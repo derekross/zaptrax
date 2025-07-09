@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -19,7 +20,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useMusicPlayer } from '@/contexts/MusicPlayerContext';
-import { useLikeTrack, useTrackReactions, useUpdateNowPlaying } from '@/hooks/useNostrMusic';
+import { useLikeTrack, useTrackReactions, useLikedSongs } from '@/hooks/useNostrMusic';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
 import type { WavlakeTrack } from '@/lib/wavlake';
 import { cn } from '@/lib/utils';
@@ -46,7 +47,7 @@ export function TrackCard({
   const { state, playTrack, togglePlayPause } = useMusicPlayer();
   const { user } = useCurrentUser();
   const { mutate: likeTrack } = useLikeTrack();
-  const { mutate: updateNowPlaying } = useUpdateNowPlaying();
+  const { data: likedSongs } = useLikedSongs();
 
   const trackUrl = `https://wavlake.com/track/${track.id}`;
   const { data: reactions } = useTrackReactions(trackUrl);
@@ -54,20 +55,19 @@ export function TrackCard({
   const isCurrentTrack = state.currentTrack?.id === track.id;
   const isPlaying = isCurrentTrack && state.isPlaying;
 
+  const isLiked = likedSongs?.tags.some(tag => tag[0] === 'r' && tag[1] === trackUrl);
+
   const handlePlayPause = () => {
     if (isCurrentTrack) {
       togglePlayPause();
     } else {
       playTrack(track);
-      if (user) {
-        updateNowPlaying({ track, trackUrl });
-      }
     }
   };
 
   const handleLike = () => {
     if (user) {
-      likeTrack({ track, trackUrl });
+      likeTrack({ track, trackUrl, isLiked: isLiked || false });
     }
   };
 
@@ -119,9 +119,9 @@ export function TrackCard({
               {track.title}
             </h3>
             {showArtist && (
-              <p className="text-sm text-accent truncate font-metal">
+              <Link to={`/artist/${track.artistId}`} className="text-sm text-accent truncate font-metal hover:underline">
                 {track.artist}
-              </p>
+              </Link>
             )}
             {showAlbum && (
               <p className="text-xs text-muted-foreground truncate">
@@ -148,9 +148,12 @@ export function TrackCard({
                   size="sm"
                   variant="ghost"
                   onClick={handleLike}
-                  className="h-8 w-8 p-0 hover:bg-primary hover:text-primary-foreground border border-primary"
+                  className={cn(
+                    "h-8 w-8 p-0 border border-primary",
+                    isLiked ? "bg-primary text-primary-foreground" : "hover:bg-primary hover:text-primary-foreground"
+                  )}
                 >
-                  <Heart className="h-4 w-4" />
+                  <Heart className={cn("h-4 w-4", isLiked ? "fill-current" : "")} />
                 </Button>
 
                 <Button

@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
@@ -72,9 +73,9 @@ export function MusicPlayer() {
               <h4 className="font-bold text-sm truncate uppercase tracking-wide">
                 {currentTrack.title}
               </h4>
-              <p className="text-sm text-accent truncate font-metal">
+              <Link to={`/artist/${currentTrack.artistId}`} className="text-sm text-accent truncate font-metal hover:underline">
                 {currentTrack.artist}
-              </p>
+              </Link>
             </div>
           </div>
 

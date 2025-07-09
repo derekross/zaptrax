@@ -1,5 +1,7 @@
 import React, { createContext, useContext, useReducer, useRef, useEffect } from 'react';
 import type { WavlakeTrack } from '@/lib/wavlake';
+import { useUpdateNowPlaying } from '@/hooks/useNostrMusic';
+import { useCurrentUser } from '@/hooks/useCurrentUser';
 
 interface MusicPlayerState {
   currentTrack: WavlakeTrack | null;
@@ -113,6 +115,8 @@ const MusicPlayerContext = createContext<MusicPlayerContextType | undefined>(und
 export function MusicPlayerProvider({ children }: { children: React.ReactNode }) {
   const [state, dispatch] = useReducer(musicPlayerReducer, initialState);
   const audioRef = useRef<HTMLAudioElement>(null);
+  const { mutate: updateNowPlaying } = useUpdateNowPlaying();
+  const { user } = useCurrentUser();
 
   const playTrack = (track: WavlakeTrack, queue?: WavlakeTrack[]) => {
     dispatch({ type: 'SET_TRACK', payload: track });
@@ -125,13 +129,24 @@ export function MusicPlayerProvider({ children }: { children: React.ReactNode })
       dispatch({ type: 'SET_QUEUE', payload: [track] });
       dispatch({ type: 'SET_CURRENT_INDEX', payload: 0 });
     }
+
+    // Dispatch PLAY action immediately after setting the track
+    dispatch({ type: 'PLAY' }); 
+
+    if (user) {
+      const trackUrl = `https://wavlake.com/track/${track.id}`;
+      updateNowPlaying({ track, trackUrl });
+    }
   };
 
   const togglePlayPause = () => {
-    if (state.isPlaying) {
-      dispatch({ type: 'PAUSE' });
-    } else {
-      dispatch({ type: 'PLAY' });
+    if (audioRef.current) {
+      if (state.isPlaying) {
+        audioRef.current.pause();
+        dispatch({ type: 'PAUSE' });
+      } else {
+        dispatch({ type: 'PLAY' });
+      }
     }
   };
 
@@ -157,7 +172,7 @@ export function MusicPlayerProvider({ children }: { children: React.ReactNode })
     dispatch({ type: 'PREVIOUS_TRACK' });
   };
 
-  // Audio event handlers
+  // Audio event handlers (keep this useEffect for other event listeners)
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;
@@ -171,7 +186,6 @@ export function MusicPlayerProvider({ children }: { children: React.ReactNode })
       dispatch({ type: 'SET_CURRENT_TIME', payload: audio.currentTime });
     };
     const handleEnded = () => {
-      dispatch({ type: 'PAUSE' });
       nextTrack();
     };
     const handleError = () => {
@@ -195,28 +209,36 @@ export function MusicPlayerProvider({ children }: { children: React.ReactNode })
     };
   }, []);
 
-  // Control audio playback based on state
-  useEffect(() => {
-    const audio = audioRef.current;
-    if (!audio) return;
-
-    if (state.isPlaying) {
-      audio.play().catch(() => {
-        dispatch({ type: 'SET_ERROR', payload: 'Failed to play audio' });
-      });
-    } else {
-      audio.pause();
-    }
-  }, [state.isPlaying]);
-
-  // Update audio source when track changes
+  // Update audio source when track changes (modify this useEffect)
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio || !state.currentTrack) return;
 
     audio.src = state.currentTrack.mediaUrl;
-    audio.load();
-  }, [state.currentTrack]);
+    // audio.load(); // Remove this, as setting src implicitly calls load()
+
+    const handleCanPlayThrough = () => {
+      if (state.isPlaying) { // Only play if the state indicates it should be playing
+        audio.play().catch(() => {
+          dispatch({ type: 'SET_ERROR', payload: 'Failed to play audio' });
+        });
+      }
+    };
+
+    audio.addEventListener('canplaythrough', handleCanPlayThrough);
+
+    return () => {
+      audio.removeEventListener('canplaythrough', handleCanPlayThrough);
+    };
+  }, [state.currentTrack, state.isPlaying]); // Add state.isPlaying to dependencies
+
+  // New useEffect to trigger NIP-38 update (keep this useEffect)
+  useEffect(() => {
+    if (user && state.currentTrack && state.isPlaying) {
+      const trackUrl = `https://wavlake.com/track/${state.currentTrack.id}`;
+      updateNowPlaying({ track: state.currentTrack, trackUrl });
+    }
+  }, [user, state.currentTrack, state.isPlaying, updateNowPlaying]);
 
   const value: MusicPlayerContextType = {
     state,

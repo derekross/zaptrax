@@ -19,6 +19,7 @@ import { useAuthor } from '@/hooks/useAuthor';
 import { genUserName } from '@/lib/genUserName';
 import type { NostrEvent } from '@nostrify/nostrify';
 import { cn } from '@/lib/utils';
+import { PlaylistTrackList } from './PlaylistTrackList';
 
 interface PlaylistCardProps {
   playlist: NostrEvent;
@@ -115,6 +116,8 @@ export function PlaylistCard({
                 <span>{formatDate(playlist.created_at)}</span>
               </div>
             </div>
+
+            <PlaylistTrackList trackUrls={playlist.tags.filter(tag => tag[0] === 'r').map(tag => tag[1])} />
 
             {/* Author Info */}
             <div className="flex items-center space-x-2 mt-2">
