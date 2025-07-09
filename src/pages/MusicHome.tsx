@@ -36,7 +36,7 @@ export function MusicHome() {
   // as they are moved to MusicPlaylists and MusicLikedSongs components.
 
   return (
-    <>
+    <div className="container mx-auto px-4 py-8">
       {/* Discover Tab Content */}
       <TopTracks
         onAddToPlaylist={handleAddToPlaylist}
@@ -62,6 +62,6 @@ export function MusicHome() {
         onOpenChange={setCommentDialogOpen}
         track={selectedTrackForComment}
       />
-    </>
+    </div>
   );
 }

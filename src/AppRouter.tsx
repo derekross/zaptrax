@@ -10,39 +10,41 @@ import NotFound from "./pages/NotFound";
 import { Layout } from "./components/Layout";
 import { MusicPlaylists } from "./components/music/MusicPlaylists";
 import { MusicLikedSongs } from "./components/music/MusicLikedSongs";
+import { PlayerPortal } from './components/PlayerPortal';
+import { Header } from "./components/Header";
 
 export function AppRouter() {
   return (
     <BrowserRouter>
       <ScrollToTop />
-      <div className="min-h-screen pb-24">
-        <Routes>
-          <Route path="/" element={<Layout />}>
-            <Route index element={<MusicHome />} />
-            <Route path="music" element={<MusicHome />} />
-            <Route path="music/search" element={<SearchPage />} />
-            <Route path="music/playlists" element={<MusicPlaylists />} />
-            <Route path="music/liked" element={<MusicLikedSongs />} />
-            <Route path="artist/:artistId" element={<ArtistPage />} />
-            <Route path="album/:albumId" element={<AlbumPage />} />
-            <Route path="*" element={<NotFound />} />
-          </Route>
-        </Routes>
-      </div>
-      <MusicPlayer />
+      <Header />
+      <Routes>
+        <Route path="/" element={<Layout />}>
+          <Route index element={<MusicHome />} />
+          <Route path="music" element={<MusicHome />} />
+          <Route path="music/search" element={<SearchPage />} />
+          <Route path="music/playlists" element={<MusicPlaylists />} />
+          <Route path="music/liked" element={<MusicLikedSongs />} />
+          <Route path="artist/:artistId" element={<ArtistPage />} />
+          <Route path="album/:albumId" element={<AlbumPage />} />
+          <Route path="*" element={<NotFound />} />
+        </Route>
+      </Routes>
+      <PlayerPortal>
+        <MusicPlayer />
+      </PlayerPortal>
       <footer className="py-6 md:px-8 md:py-0">
         <div className="container flex flex-col items-center justify-between gap-4 md:h-24 md:flex-row">
           <p className="text-center text-sm leading-loose text-muted-foreground md:text-left">
-            VIBED WITH{' '}
+            Music from{' '}
             <a
-              href="https://soapbox.pub/mkstack"
+              href="https://wavlake.com"
               target="_blank"
               rel="noopener noreferrer"
               className="font-medium underline underline-offset-4"
             >
-              MKSTACK
+              Wavlake
             </a>
-            {' '}⚡ PUNK ROCK FOREVER ⚡
           </p>
         </div>
       </footer>

@@ -91,37 +91,40 @@ export function TrackCard({
 
   return (
     <Card className={cn("group punk-card border-2 border-primary bg-card hover:neon-glow transition-all", className)}>
-      <CardContent className="p-4">
-        <div className="flex items-center space-x-4">
-          {/* Album Art & Play Button */}
+      <CardContent className="p-2 sm:p-4">
+        {/* Top row: Album art and song name side by side */}
+        <div className="flex flex-row items-center gap-2 sm:gap-4">
           <div className="relative flex-shrink-0">
-            <Avatar className="h-16 w-16 rounded-none border-2 border-foreground">
+            <Avatar className="h-14 w-14 sm:h-16 sm:w-16 rounded-none border-2 border-foreground">
               <AvatarImage src={track.albumArtUrl} alt={track.albumTitle} />
               <AvatarFallback className="rounded-none bg-primary text-primary-foreground font-punk">
                 {track.title.charAt(0)}
               </AvatarFallback>
             </Avatar>
             <Button
-              size="sm"
+              size="icon"
               variant="secondary"
-              className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity bg-primary/80 hover:bg-primary text-primary-foreground border-2 border-foreground punk-button"
+              className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity bg-primary/80 hover:bg-primary text-primary-foreground border-2 border-foreground punk-button h-12 w-12 sm:h-8 sm:w-8"
               onClick={handlePlayPause}
             >
               {isPlaying ? (
-                <Pause className="h-4 w-4" />
+                <Pause className="h-6 w-6 sm:h-4 sm:w-4" />
               ) : (
-                <Play className="h-4 w-4" />
+                <Play className="h-6 w-6 sm:h-4 sm:w-4" />
               )}
             </Button>
           </div>
-
-          {/* Track Info */}
           <div className="flex-1 min-w-0">
-            <h3 className="font-bold text-sm truncate uppercase tracking-wide">
+            <h3 className="font-bold text-xs sm:text-sm truncate uppercase tracking-wide">
               {track.title}
             </h3>
+          </div>
+        </div>
+        {/* Info row: artist, album, badges */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mt-1">
+          <div className="flex flex-col min-w-0">
             {showArtist && (
-              <Link to={`/artist/${track.artistId}`} className="text-sm text-accent truncate font-metal hover:underline">
+              <Link to={`/artist/${track.artistId}`} className="text-xs sm:text-sm text-accent truncate font-metal hover:underline">
                 {track.artist}
               </Link>
             )}
@@ -130,92 +133,80 @@ export function TrackCard({
                 {track.albumTitle}
               </p>
             )}
-            <div className="flex items-center space-x-2 mt-1">
-              <Badge variant="outline" className="text-xs border-primary text-primary font-bold">
-                {formatDuration(track.duration)}
-              </Badge>
-              {track.msatTotal && (
-                <Badge variant="outline" className="text-xs border-accent text-accent font-bold">
-                  ⚡ {formatSats(track.msatTotal)}
-                </Badge>
-              )}
-            </div>
           </div>
-
-          {/* Actions */}
-          <div className="flex items-center space-x-1">
-            {user && (
-              <>
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  onClick={handleLike}
-                  className={cn(
-                    "h-8 w-8 p-0 border border-primary",
-                    isLiked ? "bg-primary text-primary-foreground" : "hover:bg-primary hover:text-primary-foreground"
-                  )}
-                >
-                  <Heart className={cn("h-4 w-4", isLiked ? "fill-current" : "")} />
-                </Button>
-
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  onClick={() => onComment?.(track)}
-                  className="h-8 w-8 p-0 hover:bg-accent hover:text-accent-foreground border border-accent"
-                >
-                  <MessageCircle className="h-4 w-4" />
-                </Button>
-
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  onClick={() => onZap?.(track)}
-                  className="h-8 w-8 p-0 hover:bg-yellow-500 hover:text-black border border-yellow-500"
-                >
-                  <Zap className="h-4 w-4" />
-                </Button>
-              </>
+          <div className="flex items-center space-x-2 mt-1 sm:mt-0">
+            <Badge variant="outline" className="text-xs border-primary text-primary font-bold">
+              {formatDuration(track.duration)}
+            </Badge>
+            {track.msatTotal && (
+              <Badge variant="outline" className="text-xs border-accent text-accent font-bold">
+                ⚡ {formatSats(track.msatTotal)}
+              </Badge>
             )}
-
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button size="sm" variant="ghost" className="h-8 w-8 p-0 border border-muted-foreground">
-                  <MoreHorizontal className="h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="punk-card border-2 border-primary">
-                {user && (
-                  <DropdownMenuItem
-                    onClick={() => onAddToPlaylist?.(track)}
-                    className="font-bold uppercase tracking-wide"
-                  >
-                    <Plus className="h-4 w-4 mr-2" />
-                    ADD TO PLAYLIST
-                  </DropdownMenuItem>
-                )}
-                <DropdownMenuItem
-                  onClick={() => window.open(trackUrl, '_blank')}
-                  className="font-bold uppercase tracking-wide"
-                >
-                  VIEW ON WAVLAKE
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
           </div>
         </div>
+        {/* Actions row */}
+        <div className="flex items-center space-x-2 sm:space-x-1 mt-2 sm:mt-0">
+          {user && (
+            <>
+              <Button
+                size="icon"
+                variant="ghost"
+                onClick={handleLike}
+                className={cn(
+                  "h-11 w-11 sm:h-8 sm:w-8 p-0 border border-primary",
+                  isLiked ? "bg-primary text-primary-foreground" : "hover:bg-primary hover:text-primary-foreground"
+                )}
+              >
+                <Heart className={cn("h-6 w-6 sm:h-4 sm:w-4", isLiked ? "fill-current" : "")} />
+              </Button>
 
-        {/* Reaction Stats */}
-        {reactions && reactions.likeCount > 0 && (
-          <div className="mt-3 pt-3 border-t">
-            <div className="flex items-center space-x-4 text-sm text-muted-foreground">
-              <span className="flex items-center space-x-1">
-                <Heart className="h-3 w-3" />
-                <span>{reactions.likeCount}</span>
-              </span>
-            </div>
-          </div>
-        )}
+              <Button
+                size="icon"
+                variant="ghost"
+                onClick={() => onComment?.(track)}
+                className="h-11 w-11 sm:h-8 sm:w-8 p-0 hover:bg-accent hover:text-accent-foreground border border-accent"
+              >
+                <MessageCircle className="h-6 w-6 sm:h-4 sm:w-4" />
+              </Button>
+
+              <Button
+                size="icon"
+                variant="ghost"
+                onClick={() => onZap?.(track)}
+                className="h-11 w-11 sm:h-8 sm:w-8 p-0 hover:bg-yellow-500 hover:text-black border border-yellow-500"
+              >
+                <Zap className="h-6 w-6 sm:h-4 sm:w-4" />
+              </Button>
+            </>
+          )}
+
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button size="icon" variant="ghost" className="h-11 w-11 sm:h-8 sm:w-8 p-0 border border-muted-foreground">
+                <MoreHorizontal className="h-6 w-6 sm:h-4 sm:w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="punk-card border-2 border-primary">
+              {user && (
+                <DropdownMenuItem
+                  onClick={() => onAddToPlaylist?.(track)}
+                  className="font-bold uppercase tracking-wide"
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  ADD TO PLAYLIST
+                </DropdownMenuItem>
+              )}
+              <DropdownMenuItem
+                onClick={() => window.open(trackUrl, '_blank')}
+                className="font-bold uppercase tracking-wide"
+              >
+                <Play className="h-4 w-4 mr-2" />
+                VIEW ON WAVLAKE
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
       </CardContent>
     </Card>
   );

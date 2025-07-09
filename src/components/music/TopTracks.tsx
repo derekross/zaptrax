@@ -85,33 +85,35 @@ export function TopTracks({
       {/* Header with Filters */}
       <Card className="punk-card border-2 border-primary">
         <CardHeader>
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-0">
             <div className="flex items-center space-x-3">
               <TrendingUp className="h-6 w-6 text-primary" />
               <CardTitle className="font-punk text-xl tracking-wider text-primary">
                 TOP TRACKS
               </CardTitle>
             </div>
-            <div className="flex items-center space-x-2">
-              <Filter className="h-4 w-4 text-accent" />
-              <Select value={timeRange} onValueChange={setTimeRange}>
-                <SelectTrigger className="w-40 border-2 border-primary font-bold">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent className="punk-card border-2 border-primary">
-                  {timeRangeOptions.map((option) => (
-                    <SelectItem
-                      key={option.value}
-                      value={option.value}
-                      className="font-bold uppercase tracking-wide"
-                    >
-                      {option.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-2 w-full sm:w-auto mt-2 sm:mt-0">
+              <div className="flex items-center gap-2 w-full sm:w-auto">
+                <Filter className="h-4 w-4 text-accent" />
+                <Select value={timeRange} onValueChange={setTimeRange}>
+                  <SelectTrigger className="w-full sm:w-40 border-2 border-primary font-bold">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="punk-card border-2 border-primary">
+                    {timeRangeOptions.map((option) => (
+                      <SelectItem
+                        key={option.value}
+                        value={option.value}
+                        className="font-bold uppercase tracking-wide"
+                      >
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
               <Select value={genre} onValueChange={setGenre}>
-                <SelectTrigger className="w-32 border-2 border-accent font-bold">
+                <SelectTrigger className="w-full sm:w-32 border-2 border-accent font-bold">
                   <SelectValue placeholder="GENRE" />
                 </SelectTrigger>
                 <SelectContent className="punk-card border-2 border-accent">

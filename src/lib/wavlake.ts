@@ -23,6 +23,7 @@ export interface WavlakeArtist {
   bio: string;
   artistArtUrl: string;
   albums: WavlakeAlbumSummary[];
+  artistNpub?: string; // Optional Nostr pubkey for profile lookup
 }
 
 export interface WavlakeAlbumSummary {
