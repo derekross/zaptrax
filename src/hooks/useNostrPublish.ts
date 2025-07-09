@@ -26,7 +26,7 @@ export function useNostrPublish(): UseMutationResult<NostrEvent> {
           created_at: t.created_at ?? Math.floor(Date.now() / 1000),
         });
 
-        await nostr.event(event, { signal: AbortSignal.timeout(5000) });
+        await nostr.event(event, { signal: AbortSignal.timeout(10000) });
         return event;
       } else {
         throw new Error("User is not logged in");

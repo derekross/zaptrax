@@ -30,6 +30,7 @@ interface TrackCardProps {
   showArtist?: boolean;
   showAlbum?: boolean;
   className?: string;
+  queue?: WavlakeTrack[];
   onAddToPlaylist?: (track: WavlakeTrack) => void;
   onComment?: (track: WavlakeTrack) => void;
   onZap?: (track: WavlakeTrack) => void;
@@ -40,6 +41,7 @@ export function TrackCard({
   showArtist = true,
   showAlbum = true,
   className,
+  queue,
   onAddToPlaylist,
   onComment,
   onZap,
@@ -61,13 +63,13 @@ export function TrackCard({
     if (isCurrentTrack) {
       togglePlayPause();
     } else {
-      playTrack(track);
+      playTrack(track, queue);
     }
   };
 
   const handleLike = () => {
     if (user) {
-      likeTrack({ track, trackUrl, isLiked: isLiked || false });
+      likeTrack({ track, trackUrl });
     }
   };
 

@@ -1,17 +1,25 @@
 import React, { useState, useMemo } from 'react';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Search, Play, Music, User, Disc } from 'lucide-react';
+import { Search, Music, User, Disc } from 'lucide-react';
 import { useWavlakeSearch } from '@/hooks/useWavlake';
 import { useMusicPlayer } from '@/contexts/MusicPlayerContext';
-import { useUpdateNowPlaying } from '@/hooks/useNostrMusic';
-import { useCurrentUser } from '@/hooks/useCurrentUser';
+import { wavlakeAPI } from '@/lib/wavlake';
 import { useDebounce } from '@/hooks/useDebounce';
-import type { WavlakeSearchResult } from '@/lib/wavlake';
+import type { WavlakeSearchResult, WavlakeTrack } from '@/lib/wavlake';
+
+// Extended interfaces for API responses that might have additional properties
+interface ExtendedWavlakeTrack extends WavlakeTrack {
+  name?: string;
+  url?: string;
+}
+
+interface ExtendedWavlakeSearchResult extends WavlakeSearchResult {
+  url?: string;
+}
 
 interface MusicSearchProps {
   onTrackSelect?: (result: WavlakeSearchResult) => void;
@@ -26,9 +34,7 @@ export function MusicSearch({
 }: MusicSearchProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
-  const { user } = useCurrentUser();
-  const { playTrack } = useMusicPlayer();
-  const { mutate: updateNowPlaying } = useUpdateNowPlaying();
+  const { playTrack, dispatch } = useMusicPlayer();
 
   const { data: searchResults, isLoading, error } = useWavlakeSearch(
     debouncedSearchTerm,
@@ -49,32 +55,84 @@ export function MusicSearch({
     if (result.type !== 'track') return;
 
     try {
-      // Convert search result to track format for player
-      const track = {
-        id: result.id,
-        title: result.name,
-        albumTitle: result.albumTitle || '',
-        artist: result.artist || '',
-        artistId: result.artistId || '',
-        albumId: result.albumId || '',
-        artistArtUrl: result.artistArtUrl || '',
-        albumArtUrl: result.albumArtUrl || '',
-        mediaUrl: `https://wavlake.com/api/v1/content/track/${result.id}/stream`, // Assuming stream endpoint
-        duration: result.duration || 0,
-        releaseDate: '',
-        msatTotal: '0',
-        artistNpub: '',
-        order: 0,
+      dispatch({ type: 'SET_LOADING', payload: true });
+      console.log('MusicSearch - Fetching full track for:', result);
+      const trackData = await wavlakeAPI.getTrack(result.id);
+      const fullTrack = Array.isArray(trackData) ? trackData[0] : trackData;
+      console.log('MusicSearch - Full track data:', fullTrack);
+      console.log('MusicSearch - Full track properties:', {
+        id: fullTrack.id,
+        title: fullTrack.title,
+        albumArtUrl: fullTrack.albumArtUrl,
+        mediaUrl: fullTrack.mediaUrl,
+        artist: fullTrack.artist
+      });
+      
+      // Normalize the track data to ensure it has all required properties
+      const normalizedTrack: WavlakeTrack = {
+        id: fullTrack.id,
+        title: fullTrack.title || (fullTrack as ExtendedWavlakeTrack).name || result.name,
+        albumTitle: fullTrack.albumTitle || result.albumTitle || '',
+        artist: fullTrack.artist || result.artist || '',
+        artistId: fullTrack.artistId || result.artistId || '',
+        albumId: fullTrack.albumId || result.albumId || '',
+        artistArtUrl: fullTrack.artistArtUrl || result.artistArtUrl || '',
+        albumArtUrl: fullTrack.albumArtUrl || result.albumArtUrl || '',
+        mediaUrl: fullTrack.mediaUrl || '',
+        duration: fullTrack.duration || result.duration || 0,
+        releaseDate: fullTrack.releaseDate || '',
+        msatTotal: fullTrack.msatTotal || '',
+        artistNpub: fullTrack.artistNpub || '',
+        order: fullTrack.order || 0,
+        url: (fullTrack as ExtendedWavlakeTrack).url || (result as ExtendedWavlakeSearchResult).url || `https://wavlake.com/track/${fullTrack.id}`
       };
-
-      playTrack(track);
-
-      if (user) {
-        const trackUrl = `https://wavlake.com/track/${result.id}`;
-        updateNowPlaying({ track, trackUrl });
-      }
-    } catch (error) {
-      console.error('Failed to play track:', error);
+      
+      console.log('MusicSearch - Normalized track:', normalizedTrack);
+      
+      // Get all track results to create a queue for navigation
+      const trackResults = groupedResults.tracks;
+      const trackQueue = await Promise.all(
+        trackResults.map(async (trackResult) => {
+          if (trackResult.id === result.id) {
+            return normalizedTrack; // Use the normalized track
+          }
+          try {
+            const trackData = await wavlakeAPI.getTrack(trackResult.id);
+            const track = Array.isArray(trackData) ? trackData[0] : trackData;
+            // Normalize each track in the queue as well
+            return {
+              id: track.id,
+              title: track.title || (track as ExtendedWavlakeTrack).name || trackResult.name,
+              albumTitle: track.albumTitle || trackResult.albumTitle || '',
+              artist: track.artist || trackResult.artist || '',
+              artistId: track.artistId || trackResult.artistId || '',
+              albumId: track.albumId || trackResult.albumId || '',
+              artistArtUrl: track.artistArtUrl || trackResult.artistArtUrl || '',
+              albumArtUrl: track.albumArtUrl || trackResult.albumArtUrl || '',
+              mediaUrl: track.mediaUrl || '',
+              duration: track.duration || trackResult.duration || 0,
+              releaseDate: track.releaseDate || '',
+              msatTotal: track.msatTotal || '',
+              artistNpub: track.artistNpub || '',
+              order: track.order || 0,
+              url: (track as ExtendedWavlakeTrack).url || (trackResult as ExtendedWavlakeSearchResult).url || `https://wavlake.com/track/${track.id}`
+            } as WavlakeTrack;
+          } catch (e) {
+            console.error('Failed to fetch track:', trackResult.id, e);
+            return null;
+          }
+        })
+      );
+      
+      // Filter out any failed fetches and play with queue
+      const validTracks = trackQueue.filter(track => track !== null) as WavlakeTrack[];
+      console.log('MusicSearch - Queue created with', validTracks.length, 'tracks');
+      playTrack(normalizedTrack, validTracks);
+    } catch (e) {
+      console.error('Failed to fetch full track details:', e);
+      dispatch({ type: 'SET_ERROR', payload: 'Failed to load track details.' });
+    } finally {
+      dispatch({ type: 'SET_LOADING', payload: false });
     }
   };
 
@@ -171,7 +229,7 @@ export function MusicSearch({
                   <div
                     key={result.id}
                     className="flex items-center space-x-3 p-2 rounded-lg hover:bg-muted/50 cursor-pointer group"
-                    onClick={() => handleResultClick(result)}
+                    onClick={() => handleTrackPlay(result)}
                   >
                     <Avatar className="h-12 w-12 rounded-md">
                       <AvatarImage src={result.albumArtUrl} alt={result.name} />
@@ -200,17 +258,6 @@ export function MusicSearch({
                           {formatDuration(result.duration)}
                         </Badge>
                       )}
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleTrackPlay(result);
-                        }}
-                        className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
-                      >
-                        <Play className="h-4 w-4" />
-                      </Button>
                     </div>
                   </div>
                 ))}

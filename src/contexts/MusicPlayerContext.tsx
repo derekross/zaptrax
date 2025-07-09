@@ -119,6 +119,15 @@ export function MusicPlayerProvider({ children }: { children: React.ReactNode })
   const { user } = useCurrentUser();
 
   const playTrack = (track: WavlakeTrack, queue?: WavlakeTrack[]) => {
+    console.log('MusicPlayer - playTrack called with:', track);
+    console.log('MusicPlayer - track properties:', {
+      id: track.id,
+      title: track.title,
+      albumArtUrl: track.albumArtUrl,
+      mediaUrl: track.mediaUrl,
+      artist: track.artist
+    });
+    
     dispatch({ type: 'SET_TRACK', payload: track });
     
     if (queue) {
@@ -130,19 +139,12 @@ export function MusicPlayerProvider({ children }: { children: React.ReactNode })
       dispatch({ type: 'SET_CURRENT_INDEX', payload: 0 });
     }
 
-    // Dispatch PLAY action immediately after setting the track
-    dispatch({ type: 'PLAY' }); 
-
-    if (user) {
-      const trackUrl = `https://wavlake.com/track/${track.id}`;
-      updateNowPlaying({ track, trackUrl });
-    }
+    dispatch({ type: 'PLAY' }); // Ensure isPlaying state is updated
   };
 
   const togglePlayPause = () => {
-    if (audioRef.current) {
+    if (state.currentTrack) {
       if (state.isPlaying) {
-        audioRef.current.pause();
         dispatch({ type: 'PAUSE' });
       } else {
         dispatch({ type: 'PLAY' });
@@ -177,9 +179,27 @@ export function MusicPlayerProvider({ children }: { children: React.ReactNode })
     const audio = audioRef.current;
     if (!audio) return;
 
-    const handleLoadStart = () => dispatch({ type: 'SET_LOADING', payload: true });
-    const handleCanPlay = () => dispatch({ type: 'SET_LOADING', payload: false });
+    const handleLoadStart = () => {
+      console.log('Audio load started');
+      dispatch({ type: 'SET_LOADING', payload: true });
+    };
+    const handleCanPlay = () => {
+      console.log('Audio can play');
+      dispatch({ type: 'SET_LOADING', payload: false });
+      if (state.isPlaying) {
+        audio.play().catch((error) => {
+          console.error('Audio play failed on canplay:', error);
+          if (error.name === 'NotAllowedError') {
+            dispatch({ type: 'SET_ERROR', payload: 'Autoplay prevented. Please click play to start.' });
+          } else {
+            dispatch({ type: 'SET_ERROR', payload: 'Failed to play audio.' });
+          }
+          dispatch({ type: 'PAUSE' });
+        });
+      }
+    };
     const handleLoadedMetadata = () => {
+      console.log('Audio metadata loaded, duration:', audio.duration);
       dispatch({ type: 'SET_DURATION', payload: audio.duration });
     };
     const handleTimeUpdate = () => {
@@ -189,6 +209,7 @@ export function MusicPlayerProvider({ children }: { children: React.ReactNode })
       nextTrack();
     };
     const handleError = () => {
+      console.error('Audio error occurred:', audio.error);
       dispatch({ type: 'SET_ERROR', payload: 'Failed to load audio' });
     };
 
@@ -207,30 +228,64 @@ export function MusicPlayerProvider({ children }: { children: React.ReactNode })
       audio.removeEventListener('ended', handleEnded);
       audio.removeEventListener('error', handleError);
     };
-  }, []);
+  }, [state.isPlaying]);
 
-  // Update audio source when track changes (modify this useEffect)
+  // Update audio source when track changes
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio || !state.currentTrack) return;
 
-    audio.src = state.currentTrack.mediaUrl;
-    // audio.load(); // Remove this, as setting src implicitly calls load()
+    let mediaUrl = state.currentTrack.mediaUrl;
+    if (!mediaUrl) return; // Ensure mediaUrl is defined
 
-    const handleCanPlayThrough = () => {
-      if (state.isPlaying) { // Only play if the state indicates it should be playing
-        audio.play().catch(() => {
-          dispatch({ type: 'SET_ERROR', payload: 'Failed to play audio' });
+    console.log('MusicPlayer - Original mediaUrl:', mediaUrl);
+
+    // If the mediaUrl contains op3.dev, extract the direct CloudFront URL
+    if (mediaUrl.includes('op3.dev')) {
+      // Extract the URL after the op3.dev path
+      const urlMatch = mediaUrl.match(/https:\/\/op3\.dev\/[^/]+\/(https:\/\/.*)/);
+      if (urlMatch) {
+        mediaUrl = urlMatch[1];
+        console.log('MusicPlayer - Extracted CloudFront URL:', mediaUrl);
+      } else {
+        console.log('MusicPlayer - Failed to extract URL from op3.dev');
+      }
+    }
+    
+    console.log('MusicPlayer - Setting audio src to:', mediaUrl);
+    audio.src = mediaUrl;
+    audio.load();
+
+    // Clear any previous error when a new track is set
+    dispatch({ type: 'CLEAR_ERROR' });
+  }, [state.currentTrack, state.isPlaying]);
+
+  // Handle play/pause based on isPlaying state
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    console.log('MusicPlayer - isPlaying state changed to:', state.isPlaying);
+
+    if (state.isPlaying) {
+      console.log('MusicPlayer - Attempting to play audio');
+      const playPromise = audio.play();
+      if (playPromise !== undefined) {
+        playPromise.catch((error) => {
+          console.error('Audio play failed:', error);
+          if (error.name === 'NotAllowedError') {
+            dispatch({ type: 'SET_ERROR', payload: 'Autoplay prevented. Please click play to start.' });
+          } else {
+            dispatch({ type: 'SET_ERROR', payload: 'Failed to play audio.' });
+          }
+          dispatch({ type: 'PAUSE' });
         });
       }
-    };
-
-    audio.addEventListener('canplaythrough', handleCanPlayThrough);
-
-    return () => {
-      audio.removeEventListener('canplaythrough', handleCanPlayThrough);
-    };
-  }, [state.currentTrack, state.isPlaying]); // Add state.isPlaying to dependencies
+    } else {
+      console.log('MusicPlayer - Pausing audio');
+      audio.pause();
+    }
+  }, [state.isPlaying]);
 
   // New useEffect to trigger NIP-38 update (keep this useEffect)
   useEffect(() => {
@@ -239,6 +294,8 @@ export function MusicPlayerProvider({ children }: { children: React.ReactNode })
       updateNowPlaying({ track: state.currentTrack, trackUrl });
     }
   }, [user, state.currentTrack, state.isPlaying, updateNowPlaying]);
+
+  
 
   const value: MusicPlayerContextType = {
     state,

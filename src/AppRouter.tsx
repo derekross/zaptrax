@@ -3,10 +3,11 @@ import { ScrollToTop } from "./components/ScrollToTop";
 
 import { MusicHome } from "./pages/MusicHome";
 import { ArtistPage } from "./pages/ArtistPage";
+import { AlbumPage } from "./pages/AlbumPage";
+import { SearchPage } from "./pages/SearchPage";
 import { MusicPlayer } from "./components/music/MusicPlayer";
 import NotFound from "./pages/NotFound";
 import { Layout } from "./components/Layout";
-import { MusicSearch } from "./components/music/MusicSearch";
 import { MusicPlaylists } from "./components/music/MusicPlaylists";
 import { MusicLikedSongs } from "./components/music/MusicLikedSongs";
 
@@ -19,10 +20,11 @@ export function AppRouter() {
           <Route path="/" element={<Layout />}>
             <Route index element={<MusicHome />} />
             <Route path="music" element={<MusicHome />} />
-            <Route path="music/search" element={<MusicSearch />} />
+            <Route path="music/search" element={<SearchPage />} />
             <Route path="music/playlists" element={<MusicPlaylists />} />
             <Route path="music/liked" element={<MusicLikedSongs />} />
             <Route path="artist/:artistId" element={<ArtistPage />} />
+            <Route path="album/:albumId" element={<AlbumPage />} />
             <Route path="*" element={<NotFound />} />
           </Route>
         </Routes>

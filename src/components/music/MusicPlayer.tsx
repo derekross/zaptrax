@@ -66,7 +66,7 @@ export function MusicPlayer() {
             <Avatar className="h-12 w-12 rounded-none border-2 border-primary">
               <AvatarImage src={currentTrack.albumArtUrl} alt={currentTrack.albumTitle} />
               <AvatarFallback className="rounded-none bg-primary text-primary-foreground font-punk">
-                {currentTrack.title.charAt(0)}
+                {(currentTrack.title || '').charAt(0)}
               </AvatarFallback>
             </Avatar>
             <div className="min-w-0">

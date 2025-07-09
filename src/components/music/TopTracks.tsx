@@ -174,6 +174,7 @@ export function TopTracks({
               <TrackCard
                 track={track}
                 className="ml-4"
+                queue={topTracks}
                 onAddToPlaylist={onAddToPlaylist}
                 onComment={onComment}
                 onZap={onZap}

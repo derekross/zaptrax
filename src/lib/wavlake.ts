@@ -14,6 +14,7 @@ export interface WavlakeTrack {
   msatTotal: string;
   artistNpub: string;
   order: number;
+  url?: string; // Optional URL property that may be present in search results
 }
 
 export interface WavlakeArtist {
@@ -45,6 +46,7 @@ export interface WavlakeAlbum {
 export interface WavlakeSearchResult {
   id: string;
   name: string;
+  title?: string; // Present for artists and tracks
   type: 'artist' | 'album' | 'track';
   albumArtUrl?: string;
   artistArtUrl?: string;

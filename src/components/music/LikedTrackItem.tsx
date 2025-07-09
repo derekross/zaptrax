@@ -37,6 +37,7 @@ export function LikedTrackItem({ trackUrl, onClick }: LikedTrackItemProps) {
       if (isCurrentTrack) {
         togglePlayPause();
       } else {
+        console.log('LikedTrackItem - Playing track:', track);
         onClick?.(track);
       }
     }
@@ -45,7 +46,7 @@ export function LikedTrackItem({ trackUrl, onClick }: LikedTrackItemProps) {
   const handleLike = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (user && track) {
-      likeTrack({ track, trackUrl, isLiked: isLiked || false });
+      likeTrack({ track, trackUrl });
     }
   };
 

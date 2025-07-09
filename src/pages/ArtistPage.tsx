@@ -31,7 +31,7 @@ export function ArtistPage() {
 
       <div className="space-y-4">
         {tracks.map(track => (
-          <TrackCard key={track.id} track={track} />
+          <TrackCard key={track.id} track={track} queue={tracks} />
         ))}
       </div>
     </div>
