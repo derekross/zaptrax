@@ -10,6 +10,9 @@
     "deploy": "npm run build && npx -y nostr-deploy-cli deploy --skip-setup"
   },
   "dependencies": {
+    "@fontsource/black-ops-one": "^5.2.6",
+    "@fontsource/creepster": "^5.2.6",
+    "@fontsource/metal-mania": "^5.2.6",
     "@hookform/resolvers": "^3.9.0",
     "@nostrify/nostrify": "npm:@jsr/nostrify__nostrify@^0.46.1",
     "@nostrify/react": "npm:@jsr/nostrify__react@^0.2.5",

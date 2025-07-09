@@ -1,0 +1,410 @@
+---
+swagger: "2.0"
+info:
+  description: Welcome to the Wavlake Developer API docs. You can find out more about Wavlake at [http://wavlake.com](http://wavlake.com) or contact us to request an application ID.
+  version: "1.0"
+  title: "Wavlake Developer API"
+  contact:
+    email: "contact@wavlake.com"
+host: "wavlake.com"
+basePath: "/api/v1"
+tags:
+  - name: "content"
+    description: "Wavlake content metadata service"
+    externalDocs:
+      description: "Wavlake Content API"
+      url: "http://wavlake.com"
+  - name: "lnurl"
+    description: "LNURL service"
+    externalDocs:
+      description: "LNURL spec"
+      url: "https://github.com/lnurl/luds"
+schemes:
+  - "https"
+paths:
+  /content/search:
+    get:
+      tags:
+        - "content"
+      summary: "Search for Wavlake content"
+      description: "Search for Wavlake content by artist, album, or track title."
+      operationId: "searchContent"
+      produces:
+        - "application/json"
+      parameters:
+        - name: "term"
+          in: "query"
+          description: "Search query string"
+          required: true
+          type: "string"
+      responses:
+        200:
+          description: "success"
+          schema:
+            type: "array"
+            items:
+              $ref: "#/definitions/SearchResponse"
+        400:
+          description: "Invalid search query"
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+  /content/rankings:
+    get:
+      tags:
+        - "content"
+      summary: "Retrieve customized Wavlake rankings"
+      description: "Retrieve a list of Wavlake tracks ranked by sats earned over a specific time period. A date window is required, and can be one of either `days` or `startDate` and `endDate`. Optionally filter by genre and limit the number of tracks returned. List of genres can be found at: https://github.com/wavlake/genre-list"
+      operationId: "getRanking"
+      produces:
+        - "application/json"
+      parameters:
+        - name: "sort"
+          in: "query"
+          description: "Metric to sort by"
+          required: true
+          type: "string"
+          enum:
+            - "sats"
+          default: "sats"
+        - name: "startDate"
+          in: "query"
+          description: "Start date for rankings query"
+          required: false
+          type: "string"
+          format: "date"
+        - name: "endDate"
+          in: "query"
+          description: "End date for rankings query"
+          required: false
+          type: "string"
+          format: "date"
+        - name: "days"
+          in: "query"
+          description: "Number of days to include in rankings query"
+          required: false
+          type: "integer"
+          format: "int32"
+          minimum: 1
+          maximum: 90
+        - name: "genre"
+          in: "query"
+          description: "Genre to filter rankings by"
+          required: false
+          type: "string"
+        - name: "limit"
+          in: "query"
+          description: "Number of tracks to return"
+          required: false
+          type: "integer"
+          format: "int32"
+          minimum: 1
+          maximum: 100
+      responses:
+        200:
+          description: "success"
+          schema:
+            type: "array"
+            items:
+              $ref: "#/definitions/TrackResponse"
+        400:
+          description: "Invalid rankings query"
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+  /content/track/{trackId}:
+    get:
+      tags:
+        - "content"
+      summary: "Retrieves metadata for a Wavlake track by trackId"
+      description: "Retrieve artist, album, and track metadata for a specific Wavlake track by trackId."
+      operationId: "getTrackById"
+      produces:
+        - "application/json"
+      parameters:
+        - name: "trackId"
+          in: "path"
+          description: "GUID for track"
+          required: true
+          type: "string"
+          format: "uuid"
+      responses:
+        200:
+          description: "success"
+          schema:
+            $ref: "#/definitions/TrackResponse"
+        400:
+          description: "Invalid ID or no such track"
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+  /content/album/{albumId}:
+    get:
+      tags:
+        - "content"
+      summary: "Retrieves metadata for a Wavlake album by albumId"
+      description: "Retrieve all the tracks and album metadata for a specific Wavlake album by albumId."
+      operationId: "getAlbumById"
+      produces:
+        - "application/json"
+      parameters:
+        - name: "albumId"
+          in: "path"
+          description: "GUID for album"
+          required: true
+          type: "string"
+          format: "uuid"
+      responses:
+        200:
+          description: "success"
+          schema:
+            $ref: "#/definitions/AlbumResponse"
+        400:
+          description: "Invalid ID or no such album"
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+  /content/artist/{artistId}:
+    get:
+      tags:
+        - "content"
+      summary: "Retrieves metadata for a Wavlake artist by artistId"
+      description: "Retrieve all the albums and artist metadata for a specific Wavlake artist by artistId."
+      operationId: "getArtistById"
+      produces:
+        - "application/json"
+      parameters:
+        - name: "artistId"
+          in: "path"
+          description: "GUID for artist"
+          required: true
+          type: "string"
+          format: "uuid"
+      responses:
+        200:
+          description: "success"
+          schema:
+            $ref: "#/definitions/ArtistResponse"
+        400:
+          description: "Invalid ID or no such artist"
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+  /content/playlist/{playlistId}:
+    get:
+      tags:
+        - "content"
+      summary: "Retrieves metadata for a Wavlake playlist by playlistId"
+      description: "Retrieve all the tracks and playlist metadata for a specific Wavlake playlist by playlistId."
+      operationId: "getPlaylistById"
+      produces:
+        - "application/json"
+      parameters:
+        - name: "playlistId"
+          in: "path"
+          description: "GUID for playlist"
+          required: true
+          type: "string"
+          format: "uuid"
+      responses:
+        200:
+          description: "success"
+          schema:
+            $ref: "#/definitions/PlaylistResponse"
+        400:
+          description: "Invalid ID or no such playlist"
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+  /lnurl:
+    get:
+      tags:
+        - "lnurl"
+      summary: "Retrieves an LNURL string"
+      description: "Retrieve an LNURL pay request string for a specific piece of Wavlake content (e.g. a track). Required appId param credits developer with fee splits. Currently this only supports music tracks."
+      operationId: "getLnurl"
+      produces:
+        - "application/json"
+      parameters:
+        - name: "contentId"
+          in: "query"
+          description: "GUID for Wavlake content (e.g. a track) for which to generate an LNURL pay request string."
+          required: true
+          type: "string"
+          format: "uuid"
+        - name: "appId"
+          in: "query"
+          description: "Unique id of application developer"
+          required: true
+          type: "string"
+      responses:
+        200:
+          description: "success"
+          schema:
+            $ref: "#/definitions/LnurlResponse"
+        400:
+          description: "Invalid contentId or appId"
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+# securityDefinitions:
+#   api_key:
+#     type: "apiKey"
+#     name: "api_key"
+#     in: "header"
+#   petstore_auth:
+#     type: "oauth2"
+#     authorizationUrl: "https://petstore.swagger.io/oauth/authorize"
+#     flow: "implicit"
+#     scopes:
+#       read:pets: "read your pets"
+#       write:pets: "modify pets in your account"
+definitions:
+  SearchResponse:
+    type: "object"
+    properties:
+      id:
+        type: "string"
+        format: "uuid"
+      name:
+        type: "string"
+      type:
+        type: "string"
+        enum:
+          - "artist"
+          - "album"
+          - "track"
+      albumArtUrl:
+        type: "string"
+      artistArtUrl:
+        type: "string"
+      albumId:
+        type: "string"
+        format: "uuid"
+        required: false
+      albumTitle:
+        type: "string"
+        required: false
+      artistId:
+        type: "string"
+        format: "uuid"
+        required: false
+      artist:
+        type: "string"
+        required: false
+      duration:
+        type: "integer"
+        format: "int32"
+        required: false
+  ArtistResponse:
+    type: "object"
+    properties:
+      id:
+        type: "string"
+        format: "uuid"
+      name:
+        type: "string"
+      bio:
+        type: "string"
+      artistArtUrl:
+        type: "string"
+      albums:
+        type: "array"
+        items:
+          $ref: "#/definitions/AlbumsSummaryResponse"
+  AlbumsSummaryResponse:
+    type: "object"
+    properties:
+      id:
+        type: "string"
+        format: "uuid"
+      title:
+        type: "string"
+      albumArtUrl:
+        type: "string"
+      releaseDate:
+        type: "string"
+        format: "date-time"
+  TrackResponse:
+    type: "object"
+    properties:
+      id:
+        type: "string"
+        format: "uuid"
+      title:
+        type: "string"
+      albumTitle:
+        type: "string"
+      artist:
+        type: "string"
+      artistId:
+        type: "string"
+        format: "uuid"
+      albumId:
+        type: "string"
+        format: "uuid"
+      artistArtUrl:
+        type: "string"
+      albumArtUrl:
+        type: "string"
+      mediaUrl:
+        type: "string"
+      duration:
+        type: "integer"
+        format: "int32"
+      releaseDate:
+        type: "string"
+        format: "date-time"
+      msatTotal:
+        type: "string"
+      artistNpub:
+        type: "string"
+      order:
+        type: "integer"
+        format: "int32"
+  AlbumResponse:
+    type: "object"
+    properties:
+      id:
+        type: "string"
+        format: "uuid"
+      title:
+        type: "string"
+      artist:
+        type: "string"
+      artistUrl:
+        type: "string"
+      artistArtUrl:
+        type: "string"
+      albumArtUrl:
+        type: "string"
+      releaseDate:
+        type: "string"
+        format: "date-time"
+      tracks:
+        type: "array"
+        items:
+          $ref: "#/definitions/TrackResponse"
+  PlaylistResponse:
+    type: "object"
+    properties:
+      userId:
+        type: "string"
+        format: "uuid"
+      title:
+        type: "string"
+      tracks:
+        type: "array"
+        items:
+          $ref: "#/definitions/TrackResponse"
+  LnurlResponse:
+    type: "object"
+    properties:
+      lnurl:
+        type: "string"
+  ErrorResponse:
+    type: "object"
+    properties:
+      code:
+        type: "integer"
+        format: "int32"
+      success:
+        type: "boolean"
+      error:
+        type: "string"
+externalDocs:
+  description: "Find out more about Wavlake"
+  url: "http://wavlake.com"

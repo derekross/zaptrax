@@ -19,6 +19,12 @@ export default {
 			}
 		},
 		extend: {
+			fontFamily: {
+				'punk': ['Black Ops One', 'cursive'],
+				'metal': ['Metal Mania', 'cursive'],
+				'creepy': ['Creepster', 'cursive'],
+				'sans': ['Inter', 'system-ui', 'sans-serif'],
+			},
 			colors: {
 				border: 'hsl(var(--border))',
 				input: 'hsl(var(--input))',
@@ -62,6 +68,22 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
+				},
+				// Punk rock theme colors
+				punk: {
+					black: '#0a0a0a',
+					'dark-gray': '#1a1a1a',
+					'medium-gray': '#2a2a2a',
+					'light-gray': '#3a3a3a',
+					white: '#f5f5f5',
+					red: '#dc2626',
+					'bright-red': '#ef4444',
+					pink: '#ec4899',
+					'hot-pink': '#f97316',
+					purple: '#8b5cf6',
+					'neon-green': '#10b981',
+					'electric-blue': '#3b82f6',
+					yellow: '#eab308',
 				}
 			},
 			borderRadius: {
