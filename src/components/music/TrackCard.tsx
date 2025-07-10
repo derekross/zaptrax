@@ -177,7 +177,7 @@ export function TrackCard({
                 size="icon"
                 variant="ghost"
                 onClick={() => onZap?.(track)}
-                className="h-11 w-11 sm:h-8 sm:w-8 p-0 hover:bg-yellow-500 hover:text-black border border-yellow-500"
+                className="h-11 w-11 sm:h-8 sm:w-8 p-0 text-yellow-500 hover:bg-yellow-500 hover:text-black border border-yellow-500"
               >
                 <Zap className="h-6 w-6 sm:h-4 sm:w-4" />
               </Button>
