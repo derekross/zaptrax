@@ -5,21 +5,53 @@ import { Plus, PlayCircle } from 'lucide-react';
 import { PlaylistCard } from '@/components/music/PlaylistCard';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { useUserPlaylists } from '@/hooks/useNostrMusic';
+import { useNavigate } from 'react-router-dom';
+import { nip19 } from 'nostr-tools';
 import type { NostrEvent } from '@nostrify/nostrify';
 import { CreatePlaylistDialog } from '@/components/music/CreatePlaylistDialog';
+import { EditPlaylistDialog } from '@/components/music/EditPlaylistDialog';
+import { DeletePlaylistDialog } from '@/components/music/DeletePlaylistDialog';
+import { SharePlaylistDialog } from '@/components/music/SharePlaylistDialog';
 
 
 export function MusicPlaylists() {
   const { user } = useCurrentUser();
   const { data: userPlaylists, isLoading: playlistsLoading } = useUserPlaylists();
+  const navigate = useNavigate();
 
   const [createPlaylistOpen, setCreatePlaylistOpen] = useState(false);
-  
+  const [editPlaylistOpen, setEditPlaylistOpen] = useState(false);
+  const [deletePlaylistOpen, setDeletePlaylistOpen] = useState(false);
+  const [sharePlaylistOpen, setSharePlaylistOpen] = useState(false);
+  const [selectedPlaylist, setSelectedPlaylist] = useState<NostrEvent | null>(null);
+
 
   const handlePlayPlaylist = (playlist: NostrEvent) => {
-    // Extract track URLs from playlist and play
-    const trackTags = playlist.tags.filter(tag => tag[0] === 'r');
-    console.log('Play playlist:', playlist, trackTags);
+    // Navigate to the playlist page where playback will be handled
+    const dTag = playlist.tags.find(tag => tag[0] === 'd')?.[1];
+    if (dTag) {
+      const naddr = nip19.naddrEncode({
+        identifier: dTag,
+        pubkey: playlist.pubkey,
+        kind: playlist.kind,
+      });
+      navigate(`/playlist/${naddr}`);
+    }
+  };
+
+  const handleEditPlaylist = (playlist: NostrEvent) => {
+    setSelectedPlaylist(playlist);
+    setEditPlaylistOpen(true);
+  };
+
+  const handleDeletePlaylist = (playlist: NostrEvent) => {
+    setSelectedPlaylist(playlist);
+    setDeletePlaylistOpen(true);
+  };
+
+  const handleSharePlaylist = (playlist: NostrEvent) => {
+    setSelectedPlaylist(playlist);
+    setSharePlaylistOpen(true);
   };
 
   if (!user) {
@@ -73,6 +105,9 @@ export function MusicPlaylists() {
               key={playlist.id}
               playlist={playlist}
               onPlay={handlePlayPlaylist}
+              onEdit={handleEditPlaylist}
+              onDelete={handleDeletePlaylist}
+              onShare={handleSharePlaylist}
             />
           ))}
         </div>
@@ -96,6 +131,24 @@ export function MusicPlaylists() {
         open={createPlaylistOpen}
         onOpenChange={setCreatePlaylistOpen}
         initialTracks={[]}
+      />
+
+      <EditPlaylistDialog
+        open={editPlaylistOpen}
+        onOpenChange={setEditPlaylistOpen}
+        playlist={selectedPlaylist}
+      />
+
+      <DeletePlaylistDialog
+        open={deletePlaylistOpen}
+        onOpenChange={setDeletePlaylistOpen}
+        playlist={selectedPlaylist}
+      />
+
+      <SharePlaylistDialog
+        open={sharePlaylistOpen}
+        onOpenChange={setSharePlaylistOpen}
+        playlist={selectedPlaylist}
       />
     </div>
   );

@@ -7,7 +7,7 @@ import type { WavlakeTrack } from '@/lib/wavlake';
 
 
 export function MusicHome() {
-  
+
   const [createPlaylistOpen, setCreatePlaylistOpen] = useState(false);
   const [selectedTrackForPlaylist, setSelectedTrackForPlaylist] = useState<WavlakeTrack | null>(null);
   const [zapDialogOpen, setZapDialogOpen] = useState(false);
@@ -15,7 +15,7 @@ export function MusicHome() {
   const [selectedTrackForZap, setSelectedTrackForZap] = useState<WavlakeTrack | null>(null);
   const [selectedTrackForComment, setSelectedTrackForComment] = useState<WavlakeTrack | null>(null);
 
-  
+
 
   const handleAddToPlaylist = (track: WavlakeTrack) => {
     setSelectedTrackForPlaylist(track);
@@ -36,7 +36,7 @@ export function MusicHome() {
   // as they are moved to MusicPlaylists and MusicLikedSongs components.
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <>
       {/* Discover Tab Content */}
       <TopTracks
         onAddToPlaylist={handleAddToPlaylist}
@@ -62,6 +62,6 @@ export function MusicHome() {
         onOpenChange={setCommentDialogOpen}
         track={selectedTrackForComment}
       />
-    </div>
+    </>
   );
 }

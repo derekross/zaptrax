@@ -35,14 +35,14 @@ export function ThemeToggle() {
           className="font-bold uppercase tracking-wide"
         >
           <Sun className="mr-2 h-4 w-4" />
-          Light Punk
+          Light
         </DropdownMenuItem>
         <DropdownMenuItem 
           onClick={() => setTheme('dark')}
           className="font-bold uppercase tracking-wide"
         >
           <Moon className="mr-2 h-4 w-4" />
-          Dark Punk
+          Dark
         </DropdownMenuItem>
         <DropdownMenuItem 
           onClick={() => setTheme('system')}

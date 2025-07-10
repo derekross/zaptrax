@@ -80,10 +80,10 @@ export function Layout() {
         </TabsList>
         {/* The content for each tab will be rendered by the Outlet */}
         <div
-          className="container mx-auto px-4 py-8 space-y-8 min-h-screen pb-32"
-          style={{ 
-            paddingTop: contentPaddingTop, 
-            paddingBottom: 'calc(2rem + env(safe-area-inset-bottom))' 
+          className="container mx-auto px-2 sm:px-4 py-4 sm:py-8 space-y-4 sm:space-y-8 min-h-screen pb-32"
+          style={{
+            paddingTop: contentPaddingTop,
+            paddingBottom: 'calc(2rem + env(safe-area-inset-bottom))'
           }}
         >
           <Outlet />

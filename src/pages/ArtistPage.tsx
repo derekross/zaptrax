@@ -15,7 +15,7 @@ export function ArtistPage() {
   const { artistId } = useParams<{ artistId: string }>();
   const { data: artist, isLoading: artistLoading } = useWavlakeArtist(artistId);
   const { data: tracks, isLoading: tracksLoading } = useWavlakeArtistTracks(artistId);
-  
+
   // State to track which album is expanded
   const [expandedAlbumId, setExpandedAlbumId] = useState<string | null>(null);
   const [commentDialogOpen, setCommentDialogOpen] = useState(false);
@@ -65,7 +65,7 @@ export function ArtistPage() {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-2 sm:px-4 py-4 sm:py-8">
       <div className="flex items-center space-x-4 mb-8">
         <img src={artist.artistArtUrl} alt={artist.name} className="w-32 h-32 rounded-full" />
         <div>
@@ -106,7 +106,7 @@ export function ArtistPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {albums.map((album) => (
               <div key={album.id}>
-                <Card 
+                <Card
                   className="cursor-pointer hover:neon-glow transition-all punk-card border-2 border-primary"
                   onClick={() => handleAlbumClick(album.id)}
                 >
@@ -129,7 +129,7 @@ export function ArtistPage() {
                     </div>
                   </CardHeader>
                 </Card>
-                
+
                 {/* Expanded Album Tracks */}
                 {expandedAlbumId === album.id && (
                   <div className="mt-4 space-y-2">

@@ -8,13 +8,13 @@ import { Disc } from 'lucide-react';
 export function AlbumPage() {
   const { albumId } = useParams<{ albumId: string }>();
   const { data: albumData, isLoading, error } = useWavlakeAlbum(albumId);
-  
+
   // Handle case where API might return an array
   const album = Array.isArray(albumData) ? albumData[0] : albumData;
 
   if (isLoading) {
     return (
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-2 sm:px-4 py-4 sm:py-8">
         <div className="flex items-center space-x-4 mb-8">
           <Skeleton className="w-32 h-32 rounded-md" />
           <div className="space-y-2">
@@ -33,7 +33,7 @@ export function AlbumPage() {
 
   if (error || !album) {
     return (
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-2 sm:px-4 py-4 sm:py-8">
         <Card className="border-dashed">
           <CardContent className="py-12 px-8 text-center">
             <Disc className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
@@ -48,12 +48,12 @@ export function AlbumPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-2 sm:px-4 py-4 sm:py-8">
       {/* Album Header */}
       <div className="flex items-center space-x-4 mb-8">
-        <img 
-          src={album.albumArtUrl} 
-          alt={album.title} 
+        <img
+          src={album.albumArtUrl}
+          alt={album.title}
           className="w-32 h-32 rounded-md border-2 border-primary"
         />
         <div>
@@ -93,4 +93,4 @@ export function AlbumPage() {
       </div>
     </div>
   );
-} 
+}

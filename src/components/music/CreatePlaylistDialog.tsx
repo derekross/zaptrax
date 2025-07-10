@@ -21,10 +21,10 @@ interface CreatePlaylistDialogProps {
   initialTracks?: WavlakeTrack[];
 }
 
-export function CreatePlaylistDialog({ 
-  open, 
-  onOpenChange, 
-  initialTracks = [] 
+export function CreatePlaylistDialog({
+  open,
+  onOpenChange,
+  initialTracks = []
 }: CreatePlaylistDialogProps) {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
@@ -33,7 +33,7 @@ export function CreatePlaylistDialog({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!name.trim()) {
       toast({
         title: "Name required",
@@ -80,7 +80,7 @@ export function CreatePlaylistDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="w-[95vw] max-w-md p-4 sm:p-6">
         <DialogHeader>
           <DialogTitle>Create New Playlist</DialogTitle>
           <DialogDescription>
@@ -92,28 +92,30 @@ export function CreatePlaylistDialog({
             )}
           </DialogDescription>
         </DialogHeader>
-        
-        <form onSubmit={handleSubmit} className="space-y-4">
+
+        <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="playlist-name">Name *</Label>
+            <Label htmlFor="playlist-name" className="text-sm font-medium">Name *</Label>
             <Input
               id="playlist-name"
               placeholder="My Awesome Playlist"
               value={name}
               onChange={(e) => setName(e.target.value)}
               maxLength={100}
+              className="text-base sm:text-sm"
             />
           </div>
-          
+
           <div className="space-y-2">
-            <Label htmlFor="playlist-description">Description</Label>
+            <Label htmlFor="playlist-description" className="text-sm font-medium">Description</Label>
             <Textarea
               id="playlist-description"
               placeholder="A collection of my favorite tracks..."
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               maxLength={500}
-              rows={3}
+              rows={2}
+              className="text-base sm:text-sm resize-none"
             />
           </div>
 
@@ -131,16 +133,17 @@ export function CreatePlaylistDialog({
             </div>
           )}
 
-          <DialogFooter>
+          <DialogFooter className="flex-col sm:flex-row gap-2 sm:gap-0">
             <Button
               type="button"
               variant="outline"
               onClick={handleClose}
               disabled={isPending}
+              className="w-full sm:w-auto"
             >
               Cancel
             </Button>
-            <Button type="submit" disabled={isPending}>
+            <Button type="submit" disabled={isPending} className="w-full sm:w-auto">
               {isPending ? 'Creating...' : 'Create Playlist'}
             </Button>
           </DialogFooter>

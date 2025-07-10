@@ -1,21 +1,26 @@
 {
-  "name": "Wavlake Music - Nostr Music Player",
-  "short_name": "Wavlake Music",
-  "description": "Discover and stream music on Nostr with Wavlake integration",
+  "name": "ZapTrax - Nostr Music Player",
+  "short_name": "ZapTrax",
+  "description": "Discover and stream music on Nostr with Wavlake integration. Create playlists, like tracks, and support artists with Lightning zaps.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#000000",
+  "scope": "/",
+  "orientation": "portrait-primary",
+  "categories": ["music", "entertainment"],
   "icons": [
     {
       "src": "/icon-192.png",
       "sizes": "192x192",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     },
     {
       "src": "/icon-512.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     }
   ]
 }

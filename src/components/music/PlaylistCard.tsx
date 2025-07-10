@@ -8,6 +8,9 @@ import {
   Music,
   MoreHorizontal,
   Calendar,
+  Edit,
+  Share2,
+  Trash2,
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -16,6 +19,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useAuthor } from '@/hooks/useAuthor';
+import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { genUserName } from '@/lib/genUserName';
 import type { NostrEvent } from '@nostrify/nostrify';
 import { cn } from '@/lib/utils';
@@ -38,8 +42,11 @@ export function PlaylistCard({
   onDelete,
   onShare,
 }: PlaylistCardProps) {
+  const { user } = useCurrentUser();
   const author = useAuthor(playlist.pubkey);
   const metadata = author.data?.metadata;
+
+  const isOwner = user?.pubkey === playlist.pubkey;
 
   const getPlaylistInfo = () => {
     const titleTag = playlist.tags.find(tag => tag[0] === 'title');
@@ -146,18 +153,25 @@ export function PlaylistCard({
                   <Play className="h-4 w-4 mr-2" />
                   Play Playlist
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => onEdit?.(playlist)}>
-                  Edit Playlist
-                </DropdownMenuItem>
+                {isOwner && (
+                  <DropdownMenuItem onClick={() => onEdit?.(playlist)}>
+                    <Edit className="h-4 w-4 mr-2" />
+                    Edit Playlist
+                  </DropdownMenuItem>
+                )}
                 <DropdownMenuItem onClick={() => onShare?.(playlist)}>
+                  <Share2 className="h-4 w-4 mr-2" />
                   Share Playlist
                 </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={() => onDelete?.(playlist)}
-                  className="text-red-600"
-                >
-                  Delete Playlist
-                </DropdownMenuItem>
+                {isOwner && (
+                  <DropdownMenuItem
+                    onClick={() => onDelete?.(playlist)}
+                    className="text-red-600"
+                  >
+                    <Trash2 className="h-4 w-4 mr-2" />
+                    Delete Playlist
+                  </DropdownMenuItem>
+                )}
               </DropdownMenuContent>
             </DropdownMenu>
           </div>

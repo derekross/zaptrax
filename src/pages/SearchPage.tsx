@@ -18,8 +18,8 @@ export function SearchPage() {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="mb-8">
+    <>
+      <div className="mb-4 sm:mb-8">
         <h1 className="text-3xl font-punk font-black tracking-wider text-primary torn-edge">
           SEARCH
         </h1>
@@ -27,11 +27,11 @@ export function SearchPage() {
           Discover tracks, artists, and albums
         </p>
       </div>
-      
+
       <MusicSearch
         onArtistSelect={handleArtistSelect}
         onAlbumSelect={handleAlbumSelect}
       />
-    </div>
+    </>
   );
-} 
+}

@@ -352,3 +352,132 @@ export function useCommentOnTrack() {
     },
   });
 }
+
+// Hook to edit a playlist
+export function useEditPlaylist() {
+  const { mutate: createEvent } = useNostrPublish();
+  const queryClient = useQueryClient();
+  const { user } = useCurrentUser();
+
+  return useMutation({
+    mutationFn: async ({
+      playlistEvent,
+      name,
+      description,
+      tracks
+    }: {
+      playlistEvent: NostrEvent;
+      name: string;
+      description?: string;
+      tracks?: string[];
+    }) => {
+      // Get the d tag (identifier) from the original playlist
+      const dTag = playlistEvent.tags.find(tag => tag[0] === 'd')?.[1];
+      if (!dTag) {
+        throw new Error('Invalid playlist: missing identifier');
+      }
+
+      const tags = [
+        ['d', dTag], // Keep the same identifier to replace the event
+        ['title', name],
+        ['t', 'music'],
+      ];
+
+      if (description) {
+        tags.push(['description', description]);
+      }
+
+      // Add track URLs as 'r' tags
+      if (tracks) {
+        tracks.forEach(trackUrl => {
+          tags.push(['r', trackUrl]);
+        });
+      }
+
+      createEvent({
+        kind: 30003, // Bookmark sets
+        content: '',
+        tags,
+      });
+    },
+    onSuccess: () => {
+      if (user?.pubkey) {
+        queryClient.invalidateQueries({ queryKey: ['user-playlists', user.pubkey] });
+      }
+    },
+  });
+}
+
+// Hook to delete a playlist
+export function useDeletePlaylist() {
+  const { mutate: createEvent } = useNostrPublish();
+  const queryClient = useQueryClient();
+  const { user } = useCurrentUser();
+
+  return useMutation({
+    mutationFn: async ({ playlistEvent }: { playlistEvent: NostrEvent }) => {
+      // Get the d tag (identifier) from the playlist
+      const dTag = playlistEvent.tags.find(tag => tag[0] === 'd')?.[1];
+      if (!dTag) {
+        throw new Error('Invalid playlist: missing identifier');
+      }
+
+      // Create a deletion event (kind 5)
+      createEvent({
+        kind: 5, // Deletion
+        content: 'Deleted playlist',
+        tags: [
+          ['e', playlistEvent.id], // Reference to the event being deleted
+          ['a', `30003:${playlistEvent.pubkey}:${dTag}`], // Address reference
+        ],
+      });
+    },
+    onSuccess: () => {
+      if (user?.pubkey) {
+        queryClient.invalidateQueries({ queryKey: ['user-playlists', user.pubkey] });
+      }
+    },
+  });
+}
+
+// Hook to remove track from playlist
+export function useRemoveFromPlaylist() {
+  const { mutate: createEvent } = useNostrPublish();
+  const queryClient = useQueryClient();
+  const { user } = useCurrentUser();
+
+  return useMutation({
+    mutationFn: async ({ playlistEvent, trackUrl }: {
+      playlistEvent: NostrEvent;
+      trackUrl: string;
+    }) => {
+      // Get the d tag (identifier) from the original playlist
+      const dTag = playlistEvent.tags.find(tag => tag[0] === 'd')?.[1];
+      if (!dTag) {
+        throw new Error('Invalid playlist: missing identifier');
+      }
+
+      // Remove the track from existing tracks
+      const existingTracks = playlistEvent.tags
+        .filter(tag => tag[0] === 'r')
+        .map(tag => tag[1])
+        .filter(url => url !== trackUrl);
+
+      const newTags = [
+        ...playlistEvent.tags.filter(tag => tag[0] !== 'r'),
+        ...existingTracks.map(url => ['r', url]),
+      ];
+
+      createEvent({
+        kind: 30003,
+        content: playlistEvent.content,
+        tags: newTags,
+      });
+    },
+    onSuccess: () => {
+      if (user?.pubkey) {
+        queryClient.invalidateQueries({ queryKey: ['user-playlists', user.pubkey] });
+      }
+    },
+  });
+}

@@ -13,6 +13,7 @@ import { NostrLoginProvider } from '@nostrify/react/login';
 import { AppProvider } from '@/components/AppProvider';
 import { AppConfig } from '@/contexts/AppContext';
 import { MusicPlayerProvider } from '@/contexts/MusicPlayerContext';
+import { PWAInstallPrompt } from '@/components/PWAInstallPrompt';
 import AppRouter from './AppRouter';
 
 const head = createHead({
@@ -54,6 +55,7 @@ export function App() {
                 <TooltipProvider>
                   <Toaster />
                   <Sonner />
+                  <PWAInstallPrompt />
                   <Suspense>
                     <AppRouter />
                   </Suspense>

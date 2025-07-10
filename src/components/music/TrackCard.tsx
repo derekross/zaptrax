@@ -52,7 +52,7 @@ export function TrackCard({
   const { data: likedSongs } = useLikedSongs();
 
   const trackUrl = `https://wavlake.com/track/${track.id}`;
-  const { data: reactions } = useTrackReactions(trackUrl);
+  const { data: _reactions } = useTrackReactions(trackUrl);
 
   const isCurrentTrack = state.currentTrack?.id === track.id;
   const isPlaying = isCurrentTrack && state.isPlaying;
