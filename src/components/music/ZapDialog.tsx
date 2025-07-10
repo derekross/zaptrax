@@ -104,8 +104,31 @@ export function ZapDialog({ open, onOpenChange, track }: ZapDialogProps) {
       // Get LNURL for the track
       const lnurlResponse = await wavlakeAPI.getLnurl(track.id, WAVLAKE_APP_ID);
 
-      // Open the LNURL in external wallet
-      window.open(`lightning:${lnurlResponse.lnurl}`, '_blank');
+      // Check if the response contains a valid LNURL
+      if (!lnurlResponse.lnurl) {
+        throw new Error('No LNURL in response from Wavlake');
+      }
+
+      // Fetch LNURL-pay info
+      const lnurlPayInfo = await fetchLNURLPayInfo(lnurlResponse.lnurl);
+
+      // Convert sats to millisats
+      const amountMsats = parseInt(amount) * 1000;
+
+      // Check amount limits
+      if (amountMsats < lnurlPayInfo.minSendable || amountMsats > lnurlPayInfo.maxSendable) {
+        throw new Error(`Amount must be between ${lnurlPayInfo.minSendable / 1000} and ${lnurlPayInfo.maxSendable / 1000} sats`);
+      }
+
+      // Request invoice from LNURL callback
+      const invoiceResponse = await requestLNURLPayInvoice(
+        lnurlPayInfo.callback,
+        amountMsats,
+        comment || undefined
+      );
+
+      // Open the invoice (not the LNURL) in external wallet
+      window.open(`lightning:${invoiceResponse.pr}`, '_blank');
 
       toast({
         title: "Zap initiated",
@@ -115,7 +138,8 @@ export function ZapDialog({ open, onOpenChange, track }: ZapDialogProps) {
       onOpenChange(false);
     } catch (error) {
       console.error('External zap failed:', error);
-      throw new Error('Failed to open external wallet');
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      throw new Error(`Failed to open external wallet: ${errorMessage}`);
     }
   };
 

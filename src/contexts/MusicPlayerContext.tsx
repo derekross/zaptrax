@@ -127,9 +127,9 @@ export function MusicPlayerProvider({ children }: { children: React.ReactNode })
       mediaUrl: track.mediaUrl,
       artist: track.artist
     });
-    
+
     dispatch({ type: 'SET_TRACK', payload: track });
-    
+
     if (queue) {
       dispatch({ type: 'SET_QUEUE', payload: queue });
       const index = queue.findIndex(t => t.id === track.id);
@@ -251,14 +251,14 @@ export function MusicPlayerProvider({ children }: { children: React.ReactNode })
         console.log('MusicPlayer - Failed to extract URL from op3.dev');
       }
     }
-    
+
     console.log('MusicPlayer - Setting audio src to:', mediaUrl);
     audio.src = mediaUrl;
     audio.load();
 
     // Clear any previous error when a new track is set
     dispatch({ type: 'CLEAR_ERROR' });
-  }, [state.currentTrack, state.isPlaying]);
+  }, [state.currentTrack]); // Removed state.isPlaying dependency
 
   // Handle play/pause based on isPlaying state
   useEffect(() => {
@@ -295,7 +295,7 @@ export function MusicPlayerProvider({ children }: { children: React.ReactNode })
     }
   }, [user, state.currentTrack, state.isPlaying, updateNowPlaying]);
 
-  
+
 
   const value: MusicPlayerContextType = {
     state,
