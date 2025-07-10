@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -13,9 +13,11 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Zap, ExternalLink } from 'lucide-react';
+import { Zap, ExternalLink, Wallet, Globe } from 'lucide-react';
 import { useToast } from '@/hooks/useToast';
+import { useWebLN } from '@/hooks/useWebLN';
 import { wavlakeAPI } from '@/lib/wavlake';
+import { fetchLNURLPayInfo, requestLNURLPayInvoice } from '@/lib/lnurl';
 import type { WavlakeTrack } from '@/lib/wavlake';
 
 interface ZapDialogProps {
@@ -24,26 +26,85 @@ interface ZapDialogProps {
   track: WavlakeTrack | null;
 }
 
-const WAVLAKE_APP_ID = 'nostr-music-app'; // You would get this from Wavlake
+const WAVLAKE_APP_ID = 'DR25'; // Wavlake app ID
 
 export function ZapDialog({ open, onOpenChange, track }: ZapDialogProps) {
   const [amount, setAmount] = useState('1000');
   const [comment, setComment] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState<'webln' | 'external'>('webln');
   const { toast } = useToast();
+  const webln = useWebLN();
 
-  const handleZap = async () => {
+  // Auto-detect payment method based on WebLN availability
+  useEffect(() => {
+    if (webln.isAvailable) {
+      setPaymentMethod('webln');
+    } else {
+      setPaymentMethod('external');
+    }
+  }, [webln.isAvailable]);
+
+  const handleZapWithWebLN = async () => {
     if (!track) return;
 
-    setIsLoading(true);
+    try {
+      // Enable WebLN if not already enabled
+      if (!webln.isEnabled) {
+        await webln.enable();
+      }
+
+      // Get LNURL for the track
+      const lnurlResponse = await wavlakeAPI.getLnurl(track.id, WAVLAKE_APP_ID);
+
+      // Check if the response contains a valid LNURL
+      if (!lnurlResponse.lnurl) {
+        throw new Error('No LNURL in response from Wavlake');
+      }
+
+      // Fetch LNURL-pay info
+      const lnurlPayInfo = await fetchLNURLPayInfo(lnurlResponse.lnurl);
+
+      // Convert sats to millisats
+      const amountMsats = parseInt(amount) * 1000;
+
+      // Check amount limits
+      if (amountMsats < lnurlPayInfo.minSendable || amountMsats > lnurlPayInfo.maxSendable) {
+        throw new Error(`Amount must be between ${lnurlPayInfo.minSendable / 1000} and ${lnurlPayInfo.maxSendable / 1000} sats`);
+      }
+
+      // Request invoice from LNURL callback
+      const invoiceResponse = await requestLNURLPayInvoice(
+        lnurlPayInfo.callback,
+        amountMsats,
+        comment || undefined
+      );
+
+      // Pay the invoice using WebLN
+      const paymentResult = await webln.sendPayment(invoiceResponse.pr);
+
+      toast({
+        title: "Zap successful! ⚡",
+        description: `Successfully zapped ${amount} sats to "${track.title}"`,
+      });
+
+      onOpenChange(false);
+      return paymentResult;
+    } catch (error) {
+      console.error('WebLN zap failed:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      throw new Error(`WebLN payment failed: ${errorMessage}`);
+    }
+  };
+
+  const handleZapExternal = async () => {
+    if (!track) return;
+
     try {
       // Get LNURL for the track
       const lnurlResponse = await wavlakeAPI.getLnurl(track.id, WAVLAKE_APP_ID);
 
-      // Create a zap request event (NIP-57) and send to LNURL callback
-      // This would normally create a proper zap request and get an invoice
-
-      // For now, just open the LNURL in a new tab
+      // Open the LNURL in external wallet
       window.open(`lightning:${lnurlResponse.lnurl}`, '_blank');
 
       toast({
@@ -53,10 +114,27 @@ export function ZapDialog({ open, onOpenChange, track }: ZapDialogProps) {
 
       onOpenChange(false);
     } catch (error) {
+      console.error('External zap failed:', error);
+      throw new Error('Failed to open external wallet');
+    }
+  };
+
+  const handleZap = async () => {
+    if (!track) return;
+
+    setIsLoading(true);
+    try {
+      if (paymentMethod === 'webln' && webln.isAvailable) {
+        await handleZapWithWebLN();
+      } else {
+        await handleZapExternal();
+      }
+    } catch (error) {
       console.error('Zap failed:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       toast({
         title: "Zap failed",
-        description: "Failed to create zap. Please try again.",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
@@ -121,6 +199,40 @@ export function ZapDialog({ open, onOpenChange, track }: ZapDialogProps) {
         </div>
 
         <div className="space-y-4">
+          {/* Payment Method Selection */}
+          {webln.isAvailable && (
+            <div className="space-y-2">
+              <Label>Payment Method</Label>
+              <div className="flex space-x-2">
+                <Button
+                  type="button"
+                  size="sm"
+                  variant={paymentMethod === 'webln' ? 'default' : 'outline'}
+                  onClick={() => setPaymentMethod('webln')}
+                  className="flex-1 flex items-center justify-center space-x-2"
+                >
+                  <Wallet className="h-4 w-4" />
+                  <span>WebLN Wallet</span>
+                </Button>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant={paymentMethod === 'external' ? 'default' : 'outline'}
+                  onClick={() => setPaymentMethod('external')}
+                  className="flex-1 flex items-center justify-center space-x-2"
+                >
+                  <Globe className="h-4 w-4" />
+                  <span>External Wallet</span>
+                </Button>
+              </div>
+              {paymentMethod === 'webln' && !webln.isEnabled && (
+                <p className="text-xs text-muted-foreground">
+                  WebLN wallet will be enabled when you zap
+                </p>
+              )}
+            </div>
+          )}
+
           {/* Amount Selection */}
           <div className="space-y-2">
             <Label htmlFor="zap-amount">Amount (sats)</Label>
@@ -184,7 +296,11 @@ export function ZapDialog({ open, onOpenChange, track }: ZapDialogProps) {
               disabled={isLoading || !amount || parseInt(amount) < 1}
               className="flex-1"
             >
-              {isLoading ? 'Creating Zap...' : `⚡ Zap ${formatSats(amount)} sats`}
+              {isLoading ? (
+                paymentMethod === 'webln' ? 'Paying with WebLN...' : 'Opening Wallet...'
+              ) : (
+                `⚡ Zap ${formatSats(amount)} sats`
+              )}
             </Button>
           </div>
 

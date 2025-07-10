@@ -113,15 +113,27 @@ export function MusicPlayer() {
           {/* Controls */}
           <div className="flex items-center space-x-1">
             {user && (
-              <Button
-                size="icon"
-                variant="ghost"
-                className={`h-10 w-10 rounded-full ${isLiked ? 'text-pink-500' : ''}`}
-                onClick={handleLike}
-                aria-label="Like song"
-              >
-                <Heart className={`h-4 w-4 ${isLiked ? 'fill-current' : ''}`} />
-              </Button>
+              <>
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  className={`h-10 w-10 rounded-full ${isLiked ? 'text-pink-500' : ''}`}
+                  onClick={handleLike}
+                  aria-label="Like song"
+                >
+                  <Heart className={`h-4 w-4 ${isLiked ? 'fill-current' : ''}`} />
+                </Button>
+
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  className="h-10 w-10 rounded-full text-yellow-500 hover:text-yellow-600"
+                  onClick={handleZap}
+                  aria-label="Zap song"
+                >
+                  <Zap className="h-4 w-4" />
+                </Button>
+              </>
             )}
 
             <Button
@@ -267,7 +279,7 @@ export function MusicPlayer() {
               size="icon"
               variant="ghost"
               onClick={handleZap}
-              className="h-12 w-12 rounded-full hover:bg-muted"
+              className="h-12 w-12 rounded-full hover:bg-muted text-yellow-500 hover:text-yellow-600"
             >
               <Zap className="h-5 w-5" />
             </Button>
@@ -401,7 +413,7 @@ export function MusicPlayer() {
                   size="icon"
                   variant="ghost"
                   onClick={handleZap}
-                  className="h-8 w-8 rounded-full hover:bg-muted"
+                  className="h-8 w-8 rounded-full hover:bg-muted text-yellow-500 hover:text-yellow-600"
                 >
                   <Zap className="h-4 w-4" />
                 </Button>
@@ -565,7 +577,7 @@ export function MusicPlayer() {
                     size="icon"
                     variant="ghost"
                     onClick={handleZap}
-                    className="h-12 w-12 rounded-full hover:bg-muted"
+                    className="h-12 w-12 rounded-full hover:bg-muted text-yellow-500 hover:text-yellow-600"
                   >
                     <Zap className="h-6 w-6" />
                   </Button>
