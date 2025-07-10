@@ -91,9 +91,9 @@ export function TrackCard({
 
   return (
     <Card className={cn("group punk-card border-2 border-primary bg-card hover:neon-glow transition-all", className)}>
-      <CardContent className="p-2 sm:p-4">
+      <CardContent className="p-3 sm:p-4">
         {/* Top row: Album art and song name side by side */}
-        <div className="flex flex-row items-center gap-2 sm:gap-4">
+        <div className="flex flex-row items-center gap-3 sm:gap-4">
           <div className="relative flex-shrink-0">
             <Avatar className="h-14 w-14 sm:h-16 sm:w-16 rounded-none border-2 border-foreground">
               <AvatarImage src={track.albumArtUrl} alt={track.albumTitle} />
@@ -115,13 +115,16 @@ export function TrackCard({
             </Button>
           </div>
           <div className="flex-1 min-w-0">
-            <h3 className="font-bold text-xs sm:text-sm truncate uppercase tracking-wide">
+            <button
+              onClick={handlePlayPause}
+              className="font-bold text-xs sm:text-sm truncate uppercase tracking-wide text-left w-full hover:text-primary transition-colors cursor-pointer"
+            >
               {track.title}
-            </h3>
+            </button>
           </div>
         </div>
         {/* Info row: artist, album, badges */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mt-1">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mt-2 sm:mt-1">
           <div className="flex flex-col min-w-0">
             {showArtist && (
               <Link to={`/artist/${track.artistId}`} className="text-xs sm:text-sm text-accent truncate font-metal hover:underline">
@@ -146,7 +149,7 @@ export function TrackCard({
           </div>
         </div>
         {/* Actions row */}
-        <div className="flex items-center space-x-2 sm:space-x-1 mt-2 sm:mt-0">
+        <div className="flex items-center space-x-2 sm:space-x-1 mt-3 sm:mt-0">
           {user && (
             <>
               <Button

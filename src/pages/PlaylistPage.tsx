@@ -1,19 +1,18 @@
 import React from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
   Play,
   Music,
-  Calendar,
   MoreHorizontal,
   Edit,
   Share2,
   Trash2,
   Copy,
+  Calendar,
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -41,6 +40,7 @@ import { useToast } from '@/hooks/useToast';
 
 export function PlaylistPage() {
   const { nip19Id } = useParams<{ nip19Id: string }>();
+  const navigate = useNavigate();
   const { nostr } = useNostr();
   const { user } = useCurrentUser();
   const { playTrack } = useMusicPlayer();
@@ -132,6 +132,10 @@ export function PlaylistPage() {
     };
   };
 
+  const formatDate = (timestamp: number) => {
+    return new Date(timestamp * 1000).toLocaleDateString();
+  };
+
   const handlePlayPlaylist = () => {
     if (allPlaylistTracks.length > 0) {
       // Play the first track in the playlist with the full playlist as context
@@ -173,45 +177,47 @@ export function PlaylistPage() {
     setClonePlaylistOpen(true);
   };
 
+  const handleAuthorClick = () => {
+    if (playlist?.pubkey) {
+      const npub = nip19.npubEncode(playlist.pubkey);
+      navigate(`/profile/${npub}`);
+    }
+  };
+
   if (!nip19Id || !decodedData) {
     return (
-      <div className="container mx-auto px-2 sm:px-4 py-4 sm:py-8">
-        <Card className="border-dashed">
-          <CardContent className="py-12 px-8 text-center">
-            <h3 className="font-medium mb-2">Invalid playlist link</h3>
-            <p className="text-sm text-muted-foreground">
-              The playlist link you're trying to access is invalid or malformed.
-            </p>
-          </CardContent>
-        </Card>
-      </div>
+      <Card className="border-dashed">
+        <CardContent className="py-12 px-8 text-center">
+          <h3 className="font-medium mb-2">Invalid playlist link</h3>
+          <p className="text-sm text-muted-foreground">
+            The playlist link you're trying to access is invalid or malformed.
+          </p>
+        </CardContent>
+      </Card>
     );
   }
 
   if (error) {
     return (
-      <div className="container mx-auto px-2 sm:px-4 py-4 sm:py-8">
-        <Card className="border-dashed">
-          <CardContent className="py-12 px-8 text-center">
-            <div className="max-w-sm mx-auto space-y-6">
-              <div>
-                <h3 className="font-medium mb-2">Failed to load playlist</h3>
-                <p className="text-sm text-muted-foreground">
-                  Could not load the playlist. Try switching to a different relay?
-                </p>
-              </div>
-              <RelaySelector className="w-full" />
+      <Card className="border-dashed">
+        <CardContent className="py-12 px-8 text-center">
+          <div className="max-w-sm mx-auto space-y-6">
+            <div>
+              <h3 className="font-medium mb-2">Failed to load playlist</h3>
+              <p className="text-sm text-muted-foreground">
+                Could not load the playlist. Try switching to a different relay?
+              </p>
             </div>
-          </CardContent>
-        </Card>
-      </div>
+            <RelaySelector className="w-full" />
+          </div>
+        </CardContent>
+      </Card>
     );
   }
 
   if (isLoading) {
     return (
-      <div className="container mx-auto px-2 sm:px-4 py-4 sm:py-8">
-        <Card>
+      <Card>
           <CardHeader>
             <div className="flex items-start justify-between">
               <div className="flex items-center space-x-4 flex-1">
@@ -240,27 +246,24 @@ export function PlaylistPage() {
             </div>
           </CardContent>
         </Card>
-      </div>
     );
   }
 
   if (!playlist) {
     return (
-      <div className="container mx-auto px-2 sm:px-4 py-4 sm:py-8">
-        <Card className="border-dashed">
-          <CardContent className="py-12 px-8 text-center">
-            <div className="max-w-sm mx-auto space-y-6">
-              <div>
-                <h3 className="font-medium mb-2">Playlist not found</h3>
-                <p className="text-sm text-muted-foreground">
-                  This playlist doesn't exist or hasn't been published yet. Try switching relays?
-                </p>
-              </div>
-              <RelaySelector className="w-full" />
+      <Card className="border-dashed">
+        <CardContent className="py-12 px-8 text-center">
+          <div className="max-w-sm mx-auto space-y-6">
+            <div>
+              <h3 className="font-medium mb-2">Playlist not found</h3>
+              <p className="text-sm text-muted-foreground">
+                This playlist doesn't exist or hasn't been published yet. Try switching relays?
+              </p>
             </div>
-          </CardContent>
-        </Card>
-      </div>
+            <RelaySelector className="w-full" />
+          </div>
+        </CardContent>
+      </Card>
     );
   }
 
@@ -269,150 +272,174 @@ export function PlaylistPage() {
   const profileImage = metadata?.picture;
   const isOwner = user?.pubkey === playlist.pubkey;
 
-  const formatDate = (timestamp: number) => {
-    return new Date(timestamp * 1000).toLocaleDateString();
-  };
 
-  // Generate a placeholder image based on playlist title
-  const getPlaylistImage = () => {
-    const colors = [
-      'bg-gradient-to-br from-purple-500 to-pink-500',
-      'bg-gradient-to-br from-blue-500 to-cyan-500',
-      'bg-gradient-to-br from-green-500 to-emerald-500',
-      'bg-gradient-to-br from-orange-500 to-red-500',
-      'bg-gradient-to-br from-indigo-500 to-purple-500',
-    ];
-    const colorIndex = title.length % colors.length;
-    return colors[colorIndex];
-  };
+
+
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <Card>
-        <CardHeader className="p-4 sm:p-6">
-          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between space-y-4 sm:space-y-0">
-            <div className="flex items-center space-x-4 sm:space-x-6 flex-1">
-              {/* Playlist Cover */}
-              <div className={`h-16 w-16 sm:h-24 sm:w-24 rounded-md flex items-center justify-center ${getPlaylistImage()}`}>
-                <Music className="h-8 w-8 sm:h-12 sm:w-12 text-white" />
+    <div className="space-y-6">
+      {/* Header Section */}
+      <Card className="bg-gradient-to-r from-purple-500/10 to-indigo-500/10 border-purple-200 dark:border-purple-800">
+        <CardContent className="p-6 relative">
+          {/* Creation Date - Top Right */}
+          <div className="absolute top-4 right-4 flex items-center gap-1 text-xs text-muted-foreground">
+            <Calendar className="h-3 w-3" />
+            <span>{formatDate(playlist.created_at)}</span>
+          </div>
+
+          <div className="flex items-start gap-6">
+            {/* Playlist Cover */}
+            <div className="h-32 w-32 rounded-lg bg-gradient-to-br from-purple-500 to-indigo-500 flex items-center justify-center shadow-lg">
+              <Music className="h-16 w-16 text-white" />
+            </div>
+
+            {/* Playlist Info */}
+            <div className="flex-1 space-y-4">
+              <div>
+                <p className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
+                  Playlist
+                </p>
+                <h1 className="text-3xl font-bold mt-1">{title}</h1>
+                {description && (
+                  <p className="text-muted-foreground mt-2">
+                    {description}
+                  </p>
+                )}
               </div>
 
-              {/* Playlist Info */}
-              <div className="flex-1 min-w-0">
-                <h1 className="text-xl sm:text-2xl font-bold truncate">{title}</h1>
-                {description && (
-                  <p className="text-muted-foreground mt-1 text-sm sm:text-base">{description}</p>
-                )}
-
-                <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-4 mt-3">
-                  <Badge variant="outline" className="w-fit">
-                    {trackCount} track{trackCount !== 1 ? 's' : ''}
-                  </Badge>
-                  <div className="flex items-center space-x-1 text-sm text-muted-foreground">
-                    <Calendar className="h-4 w-4" />
-                    <span>{formatDate(playlist.created_at)}</span>
-                  </div>
+              {/* Stats */}
+              <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                <div className="flex items-center gap-1">
+                  <Music className="h-4 w-4" />
+                  <span>{trackCount} track{trackCount !== 1 ? 's' : ''}</span>
                 </div>
-
-                {/* Author Info */}
-                <div className="flex items-center space-x-2 mt-3">
-                  <Avatar className="h-5 w-5 sm:h-6 sm:w-6">
+                <button
+                  onClick={handleAuthorClick}
+                  className="flex items-center gap-1 hover:text-foreground transition-colors cursor-pointer"
+                >
+                  <Avatar className="h-4 w-4">
                     <AvatarImage src={profileImage} alt={displayName} />
                     <AvatarFallback className="text-xs">
                       {displayName.charAt(0)}
                     </AvatarFallback>
                   </Avatar>
-                  <span className="text-sm text-muted-foreground">
-                    by {displayName}
-                  </span>
-                </div>
+                  <span>by {displayName}</span>
+                </button>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex items-center gap-3 pt-2">
+                <Button
+                  onClick={handlePlayPlaylist}
+                  disabled={allPlaylistTracksLoading || allPlaylistTracks.length === 0}
+                  size="lg"
+                  className="rounded-full px-8"
+                >
+                  <Play className="h-5 w-5 mr-2" />
+                  {allPlaylistTracksLoading ? 'Loading...' : 'Play'}
+                </Button>
+
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button size="lg" variant="outline" className="rounded-full">
+                      <MoreHorizontal className="h-5 w-5 mr-2" />
+                      More
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    {isOwner && (
+                      <DropdownMenuItem onClick={handleEditPlaylist}>
+                        <Edit className="h-4 w-4 mr-2" />
+                        Edit Playlist
+                      </DropdownMenuItem>
+                    )}
+                    <DropdownMenuItem onClick={handleSharePlaylist}>
+                      <Share2 className="h-4 w-4 mr-2" />
+                      Share Playlist
+                    </DropdownMenuItem>
+                    {!isOwner && user && (
+                      <DropdownMenuItem onClick={handleClonePlaylist}>
+                        <Copy className="h-4 w-4 mr-2" />
+                        Clone Playlist
+                      </DropdownMenuItem>
+                    )}
+                    {isOwner && (
+                      <DropdownMenuItem
+                        onClick={handleDeletePlaylist}
+                        className="text-red-600"
+                      >
+                        <Trash2 className="h-4 w-4 mr-2" />
+                        Delete Playlist
+                      </DropdownMenuItem>
+                    )}
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
             </div>
-
-            {/* Actions */}
-            <div className="flex items-center justify-between sm:justify-end space-x-2 w-full sm:w-auto">
-              <Button
-                onClick={handlePlayPlaylist}
-                disabled={allPlaylistTracksLoading || allPlaylistTracks.length === 0}
-                className="flex-1 sm:flex-none"
-              >
-                <Play className="h-4 w-4 mr-2" />
-                {allPlaylistTracksLoading ? 'Loading...' : 'Play'}
-              </Button>
-
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button size="sm" variant="outline" className="h-9 w-9 p-0 flex-shrink-0">
-                    <MoreHorizontal className="h-4 w-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  {isOwner && (
-                    <DropdownMenuItem onClick={handleEditPlaylist}>
-                      <Edit className="h-4 w-4 mr-2" />
-                      Edit Playlist
-                    </DropdownMenuItem>
-                  )}
-                  <DropdownMenuItem onClick={handleSharePlaylist}>
-                    <Share2 className="h-4 w-4 mr-2" />
-                    Share Playlist
-                  </DropdownMenuItem>
-                  {!isOwner && user && (
-                    <DropdownMenuItem onClick={handleClonePlaylist}>
-                      <Copy className="h-4 w-4 mr-2" />
-                      Clone Playlist
-                    </DropdownMenuItem>
-                  )}
-                  {isOwner && (
-                    <DropdownMenuItem
-                      onClick={handleDeletePlaylist}
-                      className="text-red-600"
-                    >
-                      <Trash2 className="h-4 w-4 mr-2" />
-                      Delete Playlist
-                    </DropdownMenuItem>
-                  )}
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
           </div>
-        </CardHeader>
-
-        <CardContent className="p-4 sm:p-6">
-          {isLoading || allPlaylistTracksLoading ? (
-            <div className="space-y-2">
-              {[...Array(3)].map((_, i) => (
-                <div key={i} className="flex items-center space-x-3 p-2 rounded-md">
-                  <Skeleton className="h-4 w-6" />
-                  <Skeleton className="h-10 w-10 rounded" />
-                  <div className="flex-1 space-y-1">
-                    <Skeleton className="h-4 w-48" />
-                    <Skeleton className="h-3 w-32" />
-                  </div>
-                  <Skeleton className="h-8 w-8" />
-                </div>
-              ))}
-            </div>
-          ) : playlistTrackUrls.length > 0 ? (
-            <div className="space-y-1">
-              {playlistTrackUrls.map((trackUrl, index) => (
-                <PlaylistTrackItem
-                  key={`${trackUrl}-${index}`}
-                  trackUrl={trackUrl}
-                  index={index}
-                  onPlay={handlePlayTrack}
-                  showDetails={true}
-                />
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-8 text-muted-foreground">
-              <Music className="h-12 w-12 mx-auto mb-2 opacity-50" />
-              <p className="text-sm">No tracks in this playlist</p>
-            </div>
-          )}
         </CardContent>
       </Card>
+
+      {/* Track List */}
+      {isLoading || allPlaylistTracksLoading ? (
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <Skeleton className="h-6 w-32" />
+              <Skeleton className="h-4 w-16" />
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            {[...Array(3)].map((_, i) => (
+              <div key={i} className="flex items-center space-x-3 p-2 rounded-md">
+                <Skeleton className="h-4 w-6" />
+                <Skeleton className="h-10 w-10 rounded" />
+                <div className="flex-1 space-y-1">
+                  <Skeleton className="h-4 w-48" />
+                  <Skeleton className="h-3 w-32" />
+                </div>
+                <Skeleton className="h-8 w-8" />
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      ) : playlistTrackUrls.length > 0 ? (
+        <Card>
+          <CardHeader className="pb-3">
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-semibold">Tracks</h2>
+              <p className="text-sm text-muted-foreground">{trackCount} tracks</p>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-1">
+            {playlistTrackUrls.map((trackUrl, index) => (
+              <PlaylistTrackItem
+                key={`${trackUrl}-${index}`}
+                trackUrl={trackUrl}
+                index={index}
+                onPlay={handlePlayTrack}
+                showDetails={true}
+              />
+            ))}
+          </CardContent>
+        </Card>
+      ) : (
+        <Card className="border-dashed">
+          <CardContent className="py-16 px-8 text-center">
+            <div className="max-w-sm mx-auto space-y-4">
+              <div className="h-16 w-16 rounded-full bg-muted flex items-center justify-center mx-auto">
+                <Music className="h-8 w-8 text-muted-foreground" />
+              </div>
+              <div>
+                <h3 className="font-semibold mb-2">No tracks in this playlist</h3>
+                <p className="text-sm text-muted-foreground">
+                  This playlist is empty. Add some tracks to get started.
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Dialogs */}
       <EditPlaylistDialog

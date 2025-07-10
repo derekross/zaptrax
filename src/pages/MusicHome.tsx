@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { TopTracks } from '@/components/music/TopTracks';
-import { CreatePlaylistDialog } from '@/components/music/CreatePlaylistDialog';
+import { AddToPlaylistDialog } from '@/components/music/AddToPlaylistDialog';
 import { ZapDialog } from '@/components/music/ZapDialog';
 import { CommentDialog } from '@/components/music/CommentDialog';
 import type { WavlakeTrack } from '@/lib/wavlake';
@@ -8,7 +8,7 @@ import type { WavlakeTrack } from '@/lib/wavlake';
 
 export function MusicHome() {
 
-  const [createPlaylistOpen, setCreatePlaylistOpen] = useState(false);
+  const [addToPlaylistOpen, setAddToPlaylistOpen] = useState(false);
   const [selectedTrackForPlaylist, setSelectedTrackForPlaylist] = useState<WavlakeTrack | null>(null);
   const [zapDialogOpen, setZapDialogOpen] = useState(false);
   const [commentDialogOpen, setCommentDialogOpen] = useState(false);
@@ -19,7 +19,7 @@ export function MusicHome() {
 
   const handleAddToPlaylist = (track: WavlakeTrack) => {
     setSelectedTrackForPlaylist(track);
-    setCreatePlaylistOpen(true);
+    setAddToPlaylistOpen(true);
   };
 
   const handleComment = (track: WavlakeTrack) => {
@@ -45,10 +45,10 @@ export function MusicHome() {
       />
 
       {/* Dialogs (these are still needed as they are triggered from TopTracks) */}
-      <CreatePlaylistDialog
-        open={createPlaylistOpen}
-        onOpenChange={setCreatePlaylistOpen}
-        initialTracks={selectedTrackForPlaylist ? [selectedTrackForPlaylist] : []}
+      <AddToPlaylistDialog
+        open={addToPlaylistOpen}
+        onOpenChange={setAddToPlaylistOpen}
+        track={selectedTrackForPlaylist}
       />
 
       <ZapDialog

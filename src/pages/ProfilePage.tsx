@@ -10,8 +10,6 @@ import {
   User,
   Music,
   Copy,
-  ExternalLink,
-  Calendar,
   Globe
 } from 'lucide-react';
 import { useAuthor } from '@/hooks/useAuthor';
@@ -148,17 +146,11 @@ export function ProfilePage() {
     });
   };
 
-  const formatDate = (timestamp: number) => {
-    return new Date(timestamp * 1000).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    });
-  };
+
 
   if (author.isLoading) {
     return (
-      <div className="container mx-auto px-4 py-8 space-y-8">
+      <div className="container mx-auto px-4 py-8 space-y-6">
         {/* Profile Header Skeleton */}
         <Card>
           <CardContent className="p-6">
@@ -199,16 +191,16 @@ export function ProfilePage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8 space-y-8">
+    <div className="container mx-auto px-4 py-8 space-y-6">
       {/* Profile Header */}
-      <Card className="punk-card border-2 border-primary">
+      <Card className="bg-gradient-to-r from-cyan-500/10 to-blue-500/10 border-cyan-200 dark:border-cyan-800">
         <CardContent className="p-6">
-          <div className="flex flex-col md:flex-row gap-6">
-            {/* Avatar */}
-            <div className="flex-shrink-0 mx-auto md:mx-0">
-              <Avatar className="h-32 w-32 border-4 border-primary">
+          <div className="flex items-start gap-6">
+            {/* Profile Avatar */}
+            <div className="h-32 w-32 rounded-full bg-gradient-to-br from-cyan-500 to-blue-500 flex items-center justify-center shadow-lg">
+              <Avatar className="h-28 w-28">
                 <AvatarImage src={metadata?.picture} alt={displayName} />
-                <AvatarFallback className="text-2xl font-punk bg-primary text-primary-foreground">
+                <AvatarFallback className="text-2xl font-semibold bg-transparent text-white">
                   {displayName.charAt(0).toUpperCase()}
                 </AvatarFallback>
               </Avatar>
@@ -216,24 +208,25 @@ export function ProfilePage() {
 
             {/* Profile Info */}
             <div className="flex-1 space-y-4">
-              <div className="text-center md:text-left">
-                <h1 className="text-3xl font-punk tracking-wider text-primary mb-2">
-                  {displayName}
-                </h1>
+              <div>
+                <p className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
+                  Profile
+                </p>
+                <h1 className="text-3xl font-bold mt-1">{displayName}</h1>
                 {metadata?.name && metadata.name !== displayName && (
-                  <p className="text-lg text-muted-foreground font-metal">
+                  <p className="text-lg text-muted-foreground mt-1">
                     @{userName}
                   </p>
                 )}
                 {metadata?.about && (
-                  <p className="text-sm text-muted-foreground mt-2 max-w-2xl">
+                  <p className="text-muted-foreground mt-2 max-w-2xl">
                     {metadata.about}
                   </p>
                 )}
               </div>
 
               {/* Profile Details */}
-              <div className="flex flex-wrap gap-4 text-sm text-muted-foreground justify-center md:justify-start">
+              <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
                 {metadata?.website && (
                   <div className="flex items-center gap-1">
                     <Globe className="h-4 w-4" />
@@ -241,40 +234,24 @@ export function ProfilePage() {
                       href={metadata.website}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="hover:text-primary transition-colors"
+                      className="hover:text-foreground transition-colors"
                     >
                       Website
                     </a>
                   </div>
                 )}
-                <div className="flex items-center gap-1">
-                  <Calendar className="h-4 w-4" />
-                  <span>Joined {formatDate(author.data?.event?.created_at || Date.now() / 1000)}</span>
-                </div>
               </div>
 
               {/* Action Buttons */}
-              <div className="flex flex-wrap gap-2 justify-center md:justify-start">
+              <div className="flex items-center gap-3 pt-2">
                 <Button
-                  variant="outline"
-                  size="sm"
                   onClick={copyProfileUrl}
-                  className="border-primary text-primary hover:bg-primary hover:text-primary-foreground"
+                  size="lg"
+                  className="rounded-full px-8"
                 >
-                  <Copy className="h-4 w-4 mr-2" />
+                  <Copy className="h-5 w-5 mr-2" />
                   Copy Profile URL
                 </Button>
-                {metadata?.website && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => window.open(metadata.website, '_blank')}
-                    className="border-accent text-accent hover:bg-accent hover:text-accent-foreground"
-                  >
-                    <ExternalLink className="h-4 w-4 mr-2" />
-                    Visit Website
-                  </Button>
-                )}
               </div>
             </div>
           </div>
@@ -285,13 +262,13 @@ export function ProfilePage() {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <Music className="h-6 w-6 text-primary" />
-            <h2 className="text-2xl font-punk tracking-wider text-primary">
-              {isOwnProfile ? 'YOUR PLAYLISTS' : `${displayName.toUpperCase()}'S PLAYLISTS`}
+            <Music className="h-6 w-6" />
+            <h2 className="text-2xl font-semibold">
+              {isOwnProfile ? 'Your Playlists' : `${displayName}'s Playlists`}
             </h2>
           </div>
           {userPlaylists && userPlaylists.length > 0 && (
-            <Badge variant="outline" className="border-primary text-primary font-bold">
+            <Badge variant="outline">
               {userPlaylists.length} {userPlaylists.length === 1 ? 'Playlist' : 'Playlists'}
             </Badge>
           )}
@@ -310,18 +287,22 @@ export function ProfilePage() {
             ))}
           </div>
         ) : userPlaylists && userPlaylists.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {userPlaylists.map((playlist) => (
-              <PlaylistCard
-                key={playlist.id}
-                playlist={playlist}
-                onPlay={handlePlayPlaylist}
-                onShare={handleSharePlaylist}
-                onClone={!isOwnProfile ? handleClonePlaylist : undefined}
-                showCloneButton={!isOwnProfile && !!currentUser}
-              />
-            ))}
-          </div>
+          <Card>
+            <CardContent className="p-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {userPlaylists.map((playlist) => (
+                  <PlaylistCard
+                    key={playlist.id}
+                    playlist={playlist}
+                    onPlay={handlePlayPlaylist}
+                    onShare={handleSharePlaylist}
+                    onClone={!isOwnProfile ? handleClonePlaylist : undefined}
+                    showCloneButton={!isOwnProfile && !!currentUser}
+                  />
+                ))}
+              </div>
+            </CardContent>
+          </Card>
         ) : (
           <Card className="border-dashed">
             <CardContent className="py-12 px-8 text-center">

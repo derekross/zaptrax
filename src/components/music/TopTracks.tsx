@@ -196,13 +196,13 @@ export function TopTracks({
               <p className="text-sm text-muted-foreground">{topTracks.length} tracks</p>
             </div>
           </CardHeader>
-          <CardContent className="space-y-2">
+          <CardContent className="space-y-3 sm:space-y-2 p-2 sm:p-6">
             {topTracks.map((track, index) => (
               <div key={track.id} className="relative">
                 {/* Ranking Badge */}
-                <div className="absolute left-2 top-1/2 -translate-y-1/2 z-10">
+                <div className="absolute left-1 sm:left-2 top-1/2 -translate-y-1/2 z-10">
                   <div className={`
-                    text-sm font-bold w-6 h-6 flex items-center justify-center rounded-full
+                    text-sm font-bold w-7 h-7 sm:w-6 sm:h-6 flex items-center justify-center rounded-full
                     ${index < 3
                       ? 'bg-gradient-to-r from-yellow-400 to-orange-500 text-white'
                       : 'bg-muted text-muted-foreground'
@@ -212,7 +212,7 @@ export function TopTracks({
                   </div>
                 </div>
 
-                <div className="pl-10">
+                <div className="pl-9 sm:pl-10">
                   <TrackCard
                     track={track}
                     queue={topTracks}
