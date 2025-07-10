@@ -1,7 +1,7 @@
 // NOTE: This file is stable and usually should not be modified.
 // It is important that all functionality in this file is preserved, and should only be modified if explicitly requested.
 
-import { ChevronDown, LogOut, UserIcon, UserPlus } from 'lucide-react';
+import { ChevronDown, LogOut, UserIcon, UserPlus, User } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,6 +13,8 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar.tsx'
 import { RelaySelector } from '@/components/RelaySelector';
 import { useLoggedInAccounts, type Account } from '@/hooks/useLoggedInAccounts';
 import { genUserName } from '@/lib/genUserName';
+import { nip19 } from 'nostr-tools';
+import { useNavigate } from 'react-router-dom';
 
 interface AccountSwitcherProps {
   onAddAccountClick: () => void;
@@ -20,6 +22,7 @@ interface AccountSwitcherProps {
 
 export function AccountSwitcher({ onAddAccountClick }: AccountSwitcherProps) {
   const { currentUser, otherUsers, setLogin, removeLogin } = useLoggedInAccounts();
+  const navigate = useNavigate();
 
   if (!currentUser) return null;
 
@@ -41,7 +44,14 @@ export function AccountSwitcher({ onAddAccountClick }: AccountSwitcherProps) {
           <ChevronDown className='w-4 h-4 text-muted-foreground' />
         </button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className='w-56 p-2 animate-scale-in'>
+      <DropdownMenuContent
+        className='w-56 p-2 animate-scale-in max-w-[calc(100vw-32px)]'
+        align="end"
+        side="bottom"
+        sideOffset={4}
+        avoidCollisions={true}
+        collisionPadding={16}
+      >
         <div className='font-medium text-sm px-2 py-1.5'>Switch Relay</div>
         <RelaySelector className="w-full" />
         <DropdownMenuSeparator />
@@ -63,6 +73,13 @@ export function AccountSwitcher({ onAddAccountClick }: AccountSwitcherProps) {
           </DropdownMenuItem>
         ))}
         <DropdownMenuSeparator />
+        <DropdownMenuItem
+          onClick={() => navigate(`/profile/${nip19.npubEncode(currentUser.pubkey)}`)}
+          className='flex items-center gap-2 cursor-pointer p-2 rounded-md'
+        >
+          <User className='w-4 h-4' />
+          <span>View Profile</span>
+        </DropdownMenuItem>
         <DropdownMenuItem
           onClick={onAddAccountClick}
           className='flex items-center gap-2 cursor-pointer p-2 rounded-md'

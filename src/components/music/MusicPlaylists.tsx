@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Plus, PlayCircle } from 'lucide-react';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Plus, Music, FolderPlus } from 'lucide-react';
 import { PlaylistCard } from '@/components/music/PlaylistCard';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { useUserPlaylists } from '@/hooks/useNostrMusic';
@@ -69,60 +70,115 @@ export function MusicPlaylists() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-punk font-black tracking-wider text-primary torn-edge">
-          YOUR PLAYLISTS
-        </h2>
-        <Button
-          onClick={() => setCreatePlaylistOpen(true)}
-          className="punk-button bg-accent hover:bg-accent/90 text-accent-foreground"
-        >
-          <Plus className="h-4 w-4 mr-2" />
-          CREATE PLAYLIST
-        </Button>
-      </div>
+      {/* Header Section */}
+      <Card className="bg-gradient-to-r from-blue-500/10 to-purple-500/10 border-blue-200 dark:border-blue-800">
+        <CardContent className="p-6">
+          <div className="flex items-start gap-6">
+            {/* Playlists Icon */}
+            <div className="h-32 w-32 rounded-lg bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center shadow-lg">
+              <Music className="h-16 w-16 text-white" />
+            </div>
 
+            {/* Playlists Info */}
+            <div className="flex-1 space-y-4">
+              <div>
+                <p className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
+                  Your Library
+                </p>
+                <h1 className="text-3xl font-bold mt-1">Your Playlists</h1>
+                <p className="text-muted-foreground mt-2">
+                  Organize your favorite tracks into custom playlists
+                </p>
+              </div>
+
+              {/* Stats */}
+              <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                <div className="flex items-center gap-1">
+                  <Music className="h-4 w-4" />
+                  <span>{userPlaylists?.length || 0} playlist{(userPlaylists?.length || 0) !== 1 ? 's' : ''}</span>
+                </div>
+              </div>
+
+              {/* Actions */}
+              <div className="flex items-center gap-3 pt-2">
+                <Button
+                  onClick={() => setCreatePlaylistOpen(true)}
+                  size="lg"
+                  className="rounded-full px-8"
+                >
+                  <Plus className="h-5 w-5 mr-2" />
+                  Create Playlist
+                </Button>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Playlists Grid */}
       {playlistsLoading ? (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {[...Array(6)].map((_, i) => (
-            <Card key={i} className="animate-pulse">
-              <CardContent className="p-4">
-                <div className="flex items-center space-x-4">
-                  <div className="h-16 w-16 bg-muted rounded-md" />
-                  <div className="flex-1 space-y-2">
-                    <div className="h-4 bg-muted rounded w-3/4" />
-                    <div className="h-3 bg-muted rounded w-1/2" />
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <Skeleton className="h-6 w-32" />
+              <Skeleton className="h-4 w-16" />
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+              {[...Array(6)].map((_, i) => (
+                <div key={i} className="space-y-3">
+                  <Skeleton className="h-48 w-full rounded-lg" />
+                  <div className="space-y-2">
+                    <Skeleton className="h-4 w-3/4" />
+                    <Skeleton className="h-3 w-1/2" />
                   </div>
                 </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
       ) : userPlaylists && userPlaylists.length > 0 ? (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {userPlaylists.map((playlist) => (
-            <PlaylistCard
-              key={playlist.id}
-              playlist={playlist}
-              onPlay={handlePlayPlaylist}
-              onEdit={handleEditPlaylist}
-              onDelete={handleDeletePlaylist}
-              onShare={handleSharePlaylist}
-            />
-          ))}
-        </div>
+        <Card>
+          <CardHeader className="pb-3">
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-semibold">Your Playlists</h2>
+              <p className="text-sm text-muted-foreground">{userPlaylists.length} playlists</p>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+              {userPlaylists.map((playlist) => (
+                <PlaylistCard
+                  key={playlist.id}
+                  playlist={playlist}
+                  onPlay={handlePlayPlaylist}
+                  onEdit={handleEditPlaylist}
+                  onDelete={handleDeletePlaylist}
+                  onShare={handleSharePlaylist}
+                />
+              ))}
+            </div>
+          </CardContent>
+        </Card>
       ) : (
         <Card className="border-dashed">
-          <CardContent className="py-12 px-8 text-center">
-            <PlayCircle className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-            <h3 className="font-medium mb-2">No playlists yet</h3>
-            <p className="text-sm text-muted-foreground mb-4">
-              Create your first playlist to organize your favorite tracks
-            </p>
-            <Button onClick={() => setCreatePlaylistOpen(true)}>
-              <Plus className="h-4 w-4 mr-2" />
-              CREATE PLAYLIST
-            </Button>
+          <CardContent className="py-16 px-8 text-center">
+            <div className="max-w-sm mx-auto space-y-4">
+              <div className="h-16 w-16 rounded-full bg-muted flex items-center justify-center mx-auto">
+                <FolderPlus className="h-8 w-8 text-muted-foreground" />
+              </div>
+              <div>
+                <h3 className="font-semibold mb-2">No playlists yet</h3>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Create your first playlist to organize your favorite tracks and discover new music.
+                </p>
+                <Button onClick={() => setCreatePlaylistOpen(true)} size="lg">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Create Your First Playlist
+                </Button>
+              </div>
+            </div>
           </CardContent>
         </Card>
       )}

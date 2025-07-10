@@ -1,15 +1,21 @@
 import React, { useState, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Search, Music, User, Disc } from 'lucide-react';
+import { Search, Music, User, Disc, CheckCircle, XCircle, AtSign } from 'lucide-react';
 import { useWavlakeSearch } from '@/hooks/useWavlake';
+import { useNostrSearch } from '@/hooks/useNostrSearch';
+import { useAuthor } from '@/hooks/useAuthor';
 import { useMusicPlayer } from '@/contexts/MusicPlayerContext';
 import { wavlakeAPI } from '@/lib/wavlake';
 import { useDebounce } from '@/hooks/useDebounce';
+import { createNpub, isNpub, isNip05 } from '@/lib/nostrSearch';
+import { genUserName } from '@/lib/genUserName';
 import type { WavlakeSearchResult, WavlakeTrack } from '@/lib/wavlake';
+import type { NostrSearchResult } from '@/lib/nostrSearch';
 
 // Extended interfaces for API responses that might have additional properties
 interface ExtendedWavlakeTrack extends WavlakeTrack {
@@ -25,21 +31,35 @@ interface MusicSearchProps {
   onTrackSelect?: (result: WavlakeSearchResult) => void;
   onArtistSelect?: (result: WavlakeSearchResult) => void;
   onAlbumSelect?: (result: WavlakeSearchResult) => void;
+  onUserSelect?: (result: NostrSearchResult) => void;
 }
 
 export function MusicSearch({
   onTrackSelect,
   onArtistSelect,
-  onAlbumSelect
+  onAlbumSelect,
+  onUserSelect
 }: MusicSearchProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
   const { playTrack, dispatch } = useMusicPlayer();
+  const navigate = useNavigate();
 
-  const { data: searchResults, isLoading, error } = useWavlakeSearch(
+  // Check if search term looks like Nostr identifier
+  const isNostrSearch = isNpub(debouncedSearchTerm) || isNip05(debouncedSearchTerm);
+
+  const { data: searchResults, isLoading: musicLoading, error: musicError } = useWavlakeSearch(
     debouncedSearchTerm,
-    debouncedSearchTerm.length > 2
+    debouncedSearchTerm.length > 2 && !isNostrSearch
   );
+
+  const { data: nostrResults, isLoading: nostrLoading, error: nostrError } = useNostrSearch(
+    debouncedSearchTerm,
+    debouncedSearchTerm.length > 2 && isNostrSearch
+  );
+
+  const isLoading = musicLoading || nostrLoading;
+  const error = musicError || nostrError;
 
   const groupedResults = useMemo(() => {
     if (!searchResults) return { tracks: [], artists: [], albums: [] };
@@ -67,7 +87,7 @@ export function MusicSearch({
         mediaUrl: fullTrack.mediaUrl,
         artist: fullTrack.artist
       });
-      
+
       // Normalize the track data to ensure it has all required properties
       const normalizedTrack: WavlakeTrack = {
         id: fullTrack.id,
@@ -86,9 +106,9 @@ export function MusicSearch({
         order: fullTrack.order || 0,
         url: (fullTrack as ExtendedWavlakeTrack).url || (result as ExtendedWavlakeSearchResult).url || `https://wavlake.com/track/${fullTrack.id}`
       };
-      
+
       console.log('MusicSearch - Normalized track:', normalizedTrack);
-      
+
       // Get all track results to create a queue for navigation
       const trackResults = groupedResults.tracks;
       const trackQueue = await Promise.all(
@@ -123,7 +143,7 @@ export function MusicSearch({
           }
         })
       );
-      
+
       // Filter out any failed fetches and play with queue
       const validTracks = trackQueue.filter(track => track !== null) as WavlakeTrack[];
       console.log('MusicSearch - Queue created with', validTracks.length, 'tracks');
@@ -169,13 +189,80 @@ export function MusicSearch({
     }
   };
 
+  const handleUserClick = (result: NostrSearchResult) => {
+    if (result.pubkey) {
+      const npub = createNpub(result.pubkey);
+      if (npub) {
+        navigate(`/profile/${npub}`);
+      }
+    }
+    onUserSelect?.(result);
+  };
+
+  // Component for displaying user search results
+  function UserSearchResult({ result }: { result: NostrSearchResult }) {
+    const author = useAuthor(result.pubkey || undefined);
+    const metadata = author.data?.metadata;
+    const displayName = metadata?.display_name || metadata?.name || genUserName(result.pubkey || '');
+
+    return (
+      <div
+        className="flex items-center space-x-3 p-2 rounded-lg hover:bg-muted/50 cursor-pointer"
+        onClick={() => handleUserClick(result)}
+      >
+        <Avatar className="h-12 w-12">
+          <AvatarImage src={metadata?.picture} alt={displayName} />
+          <AvatarFallback>
+            {displayName.charAt(0).toUpperCase()}
+          </AvatarFallback>
+        </Avatar>
+
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center space-x-2">
+            <h4 className="font-medium text-sm truncate">
+              {displayName}
+            </h4>
+            {result.type === 'nip05' && (
+              <div className="flex items-center">
+                {result.verified ? (
+                  <CheckCircle className="h-4 w-4 text-green-500" />
+                ) : (
+                  <XCircle className="h-4 w-4 text-red-500" />
+                )}
+              </div>
+            )}
+          </div>
+          <p className="text-sm text-muted-foreground truncate">
+            {result.type === 'nip05' ? result.identifier : 'Nostr User'}
+          </p>
+          {metadata?.about && (
+            <p className="text-xs text-muted-foreground truncate mt-1">
+              {metadata.about}
+            </p>
+          )}
+        </div>
+
+        <div className="flex items-center space-x-2">
+          <Badge variant="outline" className="text-xs">
+            {result.type === 'nip05' ? (
+              <AtSign className="h-3 w-3 mr-1" />
+            ) : (
+              <User className="h-3 w-3 mr-1" />
+            )}
+            {result.type === 'nip05' ? 'NIP-05' : 'npub'}
+          </Badge>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-4">
       {/* Search Input */}
       <div className="relative">
         <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
         <Input
-          placeholder="Search for tracks, artists, or albums..."
+          placeholder="Search for tracks, artists, albums, or users (npub/NIP-05)..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           className="pl-10"
@@ -208,6 +295,23 @@ export function MusicSearch({
             <p className="text-sm text-red-500">
               Failed to search: {error.message}
             </p>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Nostr User Results */}
+      {nostrResults && nostrResults.length > 0 && (
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-lg flex items-center space-x-2">
+              <User className="h-5 w-5" />
+              <span>Users</span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            {nostrResults.map((result, index) => (
+              <UserSearchResult key={`${result.identifier}-${index}`} result={result} />
+            ))}
           </CardContent>
         </Card>
       )}
@@ -350,13 +454,23 @@ export function MusicSearch({
       )}
 
       {/* No Results */}
-      {searchResults && searchResults.length === 0 && debouncedSearchTerm.length > 2 && (
+      {debouncedSearchTerm.length > 2 &&
+       ((searchResults && searchResults.length === 0) ||
+        (nostrResults && nostrResults.length === 0)) &&
+       !isLoading && (
         <Card>
           <CardContent className="p-8 text-center">
-            <Music className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+            {isNostrSearch ? (
+              <User className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+            ) : (
+              <Music className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+            )}
             <h3 className="font-medium mb-2">No results found</h3>
             <p className="text-sm text-muted-foreground">
-              Try searching with different keywords
+              {isNostrSearch
+                ? 'User not found or NIP-05 address could not be resolved'
+                : 'Try searching with different keywords, or search for users with npub/NIP-05 addresses'
+              }
             </p>
           </CardContent>
         </Card>

@@ -73,11 +73,30 @@
   }
   html {
     overflow-x: hidden;
+    /* Force scrollbar to always be visible to prevent layout shifts */
+    overflow-y: scroll;
   }
   body {
     @apply bg-background text-foreground;
     font-feature-settings: "rlig" 1, "calt" 1;
     overflow-x: hidden;
+    position: relative;
+    /* Ensure body doesn't have its own scrollbar */
+    overflow-y: visible;
+  }
+
+  /* Prevent horizontal scrolling from dropdown menus */
+  #root {
+    overflow-x: hidden;
+    position: relative;
+    width: 100%;
+    min-height: 100vh;
+    contain: layout;
+  }
+
+  /* Ensure main container is stable */
+  .container {
+    contain: layout;
   }
 }
 
@@ -90,12 +109,116 @@
     right: 0;
     z-index: 50;
   }
-  
+
   .sticky-tabs {
     position: fixed;
     top: calc(4rem + env(safe-area-inset-top));
     left: 0;
     right: 0;
     z-index: 40;
+  }
+}
+
+/* Punk theme styles */
+@layer components {
+  .punk-card {
+    @apply bg-card border-2 border-primary;
+  }
+
+  .punk-button {
+    @apply font-bold uppercase tracking-wide;
+  }
+
+  .neon-glow {
+    box-shadow: 0 0 10px hsl(var(--primary) / 0.3);
+  }
+
+  .font-punk {
+    @apply font-bold uppercase tracking-wider;
+  }
+
+  .font-metal {
+    @apply font-bold;
+  }
+}
+
+/* Universal fix for scrollbar layout shifts */
+@layer utilities {
+  /* Aggressive fix - Force scrollbar to always be present */
+  html {
+    overflow-y: scroll !important;
+    scrollbar-gutter: stable;
+  }
+
+  /* Prevent ANY attempt to hide body overflow */
+  body,
+  body[style],
+  body[style*="overflow"],
+  body[style*="overflow: hidden"],
+  body[style*="overflow-y: hidden"] {
+    /* Don't hide overflow, use position fixed instead */
+    overflow: visible !important;
+    overflow-y: visible !important;
+  }
+
+  /* When body is position fixed (modal open), ensure no layout shift */
+  body[style*="position: fixed"] {
+    width: 100% !important;
+    overflow: visible !important;
+    overflow-y: visible !important;
+  }
+
+  /* Ensure scrollbar is always visible even with modern CSS */
+  @supports (scrollbar-gutter: stable) {
+    html {
+      scrollbar-gutter: stable both-edges !important;
+    }
+  }
+
+  /* Prevent dropdown menus from causing horizontal overflow */
+  [data-radix-popper-content-wrapper] {
+    max-width: calc(100vw - 16px) !important;
+    overflow: hidden;
+  }
+
+  [data-radix-dropdown-menu-content],
+  [data-radix-select-content] {
+    max-width: calc(100vw - 32px);
+    overflow: hidden;
+  }
+
+  /* Prevent Select components from causing layout shifts */
+  [data-radix-select-content] {
+    transform-origin: var(--radix-select-content-transform-origin);
+    will-change: transform, opacity;
+    contain: layout style paint;
+  }
+
+  /* Ensure Select viewport doesn't cause overflow */
+  [data-radix-select-viewport] {
+    max-width: calc(100vw - 32px);
+    overflow-x: hidden;
+  }
+
+  /* Prevent layout shifts from Select triggers */
+  [data-radix-select-trigger] {
+    contain: layout;
+  }
+
+  /* Stable positioning for Select portals */
+  [data-radix-select-portal] {
+    contain: layout;
+  }
+
+  /* Prevent layout shifts when Select opens */
+  [data-radix-popper-content-wrapper][data-side] {
+    transform: translateZ(0);
+    backface-visibility: hidden;
+  }
+
+  /* Force hardware acceleration for smooth animations */
+  [data-radix-select-content][data-state="open"] {
+    transform: translateZ(0);
+    backface-visibility: hidden;
   }
 }

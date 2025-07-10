@@ -15,10 +15,10 @@ export function Layout() {
 
   // Determine the active tab based on the current path
   const getActiveTab = () => {
-    if (location.pathname.startsWith('/music/search')) return 'search';
-    if (location.pathname.startsWith('/music/playlists')) return 'playlists';
-    if (location.pathname.startsWith('/music/liked')) return 'liked';
-    return 'discover'; // Default for /music or /
+    if (location.pathname.startsWith('/search')) return 'search';
+    if (location.pathname.startsWith('/playlists')) return 'playlists';
+    if (location.pathname.startsWith('/liked')) return 'liked';
+    return 'discover'; // Default for /
   };
 
   // Calculate top padding for content: header (4rem) + tabs (~3rem) + safe area
@@ -38,7 +38,7 @@ export function Layout() {
             className={`${tabBase} ${tabActive}`}
             asChild
           >
-            <Link to="/music">
+            <Link to="/">
               <TrendingUp className="h-6 w-6 sm:h-4 sm:w-4" />
               <span className="hidden sm:inline ml-2">DISCOVER</span>
             </Link>
@@ -48,7 +48,7 @@ export function Layout() {
             className={`${tabBase} ${tabActive}`}
             asChild
           >
-            <Link to="/music/search">
+            <Link to="/search">
               <Search className="h-6 w-6 sm:h-4 sm:w-4" />
               <span className="hidden sm:inline ml-2">SEARCH</span>
             </Link>
@@ -60,7 +60,7 @@ export function Layout() {
                 className={`${tabBase} ${tabActive}`}
                 asChild
               >
-                <Link to="/music/playlists">
+                <Link to="/playlists">
                   <PlayCircle className="h-6 w-6 sm:h-4 sm:w-4" />
                   <span className="hidden sm:inline ml-2">PLAYLISTS</span>
                 </Link>
@@ -70,7 +70,7 @@ export function Layout() {
                 className={`${tabBase} ${tabActive}`}
                 asChild
               >
-                <Link to="/music/liked">
+                <Link to="/liked">
                   <Heart className="h-6 w-6 sm:h-4 sm:w-4" />
                   <span className="hidden sm:inline ml-2">LIKED</span>
                 </Link>

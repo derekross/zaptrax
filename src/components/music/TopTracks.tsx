@@ -1,8 +1,8 @@
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { TrendingUp, Filter } from 'lucide-react';
+import { TrendingUp, Filter, Trophy, Music } from 'lucide-react';
 import {
   Select,
   SelectContent,
@@ -80,122 +80,162 @@ export function TopTracks({
     );
   }
 
+  const getTimeRangeLabel = () => {
+    const option = timeRangeOptions.find(opt => opt.value === timeRange);
+    return option?.label || 'Last week';
+  };
+
+  const getGenreLabel = () => {
+    const option = genreOptions.find(opt => opt.value === genre);
+    return option?.label || 'All genres';
+  };
+
   return (
     <div className="space-y-6">
-      {/* Header with Filters */}
-      <Card className="punk-card border-2 border-primary">
-        <CardHeader>
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-0">
-            <div className="flex items-center space-x-3">
-              <TrendingUp className="h-6 w-6 text-primary" />
-              <CardTitle className="font-punk text-xl tracking-wider text-primary">
-                TOP TRACKS
-              </CardTitle>
+      {/* Header Section */}
+      <Card className="bg-gradient-to-r from-orange-500/10 to-red-500/10 border-orange-200 dark:border-orange-800">
+        <CardContent className="p-6">
+          <div className="flex items-start gap-6">
+            {/* Top Tracks Icon */}
+            <div className="h-32 w-32 rounded-lg bg-gradient-to-br from-orange-500 to-red-500 flex items-center justify-center shadow-lg">
+              <Trophy className="h-16 w-16 text-white" />
             </div>
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-2 w-full sm:w-auto mt-2 sm:mt-0">
-              <div className="flex items-center gap-2 w-full sm:w-auto">
-                <Filter className="h-4 w-4 text-accent" />
+
+            {/* Top Tracks Info */}
+            <div className="flex-1 space-y-4">
+              <div>
+                <p className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
+                  Trending
+                </p>
+                <h1 className="text-3xl font-bold mt-1">Top Tracks</h1>
+                <p className="text-muted-foreground mt-2">
+                  Discover the most popular tracks {getTimeRangeLabel().toLowerCase()} • {getGenreLabel()}
+                </p>
+              </div>
+
+              {/* Stats */}
+              <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                <div className="flex items-center gap-1">
+                  <Music className="h-4 w-4" />
+                  <span>{topTracks?.length || 0} tracks</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <TrendingUp className="h-4 w-4" />
+                  <span>Ranked by popularity</span>
+                </div>
+              </div>
+
+              {/* Filters */}
+              <div className="flex flex-wrap items-center gap-3 pt-2">
+                <div className="flex items-center gap-2">
+                  <Filter className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-sm font-medium">Filters:</span>
+                </div>
                 <Select value={timeRange} onValueChange={setTimeRange}>
-                  <SelectTrigger className="w-full sm:w-40 border-2 border-primary font-bold">
+                  <SelectTrigger className="w-40">
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent className="punk-card border-2 border-primary">
+                  <SelectContent>
                     {timeRangeOptions.map((option) => (
-                      <SelectItem
-                        key={option.value}
-                        value={option.value}
-                        className="font-bold uppercase tracking-wide"
-                      >
+                      <SelectItem key={option.value} value={option.value}>
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Select value={genre} onValueChange={setGenre}>
+                  <SelectTrigger className="w-32">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {genreOptions.map((option) => (
+                      <SelectItem key={option.value} value={option.value}>
                         {option.label}
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
-              <Select value={genre} onValueChange={setGenre}>
-                <SelectTrigger className="w-full sm:w-32 border-2 border-accent font-bold">
-                  <SelectValue placeholder="GENRE" />
-                </SelectTrigger>
-                <SelectContent className="punk-card border-2 border-accent">
-                  {genreOptions.map((option) => (
-                    <SelectItem
-                      key={option.value}
-                      value={option.value}
-                      className="font-bold uppercase tracking-wide"
-                    >
-                      {option.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
             </div>
           </div>
-        </CardHeader>
+        </CardContent>
       </Card>
 
-      {/* Loading State */}
-      {isLoading && (
-        <div className="space-y-4">
-          {[...Array(10)].map((_, i) => (
-            <Card key={i}>
-              <CardContent className="p-4">
-                <div className="flex items-center space-x-4">
-                  <Skeleton className="h-16 w-16 rounded-md" />
-                  <div className="flex-1 space-y-2">
-                    <Skeleton className="h-4 w-3/4" />
-                    <Skeleton className="h-3 w-1/2" />
-                    <div className="flex space-x-2">
-                      <Skeleton className="h-5 w-12" />
-                      <Skeleton className="h-5 w-16" />
-                    </div>
-                  </div>
-                  <div className="flex space-x-1">
-                    <Skeleton className="h-8 w-8" />
-                    <Skeleton className="h-8 w-8" />
-                    <Skeleton className="h-8 w-8" />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      )}
-
       {/* Track List */}
-      {topTracks && topTracks.length > 0 && (
-        <div className="space-y-4">
-          {topTracks.map((track, index) => (
-            <div key={track.id} className="relative">
-              {/* Ranking Badge */}
-              <div className="absolute -left-2 top-4 z-10">
-                <div className="bg-primary text-primary-foreground text-xs font-bold rounded-full h-6 w-6 flex items-center justify-center">
-                  {index + 1}
+      {isLoading ? (
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <Skeleton className="h-6 w-32" />
+              <Skeleton className="h-4 w-16" />
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {[...Array(10)].map((_, i) => (
+              <div key={i} className="flex items-center gap-4 p-2">
+                <Skeleton className="h-6 w-8" />
+                <Skeleton className="h-16 w-16 rounded-md" />
+                <div className="flex-1 space-y-2">
+                  <Skeleton className="h-4 w-3/4" />
+                  <Skeleton className="h-3 w-1/2" />
+                </div>
+                <div className="flex space-x-1">
+                  <Skeleton className="h-8 w-8" />
+                  <Skeleton className="h-8 w-8" />
+                  <Skeleton className="h-8 w-8" />
                 </div>
               </div>
-
-              <TrackCard
-                track={track}
-                className="ml-4"
-                queue={topTracks}
-                onAddToPlaylist={onAddToPlaylist}
-                onComment={onComment}
-                onZap={onZap}
-              />
+            ))}
+          </CardContent>
+        </Card>
+      ) : topTracks && topTracks.length > 0 ? (
+        <Card>
+          <CardHeader className="pb-3">
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-semibold">Trending Now</h2>
+              <p className="text-sm text-muted-foreground">{topTracks.length} tracks</p>
             </div>
-          ))}
-        </div>
-      )}
+          </CardHeader>
+          <CardContent className="space-y-2">
+            {topTracks.map((track, index) => (
+              <div key={track.id} className="relative">
+                {/* Ranking Badge */}
+                <div className="absolute left-2 top-1/2 -translate-y-1/2 z-10">
+                  <div className={`
+                    text-sm font-bold w-6 h-6 flex items-center justify-center rounded-full
+                    ${index < 3
+                      ? 'bg-gradient-to-r from-yellow-400 to-orange-500 text-white'
+                      : 'bg-muted text-muted-foreground'
+                    }
+                  `}>
+                    {index + 1}
+                  </div>
+                </div>
 
-      {/* Empty State */}
-      {topTracks && topTracks.length === 0 && (
+                <div className="pl-10">
+                  <TrackCard
+                    track={track}
+                    queue={topTracks}
+                    onAddToPlaylist={onAddToPlaylist}
+                    onComment={onComment}
+                    onZap={onZap}
+                  />
+                </div>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      ) : (
         <Card className="border-dashed">
-          <CardContent className="py-12 px-8 text-center">
-            <div className="max-w-sm mx-auto space-y-6">
-              <TrendingUp className="h-12 w-12 mx-auto text-muted-foreground" />
+          <CardContent className="py-16 px-8 text-center">
+            <div className="max-w-sm mx-auto space-y-4">
+              <div className="h-16 w-16 rounded-full bg-muted flex items-center justify-center mx-auto">
+                <TrendingUp className="h-8 w-8 text-muted-foreground" />
+              </div>
               <div>
-                <h3 className="font-medium mb-2">No tracks found</h3>
-                <p className="text-sm text-muted-foreground mb-4">
-                  Try adjusting your filters or check back later.
+                <h3 className="font-semibold mb-2">No tracks found</h3>
+                <p className="text-sm text-muted-foreground">
+                  Try adjusting your filters or check back later for trending tracks.
                 </p>
               </div>
             </div>

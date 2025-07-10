@@ -6,6 +6,7 @@ import { ArtistPage } from "./pages/ArtistPage";
 import { AlbumPage } from "./pages/AlbumPage";
 import { SearchPage } from "./pages/SearchPage";
 import { PlaylistPage } from "./pages/PlaylistPage";
+import { ProfilePage } from "./pages/ProfilePage";
 import { MusicPlayer } from "./components/music/MusicPlayer";
 import NotFound from "./pages/NotFound";
 import { Layout } from "./components/Layout";
@@ -22,11 +23,11 @@ export function AppRouter() {
       <Routes>
         <Route path="/" element={<Layout />}>
           <Route index element={<MusicHome />} />
-          <Route path="music" element={<MusicHome />} />
-          <Route path="music/search" element={<SearchPage />} />
-          <Route path="music/playlists" element={<MusicPlaylists />} />
-          <Route path="music/liked" element={<MusicLikedSongs />} />
+          <Route path="search" element={<SearchPage />} />
+          <Route path="playlists" element={<MusicPlaylists />} />
+          <Route path="liked" element={<MusicLikedSongs />} />
           <Route path="playlist/:nip19Id" element={<PlaylistPage />} />
+          <Route path="profile/:npub" element={<ProfilePage />} />
           <Route path="artist/:artistId" element={<ArtistPage />} />
           <Route path="album/:albumId" element={<AlbumPage />} />
           <Route path="*" element={<NotFound />} />

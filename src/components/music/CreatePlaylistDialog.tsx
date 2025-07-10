@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -19,17 +19,29 @@ interface CreatePlaylistDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   initialTracks?: WavlakeTrack[];
+  title?: string;
 }
 
 export function CreatePlaylistDialog({
   open,
   onOpenChange,
-  initialTracks = []
+  initialTracks = [],
+  title
 }: CreatePlaylistDialogProps) {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const { mutate: createPlaylist, isPending } = useCreatePlaylist();
   const { toast } = useToast();
+
+  // Set initial name when cloning
+  useEffect(() => {
+    if (open && title) {
+      setName(title);
+    } else if (open && !title) {
+      setName('');
+      setDescription('');
+    }
+  }, [open, title]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -82,9 +94,14 @@ export function CreatePlaylistDialog({
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="w-[95vw] max-w-md p-4 sm:p-6">
         <DialogHeader>
-          <DialogTitle>Create New Playlist</DialogTitle>
+          <DialogTitle>
+            {title ? 'Clone Playlist' : 'Create New Playlist'}
+          </DialogTitle>
           <DialogDescription>
-            Create a new playlist to organize your favorite tracks.
+            {title
+              ? 'Create a copy of this playlist with your own modifications.'
+              : 'Create a new playlist to organize your favorite tracks.'
+            }
             {initialTracks.length > 0 && (
               <span className="block mt-1">
                 {initialTracks.length} track{initialTracks.length !== 1 ? 's' : ''} will be added.

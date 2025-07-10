@@ -13,6 +13,7 @@ import {
   Edit,
   Share2,
   Trash2,
+  Copy,
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -33,8 +34,10 @@ import { PlaylistTrackItem } from '@/components/music/PlaylistTrackList';
 import { EditPlaylistDialog } from '@/components/music/EditPlaylistDialog';
 import { DeletePlaylistDialog } from '@/components/music/DeletePlaylistDialog';
 import { SharePlaylistDialog } from '@/components/music/SharePlaylistDialog';
+import { CreatePlaylistDialog } from '@/components/music/CreatePlaylistDialog';
 import { RelaySelector } from '@/components/RelaySelector';
 import { useState } from 'react';
+import { useToast } from '@/hooks/useToast';
 
 export function PlaylistPage() {
   const { nip19Id } = useParams<{ nip19Id: string }>();
@@ -45,6 +48,8 @@ export function PlaylistPage() {
   const [editPlaylistOpen, setEditPlaylistOpen] = useState(false);
   const [deletePlaylistOpen, setDeletePlaylistOpen] = useState(false);
   const [sharePlaylistOpen, setSharePlaylistOpen] = useState(false);
+  const [clonePlaylistOpen, setClonePlaylistOpen] = useState(false);
+  const { toast } = useToast();
 
   // Decode the NIP-19 identifier
   const decodedData = React.useMemo(() => {
@@ -154,6 +159,18 @@ export function PlaylistPage() {
 
   const handleSharePlaylist = () => {
     setSharePlaylistOpen(true);
+  };
+
+  const handleClonePlaylist = () => {
+    if (!user) {
+      toast({
+        title: "Login required",
+        description: "You need to be logged in to clone playlists.",
+        variant: "destructive",
+      });
+      return;
+    }
+    setClonePlaylistOpen(true);
   };
 
   if (!nip19Id || !decodedData) {
@@ -340,6 +357,12 @@ export function PlaylistPage() {
                     <Share2 className="h-4 w-4 mr-2" />
                     Share Playlist
                   </DropdownMenuItem>
+                  {!isOwner && user && (
+                    <DropdownMenuItem onClick={handleClonePlaylist}>
+                      <Copy className="h-4 w-4 mr-2" />
+                      Clone Playlist
+                    </DropdownMenuItem>
+                  )}
                   {isOwner && (
                     <DropdownMenuItem
                       onClick={handleDeletePlaylist}
@@ -408,6 +431,13 @@ export function PlaylistPage() {
         open={sharePlaylistOpen}
         onOpenChange={setSharePlaylistOpen}
         playlist={playlist}
+      />
+
+      <CreatePlaylistDialog
+        open={clonePlaylistOpen}
+        onOpenChange={setClonePlaylistOpen}
+        initialTracks={allPlaylistTracks}
+        title={title}
       />
     </div>
   );

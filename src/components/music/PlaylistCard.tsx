@@ -11,6 +11,7 @@ import {
   Edit,
   Share2,
   Trash2,
+  Copy,
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -32,6 +33,8 @@ interface PlaylistCardProps {
   onEdit?: (playlist: NostrEvent) => void;
   onDelete?: (playlist: NostrEvent) => void;
   onShare?: (playlist: NostrEvent) => void;
+  onClone?: (playlist: NostrEvent) => void;
+  showCloneButton?: boolean;
 }
 
 export function PlaylistCard({
@@ -41,6 +44,8 @@ export function PlaylistCard({
   onEdit,
   onDelete,
   onShare,
+  onClone,
+  showCloneButton = false,
 }: PlaylistCardProps) {
   const { user } = useCurrentUser();
   const author = useAuthor(playlist.pubkey);
@@ -148,7 +153,15 @@ export function PlaylistCard({
                   <MoreHorizontal className="h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
+              <DropdownMenuContent
+                align="end"
+                side="bottom"
+                sideOffset={4}
+                alignOffset={-4}
+                avoidCollisions={true}
+                collisionPadding={16}
+                className="min-w-[160px] max-w-[calc(100vw-32px)]"
+              >
                 <DropdownMenuItem onClick={() => onPlay?.(playlist)}>
                   <Play className="h-4 w-4 mr-2" />
                   Play Playlist
@@ -163,6 +176,12 @@ export function PlaylistCard({
                   <Share2 className="h-4 w-4 mr-2" />
                   Share Playlist
                 </DropdownMenuItem>
+                {showCloneButton && (
+                  <DropdownMenuItem onClick={() => onClone?.(playlist)}>
+                    <Copy className="h-4 w-4 mr-2" />
+                    Clone Playlist
+                  </DropdownMenuItem>
+                )}
                 {isOwner && (
                   <DropdownMenuItem
                     onClick={() => onDelete?.(playlist)}

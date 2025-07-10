@@ -187,7 +187,15 @@ export function TrackCard({
                 <MoreHorizontal className="h-6 w-6 sm:h-4 sm:w-4" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="punk-card border-2 border-primary">
+            <DropdownMenuContent
+              align="end"
+              side="bottom"
+              sideOffset={4}
+              alignOffset={-4}
+              avoidCollisions={true}
+              collisionPadding={16}
+              className="punk-card border-2 border-primary min-w-[180px] max-w-[calc(100vw-32px)]"
+            >
               {user && (
                 <DropdownMenuItem
                   onClick={() => onAddToPlaylist?.(track)}

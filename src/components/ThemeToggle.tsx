@@ -15,9 +15,9 @@ export function ThemeToggle() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button 
-          variant="outline" 
-          size="sm" 
+        <Button
+          variant="outline"
+          size="sm"
           className="punk-button border-2 border-primary"
         >
           {theme === 'light' && <Sun className="h-4 w-4" />}
@@ -26,25 +26,30 @@ export function ThemeToggle() {
           <span className="sr-only">Toggle theme</span>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent 
-        align="end" 
-        className="punk-card border-2 border-primary bg-card"
+      <DropdownMenuContent
+        align="end"
+        side="bottom"
+        sideOffset={4}
+        alignOffset={-4}
+        avoidCollisions={true}
+        collisionPadding={16}
+        className="punk-card border-2 border-primary bg-card min-w-[120px] max-w-[calc(100vw-32px)]"
       >
-        <DropdownMenuItem 
+        <DropdownMenuItem
           onClick={() => setTheme('light')}
           className="font-bold uppercase tracking-wide"
         >
           <Sun className="mr-2 h-4 w-4" />
           Light
         </DropdownMenuItem>
-        <DropdownMenuItem 
+        <DropdownMenuItem
           onClick={() => setTheme('dark')}
           className="font-bold uppercase tracking-wide"
         >
           <Moon className="mr-2 h-4 w-4" />
           Dark
         </DropdownMenuItem>
-        <DropdownMenuItem 
+        <DropdownMenuItem
           onClick={() => setTheme('system')}
           className="font-bold uppercase tracking-wide"
         >
