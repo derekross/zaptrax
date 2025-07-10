@@ -28,7 +28,7 @@ export function useUserPlaylists(pubkey?: string) {
       return events.sort((a, b) => b.created_at - a.created_at);
     },
     enabled: !!targetPubkey,
-    staleTime: 2 * 60 * 1000, // 2 minutes
+    staleTime: 10 * 1000, // 10 seconds
   });
 }
 
@@ -56,7 +56,7 @@ export function useLikedSongs(pubkey?: string) {
       return events.sort((a, b) => b.created_at - a.created_at)[0] || null;
     },
     enabled: !!targetPubkey,
-    staleTime: 2 * 60 * 1000, // 2 minutes
+    staleTime: 10 * 1000, // 10 seconds
   });
 }
 
@@ -223,7 +223,7 @@ export function useAddToPlaylist() {
   });
 }
 
-// Hook to like a track (add to Liked Songs and create reaction)
+// Hook to like/unlike a track (add to/remove from Liked Songs and create reaction)
 export function useLikeTrack() {
   const { mutate: createEvent } = useNostrPublish();
   const queryClient = useQueryClient();
@@ -234,18 +234,7 @@ export function useLikeTrack() {
       track: WavlakeTrack;
       trackUrl: string;
     }) => {
-      // Create reaction event
-      createEvent({
-        kind: 7, // Reaction
-        content: '❤️',
-        tags: [
-          ['r', trackUrl],
-          ['k', '1'], // Reacting to a note-like content
-        ],
-      });
-
-      // Add to Liked Songs bookmark set
-      // First get existing liked songs
+      // Get existing liked songs to check if track is already liked
       const likedSongsEvents = await queryClient.fetchQuery({
         queryKey: ['liked-songs', user?.pubkey],
       });
@@ -255,7 +244,37 @@ export function useLikeTrack() {
         .filter(tag => tag[0] === 'r')
         .map(tag => tag[1]) || [];
 
-      if (!existingTracks.includes(trackUrl)) {
+      const isCurrentlyLiked = existingTracks.includes(trackUrl);
+
+      if (isCurrentlyLiked) {
+        // Unlike: Remove from liked songs
+        const updatedTracks = existingTracks.filter(url => url !== trackUrl);
+
+        const tags = [
+          ['d', 'liked-songs'], // Unique identifier for liked songs
+          ['title', 'Liked Songs'],
+          ['description', 'My favorite tracks'],
+          ['t', 'music'],
+          ...updatedTracks.map(url => ['r', url]),
+        ];
+
+        createEvent({
+          kind: 30003, // Bookmark sets
+          content: '',
+          tags,
+        });
+
+        // Create a negative reaction to indicate unlike
+        createEvent({
+          kind: 7, // Reaction
+          content: '-',
+          tags: [
+            ['r', trackUrl],
+            ['k', '1'], // Reacting to a note-like content
+          ],
+        });
+      } else {
+        // Like: Add to liked songs
         const tags = [
           ['d', 'liked-songs'], // Unique identifier for liked songs
           ['title', 'Liked Songs'],
@@ -269,6 +288,16 @@ export function useLikeTrack() {
           kind: 30003, // Bookmark sets
           content: '',
           tags,
+        });
+
+        // Create positive reaction
+        createEvent({
+          kind: 7, // Reaction
+          content: '❤️',
+          tags: [
+            ['r', trackUrl],
+            ['k', '1'], // Reacting to a note-like content
+          ],
         });
       }
     },
@@ -477,6 +506,68 @@ export function useRemoveFromPlaylist() {
     onSuccess: () => {
       if (user?.pubkey) {
         queryClient.invalidateQueries({ queryKey: ['user-playlists', user.pubkey] });
+      }
+    },
+  });
+}
+
+// Hook to remove track from liked songs
+export function useRemoveFromLikedSongs() {
+  const { mutate: createEvent } = useNostrPublish();
+  const queryClient = useQueryClient();
+  const { user } = useCurrentUser();
+
+  return useMutation({
+    mutationFn: async ({ trackUrl }: { trackUrl: string }) => {
+      // Get existing liked songs
+      const likedSongsEvents = await queryClient.fetchQuery({
+        queryKey: ['liked-songs', user?.pubkey],
+      });
+
+      const existingLikedSongs = likedSongsEvents as NostrEvent | null;
+      if (!existingLikedSongs) {
+        throw new Error('No liked songs found');
+      }
+
+      const existingTracks = existingLikedSongs.tags
+        .filter(tag => tag[0] === 'r')
+        .map(tag => tag[1]);
+
+      if (!existingTracks.includes(trackUrl)) {
+        throw new Error('Track not found in liked songs');
+      }
+
+      // Remove the track from liked songs
+      const updatedTracks = existingTracks.filter(url => url !== trackUrl);
+
+      const tags = [
+        ['d', 'liked-songs'], // Unique identifier for liked songs
+        ['title', 'Liked Songs'],
+        ['description', 'My favorite tracks'],
+        ['t', 'music'],
+        ...updatedTracks.map(url => ['r', url]),
+      ];
+
+      createEvent({
+        kind: 30003, // Bookmark sets
+        content: '',
+        tags,
+      });
+
+      // Create a negative reaction to indicate unlike
+      createEvent({
+        kind: 7, // Reaction
+        content: '-',
+        tags: [
+          ['r', trackUrl],
+          ['k', '1'], // Reacting to a note-like content
+        ],
+      });
+    },
+    onSuccess: (_, { trackUrl }) => {
+      if (user?.pubkey) {
+        queryClient.invalidateQueries({ queryKey: ['liked-songs', user.pubkey] });
+        queryClient.invalidateQueries({ queryKey: ['track-reactions', trackUrl] });
       }
     },
   });

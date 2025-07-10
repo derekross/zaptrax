@@ -13,7 +13,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Play, Pause, MoreHorizontal, Heart, Clock } from 'lucide-react';
 import { useMusicPlayer } from '@/contexts/MusicPlayerContext';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
-import { useLikeTrack } from '@/hooks/useNostrMusic';
+import { useRemoveFromLikedSongs } from '@/hooks/useNostrMusic';
 import { cn } from '@/lib/utils';
 
 interface LikedTrackItemProps {
@@ -31,7 +31,7 @@ export function LikedTrackItem({ trackUrl, index, onClick }: LikedTrackItemProps
   const [isHovered, setIsHovered] = useState(false);
   const { state, togglePlayPause } = useMusicPlayer();
   const { user } = useCurrentUser();
-  const { mutate: likeTrack } = useLikeTrack();
+  const { mutate: removeFromLikedSongs } = useRemoveFromLikedSongs();
 
   const isCurrentTrack = state.currentTrack?.id === track?.id;
   const isPlaying = isCurrentTrack && state.isPlaying;
@@ -51,7 +51,7 @@ export function LikedTrackItem({ trackUrl, index, onClick }: LikedTrackItemProps
   const handleRemoveFromLiked = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (user && track) {
-      likeTrack({ track, trackUrl });
+      removeFromLikedSongs({ trackUrl });
     }
   };
 

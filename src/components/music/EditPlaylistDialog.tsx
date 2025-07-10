@@ -280,9 +280,9 @@ export function EditPlaylistDialog({
               <Label>Tracks ({tracks.length})</Label>
               <ScrollArea className="flex-1 border rounded-md p-2">
                 <div className="space-y-2">
-                  {tracks.map((trackUrl, index) => (
+                  {tracks.map((trackUrl) => (
                     <EditableTrackItem
-                      key={`${trackUrl}-${index}`}
+                      key={trackUrl}
                       trackUrl={trackUrl}
                       onRemove={handleRemoveTrack}
                       isRemoving={isRemoving}
