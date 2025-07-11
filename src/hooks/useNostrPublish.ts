@@ -15,8 +15,8 @@ export function useNostrPublish(): UseMutationResult<NostrEvent> {
         const tags = t.tags ?? [];
 
         // Add the client tag if it doesn't exist
-        if (location.protocol === "https:" && !tags.some(([name]) => name === "client")) {
-          tags.push(["client", location.hostname]);
+        if (!tags.some(([name]) => name === "client")) {
+          tags.push(["client", "ZapTrax"]);
         }
 
         const event = await user.signer.signEvent({
