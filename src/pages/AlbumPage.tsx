@@ -1,13 +1,21 @@
-import { useParams } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
+import { useState } from 'react';
 import { useWavlakeAlbum } from '@/hooks/useWavlake';
 import { TrackCard } from '@/components/music/TrackCard';
 import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Disc } from 'lucide-react';
+import { Disc, Play, Pause } from 'lucide-react';
+import { useMusicPlayer } from '@/contexts/MusicPlayerContext';
+import { CommentDialog } from '@/components/music/CommentDialog';
+import type { WavlakeTrack } from '@/lib/wavlake';
 
 export function AlbumPage() {
   const { albumId } = useParams<{ albumId: string }>();
   const { data: albumData, isLoading, error } = useWavlakeAlbum(albumId);
+  const { state, playTrack, togglePlayPause } = useMusicPlayer();
+  const [commentDialogOpen, setCommentDialogOpen] = useState(false);
+  const [selectedTrackForComment, setSelectedTrackForComment] = useState<WavlakeTrack | null>(null);
 
   // Handle case where API might return an array
   const album = Array.isArray(albumData) ? albumData[0] : albumData;
@@ -47,6 +55,23 @@ export function AlbumPage() {
     );
   }
 
+  const isAlbumPlaying = () => {
+    if (!state.currentTrack || !album?.tracks) return false;
+    return album.tracks.some(track => track.id === state.currentTrack?.id) && state.isPlaying;
+  };
+
+  const handleAlbumPlay = () => {
+    if (album?.tracks && album.tracks.length > 0) {
+      const isCurrentTrackFromAlbum = album.tracks.some(track => track.id === state.currentTrack?.id);
+
+      if (isCurrentTrackFromAlbum) {
+        togglePlayPause();
+      } else {
+        playTrack(album.tracks[0], album.tracks);
+      }
+    }
+  };
+
   return (
     <div className="container mx-auto px-2 sm:px-4 py-4 sm:py-8">
       {/* Album Header */}
@@ -56,16 +81,43 @@ export function AlbumPage() {
           alt={album.title}
           className="w-32 h-32 rounded-md border-2 border-primary"
         />
-        <div>
+        <div className="flex-1">
           <h1 className="text-4xl font-bold font-punk tracking-wider text-primary">
             {album.title.toUpperCase()}
           </h1>
-          <p className="text-lg text-accent font-metal">
-            {album.artist}
-          </p>
-          <p className="text-sm text-muted-foreground">
+          {album.tracks.length > 0 && (
+            <Link
+              to={`/artist/${album.tracks[0].artistId}`}
+              className="text-lg text-accent font-metal hover:text-primary transition-colors hover:underline"
+            >
+              {album.artist}
+            </Link>
+          )}
+          {album.tracks.length === 0 && (
+            <p className="text-lg text-accent font-metal">
+              {album.artist}
+            </p>
+          )}
+          <p className="text-sm text-muted-foreground mb-4">
             {album.tracks.length} tracks
           </p>
+          <Button
+            size="lg"
+            onClick={handleAlbumPlay}
+            className="bg-primary hover:bg-primary/90 text-primary-foreground border-2 border-foreground punk-button font-bold uppercase tracking-wide"
+          >
+            {isAlbumPlaying() ? (
+              <>
+                <Pause className="h-5 w-5 mr-2" />
+                PAUSE ALBUM
+              </>
+            ) : (
+              <>
+                <Play className="h-5 w-5 mr-2" />
+                PLAY ALBUM
+              </>
+            )}
+          </Button>
         </div>
       </div>
 
@@ -87,10 +139,21 @@ export function AlbumPage() {
               track={track}
               className="ml-4"
               queue={album.tracks}
+              onComment={(track: WavlakeTrack) => {
+                setSelectedTrackForComment(track);
+                setCommentDialogOpen(true);
+              }}
             />
           </div>
         ))}
       </div>
+
+      {/* Comment Dialog */}
+      <CommentDialog
+        open={commentDialogOpen}
+        onOpenChange={setCommentDialogOpen}
+        track={selectedTrackForComment}
+      />
     </div>
   );
 }

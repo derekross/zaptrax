@@ -1,4 +1,4 @@
-import { useParams } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import { useState } from 'react';
 import { useWavlakeArtist } from '@/hooks/useWavlake';
 import { useWavlakeArtistTracks } from '@/hooks/useWavlakeArtistTracks';
@@ -7,14 +7,17 @@ import { TrackCard } from '@/components/music/TrackCard';
 import { Card, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { Disc, Music } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Disc, Music, Play, Pause } from 'lucide-react';
 import { CommentDialog } from '@/components/music/CommentDialog';
+import { useMusicPlayer } from '@/contexts/MusicPlayerContext';
 import type { WavlakeTrack } from '@/lib/wavlake';
 
 export function ArtistPage() {
   const { artistId } = useParams<{ artistId: string }>();
   const { data: artist, isLoading: artistLoading } = useWavlakeArtist(artistId);
   const { data: tracks, isLoading: tracksLoading } = useWavlakeArtistTracks(artistId);
+  const { state, playTrack } = useMusicPlayer();
 
   // State to track which album is expanded
   const [expandedAlbumId, setExpandedAlbumId] = useState<string | null>(null);
@@ -64,6 +67,18 @@ export function ArtistPage() {
     setExpandedAlbumId(expandedAlbumId === albumId ? null : albumId);
   };
 
+  const handleAlbumPlay = (albumTracks: WavlakeTrack[], event: React.MouseEvent) => {
+    event.stopPropagation(); // Prevent album expansion when clicking play button
+    if (albumTracks.length > 0) {
+      playTrack(albumTracks[0], albumTracks);
+    }
+  };
+
+  const isAlbumPlaying = (albumTracks: WavlakeTrack[]) => {
+    if (!state.currentTrack) return false;
+    return albumTracks.some(track => track.id === state.currentTrack?.id) && state.isPlaying;
+  };
+
   return (
     <div className="container mx-auto px-2 sm:px-4 py-4 sm:py-8">
       <div className="flex items-center space-x-4 mb-8">
@@ -107,21 +122,41 @@ export function ArtistPage() {
             {albums.map((album) => (
               <div key={album.id}>
                 <Card
-                  className="cursor-pointer hover:neon-glow transition-all punk-card border-2 border-primary"
+                  className="cursor-pointer hover:neon-glow transition-all punk-card border-2 border-primary group"
                   onClick={() => handleAlbumClick(album.id)}
                 >
                   <CardHeader className="pb-3">
                     <div className="flex items-center space-x-3">
-                      <Avatar className="h-16 w-16 rounded-md border-2 border-foreground">
-                        <AvatarImage src={album.albumArtUrl} alt={album.title} />
-                        <AvatarFallback className="rounded-md bg-primary text-primary-foreground font-punk">
-                          <Disc className="h-6 w-6" />
-                        </AvatarFallback>
-                      </Avatar>
+                      <div className="relative">
+                        <Avatar className="h-16 w-16 rounded-md border-2 border-foreground">
+                          <AvatarImage src={album.albumArtUrl} alt={album.title} />
+                          <AvatarFallback className="rounded-md bg-primary text-primary-foreground font-punk">
+                            <Disc className="h-6 w-6" />
+                          </AvatarFallback>
+                        </Avatar>
+                        <Button
+                          size="icon"
+                          variant="secondary"
+                          className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity bg-primary/80 hover:bg-primary text-primary-foreground border-2 border-foreground punk-button h-16 w-16"
+                          onClick={(e) => handleAlbumPlay(album.tracks, e)}
+                        >
+                          {isAlbumPlaying(album.tracks) ? (
+                            <Pause className="h-6 w-6" />
+                          ) : (
+                            <Play className="h-6 w-6" />
+                          )}
+                        </Button>
+                      </div>
                       <div className="flex-1 min-w-0">
-                        <CardTitle className="font-bold text-sm truncate uppercase tracking-wide">
-                          {album.title}
-                        </CardTitle>
+                        <Link
+                          to={`/album/${album.id}`}
+                          onClick={(e) => e.stopPropagation()}
+                          className="block"
+                        >
+                          <CardTitle className="font-bold text-sm truncate uppercase tracking-wide hover:text-primary transition-colors">
+                            {album.title}
+                          </CardTitle>
+                        </Link>
                         <Badge variant="outline" className="text-xs border-accent text-accent font-bold mt-1">
                           {album.trackCount} TRACKS
                         </Badge>
