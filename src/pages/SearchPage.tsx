@@ -1,12 +1,16 @@
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { Search } from 'lucide-react';
 import { MusicSearch } from '@/components/music/MusicSearch';
-import type { WavlakeSearchResult } from '@/lib/wavlake';
+import { AddToPlaylistDialog } from '@/components/music/AddToPlaylistDialog';
+import type { WavlakeSearchResult, WavlakeTrack } from '@/lib/wavlake';
 import type { NostrSearchResult } from '@/lib/nostrSearch';
 
 export function SearchPage() {
   const navigate = useNavigate();
+  const [addToPlaylistOpen, setAddToPlaylistOpen] = useState(false);
+  const [selectedTrackForPlaylist, setSelectedTrackForPlaylist] = useState<WavlakeTrack | null>(null);
 
   const handleArtistSelect = (result: WavlakeSearchResult) => {
     if (result.type === 'artist') {
@@ -23,6 +27,11 @@ export function SearchPage() {
   const handleUserSelect = (result: NostrSearchResult) => {
     // Navigation is handled in the MusicSearch component
     console.log('User selected:', result);
+  };
+
+  const handleAddToPlaylist = (track: WavlakeTrack) => {
+    setSelectedTrackForPlaylist(track);
+    setAddToPlaylistOpen(true);
   };
 
   return (
@@ -62,6 +71,14 @@ export function SearchPage() {
         onArtistSelect={handleArtistSelect}
         onAlbumSelect={handleAlbumSelect}
         onUserSelect={handleUserSelect}
+        onAddToPlaylist={handleAddToPlaylist}
+      />
+
+      {/* Add to Playlist Dialog */}
+      <AddToPlaylistDialog
+        open={addToPlaylistOpen}
+        onOpenChange={setAddToPlaylistOpen}
+        track={selectedTrackForPlaylist}
       />
     </div>
   );

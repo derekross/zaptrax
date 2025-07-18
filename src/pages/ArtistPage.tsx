@@ -10,6 +10,8 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Disc, Music, Play, Pause } from 'lucide-react';
 import { CommentDialog } from '@/components/music/CommentDialog';
+import { AddToPlaylistDialog } from '@/components/music/AddToPlaylistDialog';
+import { ZapDialog } from '@/components/music/ZapDialog';
 import { useMusicPlayer } from '@/contexts/MusicPlayerContext';
 import type { WavlakeTrack } from '@/lib/wavlake';
 
@@ -23,6 +25,10 @@ export function ArtistPage() {
   const [expandedAlbumId, setExpandedAlbumId] = useState<string | null>(null);
   const [commentDialogOpen, setCommentDialogOpen] = useState(false);
   const [selectedTrackForComment, setSelectedTrackForComment] = useState<WavlakeTrack | null>(null);
+  const [addToPlaylistOpen, setAddToPlaylistOpen] = useState(false);
+  const [selectedTrackForPlaylist, setSelectedTrackForPlaylist] = useState<WavlakeTrack | null>(null);
+  const [zapDialogOpen, setZapDialogOpen] = useState(false);
+  const [selectedTrackForZap, setSelectedTrackForZap] = useState<WavlakeTrack | null>(null);
 
   // Find npub if present
   const npub = artist?.artistNpub;
@@ -77,6 +83,21 @@ export function ArtistPage() {
   const isAlbumPlaying = (albumTracks: WavlakeTrack[]) => {
     if (!state.currentTrack) return false;
     return albumTracks.some(track => track.id === state.currentTrack?.id) && state.isPlaying;
+  };
+
+  const handleAddToPlaylist = (track: WavlakeTrack) => {
+    setSelectedTrackForPlaylist(track);
+    setAddToPlaylistOpen(true);
+  };
+
+  const handleComment = (track: WavlakeTrack) => {
+    setSelectedTrackForComment(track);
+    setCommentDialogOpen(true);
+  };
+
+  const handleZap = (track: WavlakeTrack) => {
+    setSelectedTrackForZap(track);
+    setZapDialogOpen(true);
   };
 
   return (
@@ -179,10 +200,9 @@ export function ArtistPage() {
                           track={track}
                           className="ml-4"
                           queue={album.tracks}
-                          onComment={(track: WavlakeTrack) => {
-                            setSelectedTrackForComment(track);
-                            setCommentDialogOpen(true);
-                          }}
+                          onAddToPlaylist={handleAddToPlaylist}
+                          onComment={handleComment}
+                          onZap={handleZap}
                         />
                       </div>
                     ))}
@@ -205,19 +225,30 @@ export function ArtistPage() {
             key={track.id}
             track={track}
             queue={tracks}
-            onComment={(track: WavlakeTrack) => {
-              setSelectedTrackForComment(track);
-              setCommentDialogOpen(true);
-            }}
+            onAddToPlaylist={handleAddToPlaylist}
+            onComment={handleComment}
+            onZap={handleZap}
           />
         ))}
       </div>
 
-      {/* Comment Dialog */}
+      {/* Dialogs */}
       <CommentDialog
         open={commentDialogOpen}
         onOpenChange={setCommentDialogOpen}
         track={selectedTrackForComment}
+      />
+
+      <AddToPlaylistDialog
+        open={addToPlaylistOpen}
+        onOpenChange={setAddToPlaylistOpen}
+        track={selectedTrackForPlaylist}
+      />
+
+      <ZapDialog
+        open={zapDialogOpen}
+        onOpenChange={setZapDialogOpen}
+        track={selectedTrackForZap}
       />
     </div>
   );

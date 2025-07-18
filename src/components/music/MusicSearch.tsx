@@ -5,11 +5,19 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Search, Music, User, Disc, CheckCircle, XCircle, AtSign } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { Search, Music, User, Disc, CheckCircle, XCircle, AtSign, MoreHorizontal, Plus, Play } from 'lucide-react';
 import { useWavlakeSearch } from '@/hooks/useWavlake';
 import { useNostrSearch } from '@/hooks/useNostrSearch';
 import { useAuthor } from '@/hooks/useAuthor';
 import { useMusicPlayer } from '@/contexts/MusicPlayerContext';
+import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { wavlakeAPI } from '@/lib/wavlake';
 import { useDebounce } from '@/hooks/useDebounce';
 import { createNpub, isNpub, isNip05 } from '@/lib/nostrSearch';
@@ -32,17 +40,20 @@ interface MusicSearchProps {
   onArtistSelect?: (result: WavlakeSearchResult) => void;
   onAlbumSelect?: (result: WavlakeSearchResult) => void;
   onUserSelect?: (result: NostrSearchResult) => void;
+  onAddToPlaylist?: (track: WavlakeTrack) => void;
 }
 
 export function MusicSearch({
   onTrackSelect,
   onArtistSelect,
   onAlbumSelect,
-  onUserSelect
+  onUserSelect,
+  onAddToPlaylist
 }: MusicSearchProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
   const { playTrack, dispatch } = useMusicPlayer();
+  const { user } = useCurrentUser();
   const navigate = useNavigate();
 
   // Check if search term looks like Nostr identifier
@@ -332,8 +343,7 @@ export function MusicSearch({
                 {groupedResults.tracks.map((result) => (
                   <div
                     key={result.id}
-                    className="flex items-center space-x-3 p-2 rounded-lg hover:bg-muted/50 cursor-pointer group"
-                    onClick={() => handleTrackPlay(result)}
+                    className="flex items-center space-x-3 p-2 rounded-lg hover:bg-muted/50 group"
                   >
                     <Avatar className="h-12 w-12 rounded-md">
                       <AvatarImage src={result.albumArtUrl} alt={result.name} />
@@ -342,7 +352,10 @@ export function MusicSearch({
                       </AvatarFallback>
                     </Avatar>
 
-                    <div className="flex-1 min-w-0">
+                    <div
+                      className="flex-1 min-w-0 cursor-pointer"
+                      onClick={() => handleTrackPlay(result)}
+                    >
                       <h4 className="font-medium text-sm truncate">
                         {result.name}
                       </h4>
@@ -362,6 +375,59 @@ export function MusicSearch({
                           {formatDuration(result.duration)}
                         </Badge>
                       )}
+
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button size="icon" variant="ghost" className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <MoreHorizontal className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem onClick={() => handleTrackPlay(result)}>
+                            <Play className="h-4 w-4 mr-2" />
+                            Play
+                          </DropdownMenuItem>
+                          {user && onAddToPlaylist && (
+                            <DropdownMenuItem
+                              onClick={async () => {
+                                try {
+                                  const trackData = await wavlakeAPI.getTrack(result.id);
+                                  const fullTrack = Array.isArray(trackData) ? trackData[0] : trackData;
+
+                                  const normalizedTrack: WavlakeTrack = {
+                                    id: fullTrack.id,
+                                    title: fullTrack.title || result.name,
+                                    albumTitle: fullTrack.albumTitle || result.albumTitle || '',
+                                    artist: fullTrack.artist || result.artist || '',
+                                    artistId: fullTrack.artistId || result.artistId || '',
+                                    albumId: fullTrack.albumId || result.albumId || '',
+                                    artistArtUrl: fullTrack.artistArtUrl || result.artistArtUrl || '',
+                                    albumArtUrl: fullTrack.albumArtUrl || result.albumArtUrl || '',
+                                    mediaUrl: fullTrack.mediaUrl || '',
+                                    duration: fullTrack.duration || result.duration || 0,
+                                    releaseDate: fullTrack.releaseDate || '',
+                                    msatTotal: fullTrack.msatTotal || '',
+                                    artistNpub: fullTrack.artistNpub || '',
+                                    order: fullTrack.order || 0,
+                                    url: fullTrack.url || `https://wavlake.com/track/${fullTrack.id}`
+                                  };
+
+                                  onAddToPlaylist(normalizedTrack);
+                                } catch (e) {
+                                  console.error('Failed to fetch track for playlist:', e);
+                                }
+                              }}
+                            >
+                              <Plus className="h-4 w-4 mr-2" />
+                              Add to Playlist
+                            </DropdownMenuItem>
+                          )}
+                          <DropdownMenuItem onClick={() => window.open(`https://wavlake.com/track/${result.id}`, '_blank')}>
+                            <Music className="h-4 w-4 mr-2" />
+                            View on Wavlake
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </div>
                   </div>
                 ))}

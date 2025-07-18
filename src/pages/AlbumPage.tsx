@@ -8,6 +8,8 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Disc, Play, Pause } from 'lucide-react';
 import { useMusicPlayer } from '@/contexts/MusicPlayerContext';
 import { CommentDialog } from '@/components/music/CommentDialog';
+import { AddToPlaylistDialog } from '@/components/music/AddToPlaylistDialog';
+import { ZapDialog } from '@/components/music/ZapDialog';
 import type { WavlakeTrack } from '@/lib/wavlake';
 
 export function AlbumPage() {
@@ -16,6 +18,10 @@ export function AlbumPage() {
   const { state, playTrack, togglePlayPause } = useMusicPlayer();
   const [commentDialogOpen, setCommentDialogOpen] = useState(false);
   const [selectedTrackForComment, setSelectedTrackForComment] = useState<WavlakeTrack | null>(null);
+  const [addToPlaylistOpen, setAddToPlaylistOpen] = useState(false);
+  const [selectedTrackForPlaylist, setSelectedTrackForPlaylist] = useState<WavlakeTrack | null>(null);
+  const [zapDialogOpen, setZapDialogOpen] = useState(false);
+  const [selectedTrackForZap, setSelectedTrackForZap] = useState<WavlakeTrack | null>(null);
 
   // Handle case where API might return an array
   const album = Array.isArray(albumData) ? albumData[0] : albumData;
@@ -70,6 +76,21 @@ export function AlbumPage() {
         playTrack(album.tracks[0], album.tracks);
       }
     }
+  };
+
+  const handleAddToPlaylist = (track: WavlakeTrack) => {
+    setSelectedTrackForPlaylist(track);
+    setAddToPlaylistOpen(true);
+  };
+
+  const handleComment = (track: WavlakeTrack) => {
+    setSelectedTrackForComment(track);
+    setCommentDialogOpen(true);
+  };
+
+  const handleZap = (track: WavlakeTrack) => {
+    setSelectedTrackForZap(track);
+    setZapDialogOpen(true);
   };
 
   return (
@@ -139,20 +160,31 @@ export function AlbumPage() {
               track={track}
               className="ml-4"
               queue={album.tracks}
-              onComment={(track: WavlakeTrack) => {
-                setSelectedTrackForComment(track);
-                setCommentDialogOpen(true);
-              }}
+              onAddToPlaylist={handleAddToPlaylist}
+              onComment={handleComment}
+              onZap={handleZap}
             />
           </div>
         ))}
       </div>
 
-      {/* Comment Dialog */}
+      {/* Dialogs */}
       <CommentDialog
         open={commentDialogOpen}
         onOpenChange={setCommentDialogOpen}
         track={selectedTrackForComment}
+      />
+
+      <AddToPlaylistDialog
+        open={addToPlaylistOpen}
+        onOpenChange={setAddToPlaylistOpen}
+        track={selectedTrackForPlaylist}
+      />
+
+      <ZapDialog
+        open={zapDialogOpen}
+        onOpenChange={setZapDialogOpen}
+        track={selectedTrackForZap}
       />
     </div>
   );

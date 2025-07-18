@@ -15,12 +15,14 @@ import {
   Zap,
   ChevronUp,
   ChevronDown,
+  Plus,
 } from 'lucide-react';
 import { useMusicPlayer } from '@/contexts/MusicPlayerContext';
 import { useLikeTrack, useLikedSongs } from '@/hooks/useNostrMusic';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { CommentDialog } from './CommentDialog';
 import { ZapDialog } from './ZapDialog';
+import { AddToPlaylistDialog } from './AddToPlaylistDialog';
 
 export function MusicPlayer() {
   const {
@@ -37,6 +39,7 @@ export function MusicPlayer() {
   const [isExpanded, setIsExpanded] = useState(false);
   const [commentDialogOpen, setCommentDialogOpen] = useState(false);
   const [zapDialogOpen, setZapDialogOpen] = useState(false);
+  const [addToPlaylistOpen, setAddToPlaylistOpen] = useState(false);
 
   if (!state.currentTrack) {
     return null;
@@ -74,6 +77,10 @@ export function MusicPlayer() {
 
   const handleZap = () => {
     setZapDialogOpen(true);
+  };
+
+  const handleAddToPlaylist = () => {
+    setAddToPlaylistOpen(true);
   };
 
   // Mini player (default, mobile)
@@ -122,6 +129,16 @@ export function MusicPlayer() {
                   aria-label="Like song"
                 >
                   <Heart className={`h-4 w-4 ${isLiked ? 'fill-current' : ''}`} />
+                </Button>
+
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  className="h-10 w-10 rounded-full"
+                  onClick={handleAddToPlaylist}
+                  aria-label="Add to playlist"
+                >
+                  <Plus className="h-4 w-4" />
                 </Button>
 
                 <Button
@@ -278,6 +295,15 @@ export function MusicPlayer() {
             <Button
               size="icon"
               variant="ghost"
+              onClick={handleAddToPlaylist}
+              className="h-12 w-12 rounded-full hover:bg-muted"
+            >
+              <Plus className="h-5 w-5" />
+            </Button>
+
+            <Button
+              size="icon"
+              variant="ghost"
               onClick={handleZap}
               className="h-12 w-12 rounded-full hover:bg-muted text-yellow-500 hover:text-yellow-600"
             >
@@ -398,6 +424,15 @@ export function MusicPlayer() {
                   className={`h-8 w-8 rounded-full hover:bg-muted ${isLiked ? 'text-pink-500' : ''}`}
                 >
                   <Heart className={`h-4 w-4 ${isLiked ? 'fill-current' : ''}`} />
+                </Button>
+
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  onClick={handleAddToPlaylist}
+                  className="h-8 w-8 rounded-full hover:bg-muted"
+                >
+                  <Plus className="h-4 w-4" />
                 </Button>
 
                 <Button
@@ -576,6 +611,15 @@ export function MusicPlayer() {
                   <Button
                     size="icon"
                     variant="ghost"
+                    onClick={handleAddToPlaylist}
+                    className="h-12 w-12 rounded-full hover:bg-muted"
+                  >
+                    <Plus className="h-6 w-6" />
+                  </Button>
+
+                  <Button
+                    size="icon"
+                    variant="ghost"
                     onClick={handleZap}
                     className="h-12 w-12 rounded-full hover:bg-muted text-yellow-500 hover:text-yellow-600"
                   >
@@ -632,6 +676,11 @@ export function MusicPlayer() {
       <ZapDialog
         open={zapDialogOpen}
         onOpenChange={setZapDialogOpen}
+        track={currentTrack}
+      />
+      <AddToPlaylistDialog
+        open={addToPlaylistOpen}
+        onOpenChange={setAddToPlaylistOpen}
         track={currentTrack}
       />
     </>
