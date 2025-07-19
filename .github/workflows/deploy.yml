@@ -31,4 +31,5 @@ jobs:
           key: ${{ secrets.PROD_SSH_KEY }}
           source: "dist/*"
           target: ${{ secrets.PROD_PATH }}
+          strip_components: 1
 
