@@ -140,6 +140,40 @@ export function useTrackComments(trackUrl: string) {
   });
 }
 
+// Hook to get note comments (replies to a note)
+export function useNoteComments(noteId: string) {
+  const { nostr } = useNostr();
+
+  return useQuery({
+    queryKey: ['note-comments', noteId],
+    queryFn: async (c) => {
+      if (!noteId) return [];
+
+      const signal = AbortSignal.any([c.signal, AbortSignal.timeout(3000)]);
+      const events = await nostr.query([
+        {
+          kinds: [1], // Text notes
+          '#e': [noteId],
+          limit: 50,
+        }
+      ], { signal });
+
+      // Filter for replies (events that have the noteId in an 'e' tag with 'reply' marker)
+      const replies = events.filter(event => {
+        return event.tags.some(tag =>
+          tag[0] === 'e' &&
+          tag[1] === noteId &&
+          (tag[3] === 'reply' || tag[3] === undefined) // Some clients don't use the marker
+        );
+      });
+
+      return replies.sort((a, b) => a.created_at - b.created_at); // Chronological order for comments
+    },
+    enabled: !!noteId,
+    staleTime: 30 * 1000, // 30 seconds
+  });
+}
+
 // Hook to create a playlist
 export function useCreatePlaylist() {
   const { mutate: createEvent } = useNostrPublish();
@@ -178,6 +212,8 @@ export function useCreatePlaylist() {
     onSuccess: () => {
       if (user?.pubkey) {
         queryClient.invalidateQueries({ queryKey: ['user-playlists', user.pubkey] });
+        // Also invalidate social feed to show the new playlist
+        queryClient.invalidateQueries({ queryKey: ['social-feed'] });
       }
     },
   });
@@ -305,6 +341,8 @@ export function useLikeTrack() {
       if (user?.pubkey) {
         queryClient.invalidateQueries({ queryKey: ['liked-songs', user.pubkey] });
         queryClient.invalidateQueries({ queryKey: ['track-reactions', trackUrl] });
+        // Also invalidate social feed to show the new reaction
+        queryClient.invalidateQueries({ queryKey: ['social-feed'] });
       }
     },
   });
@@ -378,6 +416,83 @@ export function useCommentOnTrack() {
     },
     onSuccess: (_, { trackUrl }) => {
       queryClient.invalidateQueries({ queryKey: ['track-comments', trackUrl] });
+      // Also invalidate social feed to show the new comment
+      queryClient.invalidateQueries({ queryKey: ['social-feed'] });
+    },
+  });
+}
+
+// Hook to get playlist comments
+export function usePlaylistComments(playlistEvent: NostrEvent | null) {
+  const { nostr } = useNostr();
+
+  return useQuery({
+    queryKey: ['playlist-comments', playlistEvent?.id],
+    queryFn: async (c) => {
+      if (!playlistEvent) return [];
+
+      const signal = AbortSignal.any([c.signal, AbortSignal.timeout(3000)]);
+
+      // Get the d tag (identifier) from the playlist
+      const dTag = playlistEvent.tags.find(tag => tag[0] === 'd')?.[1];
+      if (!dTag) return [];
+
+      // Create the address reference for the playlist
+      const addressRef = `30003:${playlistEvent.pubkey}:${dTag}`;
+
+      const events = await nostr.query([
+        {
+          kinds: [1111], // Comment events
+          '#A': [addressRef], // Root reference to the playlist
+          limit: 50,
+        }
+      ], { signal });
+
+      return events.sort((a, b) => b.created_at - a.created_at);
+    },
+    enabled: !!playlistEvent,
+    staleTime: 30 * 1000, // 30 seconds
+  });
+}
+
+// Hook to comment on a playlist
+export function useCommentOnPlaylist() {
+  const { mutate: createEvent } = useNostrPublish();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ content, playlistEvent }: {
+      content: string;
+      playlistEvent: NostrEvent;
+    }) => {
+      // Get the d tag (identifier) from the playlist
+      const dTag = playlistEvent.tags.find(tag => tag[0] === 'd')?.[1];
+      if (!dTag) {
+        throw new Error('Invalid playlist: missing identifier');
+      }
+
+      // Create the address reference for the playlist
+      const addressRef = `30003:${playlistEvent.pubkey}:${dTag}`;
+
+      createEvent({
+        kind: 1111, // Comment
+        content,
+        tags: [
+          // Root references (uppercase)
+          ['A', addressRef], // Address reference to the playlist
+          ['K', '30003'], // Kind of the root content
+          ['P', playlistEvent.pubkey], // Author of the root content
+          // Parent references (lowercase) - same as root for top-level comments
+          ['a', addressRef], // Address reference to the parent (same as root)
+          ['k', '30003'], // Kind of the parent
+          ['p', playlistEvent.pubkey], // Author of the parent
+        ],
+      });
+    },
+    onSuccess: (_, { playlistEvent }) => {
+      queryClient.invalidateQueries({ queryKey: ['playlist-comments', playlistEvent.id] });
+      // Also invalidate social feed to show the new comment
+      queryClient.invalidateQueries({ queryKey: ['social-feed'] });
     },
   });
 }
@@ -432,6 +547,8 @@ export function useEditPlaylist() {
     onSuccess: () => {
       if (user?.pubkey) {
         queryClient.invalidateQueries({ queryKey: ['user-playlists', user.pubkey] });
+        // Also invalidate social feed to show the updated playlist
+        queryClient.invalidateQueries({ queryKey: ['social-feed'] });
       }
     },
   });

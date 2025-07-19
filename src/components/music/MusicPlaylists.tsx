@@ -13,6 +13,7 @@ import { CreatePlaylistDialog } from '@/components/music/CreatePlaylistDialog';
 import { EditPlaylistDialog } from '@/components/music/EditPlaylistDialog';
 import { DeletePlaylistDialog } from '@/components/music/DeletePlaylistDialog';
 import { SharePlaylistDialog } from '@/components/music/SharePlaylistDialog';
+import { PlaylistCommentDialog } from '@/components/music/PlaylistCommentDialog';
 
 
 export function MusicPlaylists() {
@@ -24,6 +25,7 @@ export function MusicPlaylists() {
   const [editPlaylistOpen, setEditPlaylistOpen] = useState(false);
   const [deletePlaylistOpen, setDeletePlaylistOpen] = useState(false);
   const [sharePlaylistOpen, setSharePlaylistOpen] = useState(false);
+  const [commentDialogOpen, setCommentDialogOpen] = useState(false);
   const [selectedPlaylist, setSelectedPlaylist] = useState<NostrEvent | null>(null);
 
 
@@ -53,6 +55,11 @@ export function MusicPlaylists() {
   const handleSharePlaylist = (playlist: NostrEvent) => {
     setSelectedPlaylist(playlist);
     setSharePlaylistOpen(true);
+  };
+
+  const handleCommentOnPlaylist = (playlist: NostrEvent) => {
+    setSelectedPlaylist(playlist);
+    setCommentDialogOpen(true);
   };
 
   if (!user) {
@@ -156,6 +163,7 @@ export function MusicPlaylists() {
                   onEdit={handleEditPlaylist}
                   onDelete={handleDeletePlaylist}
                   onShare={handleSharePlaylist}
+                  onComment={handleCommentOnPlaylist}
                 />
               ))}
             </div>
@@ -205,6 +213,12 @@ export function MusicPlaylists() {
         open={sharePlaylistOpen}
         onOpenChange={setSharePlaylistOpen}
         playlist={selectedPlaylist}
+      />
+
+      <PlaylistCommentDialog
+        open={commentDialogOpen}
+        onOpenChange={setCommentDialogOpen}
+        playlistEvent={selectedPlaylist}
       />
     </div>
   );

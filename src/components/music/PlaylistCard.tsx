@@ -12,6 +12,7 @@ import {
   Share2,
   Trash2,
   Copy,
+  MessageCircle,
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -34,6 +35,7 @@ interface PlaylistCardProps {
   onDelete?: (playlist: NostrEvent) => void;
   onShare?: (playlist: NostrEvent) => void;
   onClone?: (playlist: NostrEvent) => void;
+  onComment?: (playlist: NostrEvent) => void;
   showCloneButton?: boolean;
 }
 
@@ -45,6 +47,7 @@ export function PlaylistCard({
   onDelete,
   onShare,
   onClone,
+  onComment,
   showCloneButton = false,
 }: PlaylistCardProps) {
   const { user } = useCurrentUser();
@@ -166,6 +169,12 @@ export function PlaylistCard({
                   <Play className="h-4 w-4 mr-2" />
                   Play Playlist
                 </DropdownMenuItem>
+                {user && (
+                  <DropdownMenuItem onClick={() => onComment?.(playlist)}>
+                    <MessageCircle className="h-4 w-4 mr-2" />
+                    Comment
+                  </DropdownMenuItem>
+                )}
                 {isOwner && (
                   <DropdownMenuItem onClick={() => onEdit?.(playlist)}>
                     <Edit className="h-4 w-4 mr-2" />

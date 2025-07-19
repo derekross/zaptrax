@@ -13,6 +13,7 @@ import {
   Trash2,
   Copy,
   Calendar,
+  MessageCircle,
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -34,6 +35,7 @@ import { EditPlaylistDialog } from '@/components/music/EditPlaylistDialog';
 import { DeletePlaylistDialog } from '@/components/music/DeletePlaylistDialog';
 import { SharePlaylistDialog } from '@/components/music/SharePlaylistDialog';
 import { CreatePlaylistDialog } from '@/components/music/CreatePlaylistDialog';
+import { PlaylistCommentDialog } from '@/components/music/PlaylistCommentDialog';
 import { RelaySelector } from '@/components/RelaySelector';
 import { useState } from 'react';
 import { useToast } from '@/hooks/useToast';
@@ -49,6 +51,7 @@ export function PlaylistPage() {
   const [deletePlaylistOpen, setDeletePlaylistOpen] = useState(false);
   const [sharePlaylistOpen, setSharePlaylistOpen] = useState(false);
   const [clonePlaylistOpen, setClonePlaylistOpen] = useState(false);
+  const [commentDialogOpen, setCommentDialogOpen] = useState(false);
   const { toast } = useToast();
 
   // Decode the NIP-19 identifier
@@ -175,6 +178,10 @@ export function PlaylistPage() {
       return;
     }
     setClonePlaylistOpen(true);
+  };
+
+  const handleCommentOnPlaylist = () => {
+    setCommentDialogOpen(true);
   };
 
   const handleAuthorClick = () => {
@@ -339,6 +346,18 @@ export function PlaylistPage() {
                   {allPlaylistTracksLoading ? 'Loading...' : 'Play'}
                 </Button>
 
+                {user && (
+                  <Button
+                    onClick={handleCommentOnPlaylist}
+                    size="lg"
+                    variant="outline"
+                    className="rounded-full"
+                  >
+                    <MessageCircle className="h-5 w-5 mr-2" />
+                    Comment
+                  </Button>
+                )}
+
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button size="lg" variant="outline" className="rounded-full">
@@ -465,6 +484,12 @@ export function PlaylistPage() {
         onOpenChange={setClonePlaylistOpen}
         initialTracks={allPlaylistTracks}
         title={title}
+      />
+
+      <PlaylistCommentDialog
+        open={commentDialogOpen}
+        onOpenChange={setCommentDialogOpen}
+        playlistEvent={playlist}
       />
     </div>
   );

@@ -5,6 +5,7 @@ import {
   Search,
   Heart,
   PlayCircle,
+  Users,
 } from 'lucide-react';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
@@ -15,6 +16,7 @@ export function Layout() {
 
   // Determine the active tab based on the current path
   const getActiveTab = () => {
+    if (location.pathname.startsWith('/social')) return 'social';
     if (location.pathname.startsWith('/search')) return 'search';
     if (location.pathname.startsWith('/playlists')) return 'playlists';
     if (location.pathname.startsWith('/liked')) return 'liked';
@@ -33,6 +35,18 @@ export function Layout() {
     <>
       <Tabs value={getActiveTab()} className="space-y-8">
         <TabsList className="sticky-tabs flex w-full h-12 bg-card border-2 border-primary punk-card px-0 overflow-hidden rounded-b-lg">
+          {user && (
+            <TabsTrigger
+              value="social"
+              className={`${tabBase} ${tabActive}`}
+              asChild
+            >
+              <Link to="/social">
+                <Users className="h-6 w-6 sm:h-4 sm:w-4" />
+                <span className="hidden sm:inline ml-2">SOCIAL</span>
+              </Link>
+            </TabsTrigger>
+          )}
           <TabsTrigger
             value="discover"
             className={`${tabBase} ${tabActive}`}

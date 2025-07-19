@@ -10,51 +10,53 @@ import {
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { MessageCircle, Send } from 'lucide-react';
-import { useCommentOnTrack, useTrackComments } from '@/hooks/useNostrMusic';
+import { MessageCircle, Send, PlayCircle } from 'lucide-react';
+import { useCommentOnPlaylist, usePlaylistComments } from '@/hooks/useNostrMusic';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { useAuthor } from '@/hooks/useAuthor';
 import { useToast } from '@/hooks/useToast';
 import { genUserName } from '@/lib/genUserName';
 import { NoteContent } from '@/components/NoteContent';
-import { useNavigate } from 'react-router-dom';
-import { nip19 } from 'nostr-tools';
-import type { WavlakeTrack } from '@/lib/wavlake';
 import type { NostrEvent } from '@nostrify/nostrify';
 
-interface CommentDialogProps {
+interface PlaylistCommentDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  track: WavlakeTrack | null;
+  playlistEvent: NostrEvent | null;
 }
 
-export function CommentDialog({ open, onOpenChange, track }: CommentDialogProps) {
+export function PlaylistCommentDialog({ open, onOpenChange, playlistEvent }: PlaylistCommentDialogProps) {
   const [comment, setComment] = useState('');
   const { user } = useCurrentUser();
-  const { mutate: commentOnTrack, isPending } = useCommentOnTrack();
+  const { mutate: commentOnPlaylist, isPending } = useCommentOnPlaylist();
   const { toast } = useToast();
-  const navigate = useNavigate();
 
-  const trackUrl = track ? `https://wavlake.com/track/${track.id}` : '';
-  const { data: comments, isLoading: commentsLoading } = useTrackComments(trackUrl);
+  const { data: comments, isLoading: commentsLoading } = usePlaylistComments(playlistEvent);
+
+  const getPlaylistInfo = (playlist: NostrEvent) => {
+    const titleTag = playlist.tags.find(tag => tag[0] === 'title');
+    const trackTags = playlist.tags.filter(tag => tag[0] === 'r');
+
+    return {
+      title: titleTag?.[1] || 'Untitled Playlist',
+      trackCount: trackTags.length,
+    };
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!track || !comment.trim()) return;
+    if (!playlistEvent || !comment.trim()) return;
 
-    const content = `${comment.trim()}
+    const playlistInfo = getPlaylistInfo(playlistEvent);
 
-🎵 ${track.title} - ${track.artist}
-${trackUrl}`;
-
-    commentOnTrack(
-      { content, trackUrl },
+    commentOnPlaylist(
+      { content: comment.trim(), playlistEvent },
       {
         onSuccess: () => {
           toast({
             title: "Comment posted",
-            description: "Your comment has been published to Nostr.",
+            description: `Your comment on "${playlistInfo.title}" has been published to Nostr.`,
           });
           setComment('');
           onOpenChange(false);
@@ -75,13 +77,9 @@ ${trackUrl}`;
     onOpenChange(false);
   };
 
-  const handleUserClick = (pubkey: string) => {
-    const npub = nip19.npubEncode(pubkey);
-    navigate(`/profile/${npub}`);
-    handleClose(); // Close dialog when navigating
-  };
+  if (!playlistEvent) return null;
 
-  if (!track) return null;
+  const playlistInfo = getPlaylistInfo(playlistEvent);
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
@@ -92,24 +90,21 @@ ${trackUrl}`;
             <span>Comments</span>
           </DialogTitle>
           <DialogDescription>
-            Share your thoughts about this track
+            Share your thoughts about this playlist
           </DialogDescription>
         </DialogHeader>
 
-        {/* Track Info */}
+        {/* Playlist Info */}
         <div className="flex items-center space-x-3 p-3 bg-muted rounded-lg">
-          <Avatar className="h-12 w-12 rounded-md">
-            <AvatarImage src={track.albumArtUrl} alt={track.albumTitle} />
-            <AvatarFallback className="rounded-md">
-              {track.title.charAt(0)}
-            </AvatarFallback>
-          </Avatar>
+          <div className="h-12 w-12 rounded-md bg-gradient-to-br from-purple-500 to-indigo-500 flex items-center justify-center">
+            <PlayCircle className="h-6 w-6 text-white" />
+          </div>
           <div className="flex-1 min-w-0">
             <h4 className="font-medium text-sm truncate">
-              {track.title}
+              {playlistInfo.title}
             </h4>
-            <p className="text-sm text-muted-foreground truncate">
-              {track.artist}
+            <p className="text-sm text-muted-foreground">
+              {playlistInfo.trackCount} track{playlistInfo.trackCount !== 1 ? 's' : ''}
             </p>
           </div>
         </div>
@@ -135,7 +130,7 @@ ${trackUrl}`;
               </div>
             ) : comments && comments.length > 0 ? (
               comments.map((commentEvent) => (
-                <CommentItem key={commentEvent.id} event={commentEvent} onUserClick={handleUserClick} />
+                <CommentItem key={commentEvent.id} event={commentEvent} />
               ))
             ) : (
               <p className="text-sm text-muted-foreground text-center py-4">
@@ -149,7 +144,7 @@ ${trackUrl}`;
         {user && (
           <form onSubmit={handleSubmit} className="space-y-4 border-t pt-4">
             <Textarea
-              placeholder="Share your thoughts about this track..."
+              placeholder="Share your thoughts about this playlist..."
               value={comment}
               onChange={(e) => setComment(e.target.value)}
               maxLength={280}
@@ -193,7 +188,7 @@ ${trackUrl}`;
   );
 }
 
-function CommentItem({ event, onUserClick }: { event: NostrEvent; onUserClick: (pubkey: string) => void }) {
+function CommentItem({ event }: { event: NostrEvent }) {
   const author = useAuthor(event.pubkey);
   const metadata = author.data?.metadata;
   const displayName = metadata?.name ?? genUserName(event.pubkey);
@@ -216,10 +211,7 @@ function CommentItem({ event, onUserClick }: { event: NostrEvent; onUserClick: (
 
   return (
     <div className="flex space-x-3">
-      <Avatar
-        className="h-8 w-8 cursor-pointer hover:opacity-80 transition-opacity"
-        onClick={() => onUserClick(event.pubkey)}
-      >
+      <Avatar className="h-8 w-8">
         <AvatarImage src={profileImage} alt={displayName} />
         <AvatarFallback className="text-xs">
           {displayName.charAt(0)}
@@ -227,10 +219,7 @@ function CommentItem({ event, onUserClick }: { event: NostrEvent; onUserClick: (
       </Avatar>
       <div className="flex-1 min-w-0">
         <div className="flex items-center space-x-2">
-          <span
-            className="font-medium text-sm truncate cursor-pointer hover:underline"
-            onClick={() => onUserClick(event.pubkey)}
-          >
+          <span className="font-medium text-sm truncate">
             {displayName}
           </span>
           <span className="text-xs text-muted-foreground">

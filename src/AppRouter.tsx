@@ -5,6 +5,7 @@ import { MusicHome } from "./pages/MusicHome";
 import { ArtistPage } from "./pages/ArtistPage";
 import { AlbumPage } from "./pages/AlbumPage";
 import { SearchPage } from "./pages/SearchPage";
+import { SocialFeedPage } from "./pages/SocialFeedPage";
 import { PlaylistPage } from "./pages/PlaylistPage";
 import { ProfilePage } from "./pages/ProfilePage";
 import { MusicPlayer } from "./components/music/MusicPlayer";
@@ -23,6 +24,7 @@ export function AppRouter() {
       <Routes>
         <Route path="/" element={<Layout />}>
           <Route index element={<MusicHome />} />
+          <Route path="social" element={<SocialFeedPage />} />
           <Route path="search" element={<SearchPage />} />
           <Route path="playlists" element={<MusicPlaylists />} />
           <Route path="liked" element={<MusicLikedSongs />} />

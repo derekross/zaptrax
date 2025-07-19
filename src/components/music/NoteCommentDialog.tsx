@@ -11,45 +11,48 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { MessageCircle, Send } from 'lucide-react';
-import { useCommentOnTrack, useTrackComments } from '@/hooks/useNostrMusic';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { useAuthor } from '@/hooks/useAuthor';
 import { useToast } from '@/hooks/useToast';
+import { useNostrPublish } from '@/hooks/useNostrPublish';
+import { useNoteComments } from '@/hooks/useNostrMusic';
+import { useQueryClient } from '@tanstack/react-query';
 import { genUserName } from '@/lib/genUserName';
 import { NoteContent } from '@/components/NoteContent';
-import { useNavigate } from 'react-router-dom';
 import { nip19 } from 'nostr-tools';
-import type { WavlakeTrack } from '@/lib/wavlake';
+import { useNavigate } from 'react-router-dom';
 import type { NostrEvent } from '@nostrify/nostrify';
 
-interface CommentDialogProps {
+interface NoteCommentDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  track: WavlakeTrack | null;
+  event: NostrEvent | null;
 }
 
-export function CommentDialog({ open, onOpenChange, track }: CommentDialogProps) {
+export function NoteCommentDialog({ open, onOpenChange, event }: NoteCommentDialogProps) {
   const [comment, setComment] = useState('');
   const { user } = useCurrentUser();
-  const { mutate: commentOnTrack, isPending } = useCommentOnTrack();
+  const { mutate: createEvent, isPending } = useNostrPublish();
   const { toast } = useToast();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
-  const trackUrl = track ? `https://wavlake.com/track/${track.id}` : '';
-  const { data: comments, isLoading: commentsLoading } = useTrackComments(trackUrl);
+  const { data: comments, isLoading: commentsLoading } = useNoteComments(event?.id || '');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!track || !comment.trim()) return;
+    if (!event || !comment.trim()) return;
 
-    const content = `${comment.trim()}
-
-🎵 ${track.title} - ${track.artist}
-${trackUrl}`;
-
-    commentOnTrack(
-      { content, trackUrl },
+    createEvent(
+      {
+        kind: 1,
+        content: comment.trim(),
+        tags: [
+          ['e', event.id, '', 'reply'],
+          ['p', event.pubkey],
+        ],
+      },
       {
         onSuccess: () => {
           toast({
@@ -58,6 +61,9 @@ ${trackUrl}`;
           });
           setComment('');
           onOpenChange(false);
+          // Invalidate note comments and social feed
+          queryClient.invalidateQueries({ queryKey: ['note-comments', event.id] });
+          queryClient.invalidateQueries({ queryKey: ['social-feed'] });
         },
         onError: (error) => {
           toast({
@@ -81,7 +87,7 @@ ${trackUrl}`;
     handleClose(); // Close dialog when navigating
   };
 
-  if (!track) return null;
+  if (!event) return null;
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
@@ -92,27 +98,12 @@ ${trackUrl}`;
             <span>Comments</span>
           </DialogTitle>
           <DialogDescription>
-            Share your thoughts about this track
+            Reply to this post
           </DialogDescription>
         </DialogHeader>
 
-        {/* Track Info */}
-        <div className="flex items-center space-x-3 p-3 bg-muted rounded-lg">
-          <Avatar className="h-12 w-12 rounded-md">
-            <AvatarImage src={track.albumArtUrl} alt={track.albumTitle} />
-            <AvatarFallback className="rounded-md">
-              {track.title.charAt(0)}
-            </AvatarFallback>
-          </Avatar>
-          <div className="flex-1 min-w-0">
-            <h4 className="font-medium text-sm truncate">
-              {track.title}
-            </h4>
-            <p className="text-sm text-muted-foreground truncate">
-              {track.artist}
-            </p>
-          </div>
-        </div>
+        {/* Original Note */}
+        <OriginalNote event={event} onUserClick={handleUserClick} />
 
         {/* Comments List */}
         <div className="flex-1 min-h-0 space-y-4">
@@ -139,7 +130,7 @@ ${trackUrl}`;
               ))
             ) : (
               <p className="text-sm text-muted-foreground text-center py-4">
-                No comments yet. Be the first to share your thoughts!
+                No comments yet. Be the first to reply!
               </p>
             )}
           </div>
@@ -149,7 +140,7 @@ ${trackUrl}`;
         {user && (
           <form onSubmit={handleSubmit} className="space-y-4 border-t pt-4">
             <Textarea
-              placeholder="Share your thoughts about this track..."
+              placeholder="Write your reply..."
               value={comment}
               onChange={(e) => setComment(e.target.value)}
               maxLength={280}
@@ -173,7 +164,7 @@ ${trackUrl}`;
                 ) : (
                   <>
                     <Send className="h-4 w-4 mr-2" />
-                    Post Comment
+                    Post Reply
                   </>
                 )}
               </Button>
@@ -190,6 +181,60 @@ ${trackUrl}`;
         )}
       </DialogContent>
     </Dialog>
+  );
+}
+
+function OriginalNote({ event, onUserClick }: { event: NostrEvent; onUserClick: (pubkey: string) => void }) {
+  const author = useAuthor(event.pubkey);
+  const metadata = author.data?.metadata;
+  const displayName = metadata?.name ?? genUserName(event.pubkey);
+  const profileImage = metadata?.picture;
+
+  const formatDate = (timestamp: number) => {
+    const date = new Date(timestamp * 1000);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffMins = Math.floor(diffMs / (1000 * 60));
+    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+    if (diffMins < 1) return 'just now';
+    if (diffMins < 60) return `${diffMins}m ago`;
+    if (diffHours < 24) return `${diffHours}h ago`;
+    if (diffDays < 7) return `${diffDays}d ago`;
+    return date.toLocaleDateString();
+  };
+
+  return (
+    <div className="p-3 bg-muted rounded-lg">
+      <div className="flex space-x-3">
+        <Avatar
+          className="h-10 w-10 cursor-pointer hover:opacity-80 transition-opacity"
+          onClick={() => onUserClick(event.pubkey)}
+        >
+          <AvatarImage src={profileImage} alt={displayName} />
+          <AvatarFallback>
+            {displayName.charAt(0).toUpperCase()}
+          </AvatarFallback>
+        </Avatar>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center space-x-2 mb-2">
+            <span
+              className="font-medium text-sm truncate cursor-pointer hover:underline"
+              onClick={() => onUserClick(event.pubkey)}
+            >
+              {displayName}
+            </span>
+            <span className="text-xs text-muted-foreground">
+              {formatDate(event.created_at)}
+            </span>
+          </div>
+          <div className="text-sm">
+            <NoteContent event={event} />
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }
 
