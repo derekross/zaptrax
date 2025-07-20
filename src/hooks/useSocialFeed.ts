@@ -46,28 +46,35 @@ export function useSocialFeed(feedType: 'following' | 'global') {
         // Query for music-related activity from followed users
         filters = [
           {
-            kinds: [1], // Text notes with track references (comments on tracks)
+            kinds: [1], // Text notes with music hashtags
             authors: followedPubkeys,
-            limit: Math.ceil(EVENTS_PER_PAGE * 0.4), // 40% of page
+            '#t': ['music', 'nowplaying', 'track', 'song', 'album', 'artist', 'tunestr'],
+            limit: 50, // Increased limit
+            until,
+          },
+          {
+            kinds: [1], // All text notes from followed users (to catch r tags)
+            authors: followedPubkeys,
+            limit: 100, // Increased limit to catch more potential music content
             until,
           },
           {
             kinds: [30003], // Bookmark sets (playlists)
             authors: followedPubkeys,
             '#t': ['music'], // Music playlists
-            limit: Math.ceil(EVENTS_PER_PAGE * 0.25), // 25% of page
+            limit: 30,
             until,
           },
           {
             kinds: [7], // Reactions on tracks
             authors: followedPubkeys,
-            limit: Math.ceil(EVENTS_PER_PAGE * 0.25), // 25% of page
+            limit: 50,
             until,
           },
           {
             kinds: [1111], // Playlist comments
             authors: followedPubkeys,
-            limit: Math.ceil(EVENTS_PER_PAGE * 0.1), // 10% of page
+            limit: 20,
             until,
           },
         ];
@@ -75,24 +82,30 @@ export function useSocialFeed(feedType: 'following' | 'global') {
         // Global feed - get recent music activity from everyone
         filters = [
           {
-            kinds: [1], // Text notes with track references (comments on tracks)
-            limit: Math.ceil(EVENTS_PER_PAGE * 0.4), // 40% of page
+            kinds: [1], // Text notes with music hashtags
+            '#t': ['music', 'nowplaying', 'track', 'song', 'album', 'artist', 'tunestr'],
+            limit: 50, // Increased limit
+            until,
+          },
+          {
+            kinds: [1], // All text notes (to catch r tags)
+            limit: 100, // Increased limit to catch more potential music content
             until,
           },
           {
             kinds: [30003], // Bookmark sets (playlists)
             '#t': ['music'], // Music playlists
-            limit: Math.ceil(EVENTS_PER_PAGE * 0.25), // 25% of page
+            limit: 30,
             until,
           },
           {
             kinds: [7], // Reactions on tracks
-            limit: Math.ceil(EVENTS_PER_PAGE * 0.25), // 25% of page
+            limit: 50,
             until,
           },
           {
             kinds: [1111], // Playlist comments
-            limit: Math.ceil(EVENTS_PER_PAGE * 0.1), // 10% of page
+            limit: 20,
             until,
           },
         ];
@@ -111,20 +124,24 @@ export function useSocialFeed(feedType: 'following' | 'global') {
 
       // Filter and process events
       const musicEvents = allEvents.filter(event => {
-        // For text notes, only include if they are explicitly music-related
+        // For text notes, include if they have music hashtags (already filtered by relay)
+        // OR if they have Wavlake track references
         if (event.kind === 1) {
-          // Direct track references (comments on tracks)
+          // Direct track references in r tags
           const hasTrackReference = event.tags.some(tag =>
             tag[0] === 'r' && tag[1]?.includes('wavlake.com/track/')
           );
 
-          // Music-related hashtags
+          // Wavlake URLs in content
+          const hasWavlakeInContent = event.content.includes('wavlake.com/track/');
+
+          // Music-related hashtags (already filtered by relay, but double-check)
           const hasMusicTags = event.tags.some(tag =>
-            tag[0] === 't' && ['music', 'nowplaying', 'track', 'song', 'album', 'artist'].includes(tag[1]?.toLowerCase())
+            tag[0] === 't' && ['music', 'nowplaying', 'track', 'song', 'album', 'artist', 'tunestr'].includes(tag[1]?.toLowerCase())
           );
 
-          // Only include if explicitly music-related
-          return hasTrackReference || hasMusicTags;
+          // Include if it has music tags OR Wavlake references (in tags or content)
+          return hasTrackReference || hasWavlakeInContent || hasMusicTags;
         }
 
         // For reactions, only include if they reference Wavlake tracks
@@ -163,9 +180,12 @@ export function useSocialFeed(feedType: 'following' | 'global') {
       const pageEvents = sortedEvents.slice(0, EVENTS_PER_PAGE);
 
       // Determine next cursor (oldest event timestamp)
-      const nextCursor = pageEvents.length === EVENTS_PER_PAGE
+      // Always provide a cursor if we have events, unless we got significantly fewer than requested
+      const nextCursor = pageEvents.length > 0 && pageEvents.length >= Math.min(EVENTS_PER_PAGE, 5)
         ? pageEvents[pageEvents.length - 1].created_at
         : undefined;
+
+
 
       return {
         events: pageEvents,

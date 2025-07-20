@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { nip19 } from 'nostr-tools';
 import { useAuthor } from '@/hooks/useAuthor';
 import { genUserName } from '@/lib/genUserName';
+import { VideoContent } from '@/components/VideoPlayer';
 import { cn } from '@/lib/utils';
 
 interface NoteContentProps {
@@ -16,6 +17,38 @@ export function NoteContent({
   event,
   className,
 }: NoteContentProps) {
+  // Check if the note has music-related hashtags
+  const hasMusicHashtags = useMemo(() => {
+    return event.tags.some(tag =>
+      tag[0] === 't' &&
+      ['music', 'nowplaying', 'track', 'song', 'album', 'artist', 'tunestr'].includes(tag[1]?.toLowerCase())
+    );
+  }, [event.tags]);
+
+  // Extract video URLs from content for rendering
+  const videoUrls = useMemo(() => {
+    if (!hasMusicHashtags) return [];
+
+    const text = event.content;
+    const urlRegex = /https?:\/\/[^\s]+/g;
+    const urls: string[] = [];
+    let match: RegExpExecArray | null;
+
+    while ((match = urlRegex.exec(text)) !== null) {
+      const url = match[0];
+
+      // Check if it's a YouTube URL or video file
+      const isYouTube = /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/|youtube\.com\/shorts\/)/.test(url);
+      const isVideoFile = /\.(mp4|mov|webm|ogg|avi|mkv|m4v|3gp|flv)(\?|$)/i.test(url);
+
+      if (isYouTube || isVideoFile) {
+        urls.push(url);
+      }
+    }
+
+    return urls;
+  }, [event.content, hasMusicHashtags]);
+
   // Process the content to render mentions, links, etc.
   const content = useMemo(() => {
     const text = event.content;
@@ -38,18 +71,36 @@ export function NoteContent({
       }
 
       if (url) {
-        // Handle URLs
-        parts.push(
-          <a
-            key={`url-${keyCounter++}`}
-            href={url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-blue-500 hover:underline"
-          >
-            {url}
-          </a>
-        );
+        // Check if this URL is a video that we'll render separately
+        const isVideoUrl = videoUrls.includes(url);
+
+        if (isVideoUrl) {
+          // For video URLs in music posts, just show a simple link since we'll render the video below
+          parts.push(
+            <a
+              key={`video-link-${keyCounter++}`}
+              href={url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-500 hover:underline text-sm"
+            >
+              🎵 {url.length > 50 ? `${url.substring(0, 50)}...` : url}
+            </a>
+          );
+        } else {
+          // Handle regular URLs
+          parts.push(
+            <a
+              key={`url-${keyCounter++}`}
+              href={url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-500 hover:underline"
+            >
+              {url}
+            </a>
+          );
+        }
       } else if (nostrPrefix && nostrData) {
         // Handle Nostr references
         try {
@@ -105,11 +156,25 @@ export function NoteContent({
     }
 
     return parts;
-  }, [event]);
+  }, [event, videoUrls]);
 
   return (
     <div className={cn("whitespace-pre-wrap break-words", className)}>
       {content.length > 0 ? content : event.content}
+
+      {/* Render videos for music posts */}
+      {videoUrls.length > 0 && (
+        <div className="mt-4 space-y-3">
+          {videoUrls.map((url, index) => (
+            <VideoContent
+              key={`video-${index}`}
+              url={url}
+              className="max-w-full"
+              autoPlay={false}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 }

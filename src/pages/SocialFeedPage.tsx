@@ -223,7 +223,7 @@ export function SocialFeedPage() {
               ))}
 
               {/* Infinite scroll trigger */}
-              <div ref={observerRef} className="flex justify-center py-4">
+              <div ref={observerRef} className="flex justify-center py-4 min-h-[1px]">
                 {isFetchingNextPage ? (
                   <div className="space-y-4 w-full">
                     {/* Loading skeletons */}
@@ -463,7 +463,7 @@ function FeedItem({ event, onAddToPlaylist, onComment, onZap, onCommentOnNote, o
 
       // Check if it has music-related hashtags
       const musicTags = event.tags.filter(tag =>
-        tag[0] === 't' && ['music', 'nowplaying', 'track', 'song', 'album', 'artist'].includes(tag[1]?.toLowerCase())
+        tag[0] === 't' && ['music', 'nowplaying', 'track', 'song', 'album', 'artist', 'tunestr'].includes(tag[1]?.toLowerCase())
       );
       if (musicTags.length > 0) {
         return {

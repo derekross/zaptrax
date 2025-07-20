@@ -23,8 +23,7 @@ export function Layout() {
     return 'discover'; // Default for /
   };
 
-  // Calculate top padding for content: header (4rem) + tabs (~3rem) + safe area
-  const contentPaddingTop = 'calc(7rem + env(safe-area-inset-top))';
+
 
   const tabBase =
     "flex flex-row items-center justify-center flex-1 h-12 px-0 py-0 min-w-0 min-h-0 border-none focus:outline-none focus-visible:ring-2 focus-visible:ring-primary transition-all font-bold uppercase tracking-wide text-xs sm:text-base bg-transparent rounded-none";
@@ -32,9 +31,10 @@ export function Layout() {
     "data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md data-[state=active]:border-primary data-[state=active]:border-b-4 data-[state=active]:rounded-none";
 
   return (
-    <>
-      <Tabs value={getActiveTab()} className="space-y-8">
-        <TabsList className="sticky-tabs flex w-full h-12 bg-card border-2 border-primary punk-card px-0 overflow-hidden rounded-b-lg">
+    <div className="min-h-screen">
+      <div className="sticky top-16 z-40 w-full">
+        <Tabs value={getActiveTab()}>
+          <TabsList className="flex w-full h-12 bg-card border-2 border-primary punk-card px-0 overflow-hidden rounded-b-lg">
           {user && (
             <TabsTrigger
               value="social"
@@ -91,18 +91,14 @@ export function Layout() {
               </TabsTrigger>
             </>
           )}
-        </TabsList>
-        {/* The content for each tab will be rendered by the Outlet */}
-        <div
-          className="container mx-auto px-2 sm:px-4 py-4 sm:py-8 space-y-4 sm:space-y-8 min-h-screen pb-32"
-          style={{
-            paddingTop: contentPaddingTop,
-            paddingBottom: 'calc(2rem + env(safe-area-inset-bottom))'
-          }}
-        >
-          <Outlet />
-        </div>
-      </Tabs>
-    </>
+          </TabsList>
+        </Tabs>
+      </div>
+
+      {/* The content for each tab will be rendered by the Outlet */}
+      <div className="container mx-auto px-2 sm:px-4 py-4 sm:py-8 space-y-4 sm:space-y-8 pb-32">
+        <Outlet />
+      </div>
+    </div>
   );
 }

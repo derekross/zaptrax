@@ -75,6 +75,8 @@
     overflow-x: hidden;
     /* Force scrollbar to always be visible to prevent layout shifts */
     overflow-y: scroll;
+    /* Ensure fixed positioning context */
+    position: relative;
   }
   body {
     @apply bg-background text-foreground;
@@ -83,6 +85,8 @@
     position: relative;
     /* Ensure body doesn't have its own scrollbar */
     overflow-y: visible;
+    /* Ensure fixed elements work properly */
+    transform: none;
   }
 
   /* Prevent horizontal scrolling from dropdown menus */
@@ -92,6 +96,8 @@
     width: 100%;
     min-height: 100vh;
     contain: layout;
+    /* Ensure no parent elements interfere with fixed positioning */
+    transform: none;
   }
 
   /* Ensure main container is stable */
@@ -100,23 +106,9 @@
   }
 }
 
-/* Ensure fixed positioning works properly on mobile */
-@layer utilities {
-  .sticky-header {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    z-index: 50;
-  }
 
-  .sticky-tabs {
-    position: fixed;
-    top: calc(4rem + env(safe-area-inset-top));
-    left: 0;
-    right: 0;
-    z-index: 40;
-  }
+
+@layer utilities {
 }
 
 /* Punk theme styles */
