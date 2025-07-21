@@ -92,10 +92,10 @@ export function TrackCard({
   return (
     <Card className={cn("group punk-card border-2 border-primary bg-card hover:neon-glow transition-all", className)}>
       <CardContent className="p-3 sm:p-4">
-        {/* Top row: Album art and song name side by side */}
-        <div className="flex flex-row items-center gap-3 sm:gap-4">
+        {/* Top row: Album art and track info side by side */}
+        <div className="flex flex-row items-start gap-3 sm:gap-4">
           <div className="relative flex-shrink-0">
-            <Avatar className="h-14 w-14 sm:h-16 sm:w-16 rounded-none border-2 border-foreground">
+            <Avatar className="h-28 w-28 sm:h-32 sm:w-32 rounded-none border-2 border-foreground">
               <AvatarImage src={track.albumArtUrl} alt={track.albumTitle} />
               <AvatarFallback className="rounded-none bg-primary text-primary-foreground font-punk">
                 {track.title.charAt(0)}
@@ -104,53 +104,56 @@ export function TrackCard({
             <Button
               size="icon"
               variant="secondary"
-              className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity bg-primary/80 hover:bg-primary text-primary-foreground border-2 border-foreground punk-button h-12 w-12 sm:h-8 sm:w-8"
+              className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity bg-primary/80 hover:bg-primary text-primary-foreground border-2 border-foreground punk-button"
               onClick={handlePlayPause}
             >
               {isPlaying ? (
-                <Pause className="h-6 w-6 sm:h-4 sm:w-4" />
+                <Pause className="h-10 w-10 sm:h-12 sm:w-12" />
               ) : (
-                <Play className="h-6 w-6 sm:h-4 sm:w-4" />
+                <Play className="h-10 w-10 sm:h-12 sm:w-12" />
               )}
             </Button>
           </div>
-          <div className="flex-1 min-w-0">
+          <div className="flex-1 min-w-0 space-y-1">
+            {/* Song title */}
             <button
               onClick={handlePlayPause}
-              className="font-bold text-xs sm:text-sm truncate uppercase tracking-wide text-left w-full hover:text-primary transition-colors cursor-pointer"
+              className="font-bold text-sm sm:text-base truncate uppercase tracking-wide text-left w-full hover:text-primary transition-colors cursor-pointer"
             >
               {track.title}
             </button>
-          </div>
-        </div>
-        {/* Info row: artist, album, badges */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mt-2 sm:mt-1">
-          <div className="flex flex-col min-w-0">
+
+            {/* Artist name */}
             {showArtist && (
-              <Link to={`/artist/${track.artistId}`} className="text-xs sm:text-sm text-accent truncate font-metal hover:underline">
+              <Link to={`/artist/${track.artistId}`} className="block text-xs sm:text-sm text-accent truncate font-metal hover:underline">
                 {track.artist}
               </Link>
             )}
+
+            {/* Album name */}
             {showAlbum && (
-              <p className="text-xs text-muted-foreground truncate">
+              <p className="text-xs sm:text-sm text-muted-foreground truncate">
                 {track.albumTitle}
               </p>
             )}
-          </div>
-          <div className="flex items-center space-x-2 mt-1 sm:mt-0">
-            <Badge variant="outline" className="text-xs border-primary text-primary font-bold">
-              {formatDuration(track.duration)}
-            </Badge>
-            {track.msatTotal && (
-              <Badge variant="outline" className="text-xs border-accent text-accent font-bold">
-                ⚡ {formatSats(track.msatTotal)}
+
+            {/* Track info badges */}
+            <div className="flex items-center space-x-2 mt-1">
+              <Badge variant="outline" className="text-xs border-primary text-primary font-bold">
+                {formatDuration(track.duration)}
               </Badge>
-            )}
+              {track.msatTotal && (
+                <Badge variant="outline" className="text-xs border-accent text-accent font-bold">
+                  ⚡ {formatSats(track.msatTotal)}
+                </Badge>
+              )}
+            </div>
           </div>
         </div>
+
         {/* Actions row */}
-        <div className="flex items-center space-x-2 sm:space-x-1 mt-3 sm:mt-0">
-          {user && (
+        <div className="flex items-center justify-end space-x-2 sm:space-x-1 mt-3">
+            {user && (
             <>
               <Button
                 size="icon"

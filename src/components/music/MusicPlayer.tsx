@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect, useRef } from 'react';
+import { Link, useLocation } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
@@ -38,25 +38,57 @@ export function MusicPlayer() {
   const { user } = useCurrentUser();
   const { mutate: likeTrack } = useLikeTrack();
   const { data: likedSongs } = useLikedSongs();
+  const location = useLocation();
+  const prevPathnameRef = useRef(location.pathname);
   const [isExpanded, setIsExpanded] = useState(false);
   const [showQueue, setShowQueue] = useState(false);
   const [commentDialogOpen, setCommentDialogOpen] = useState(false);
   const [zapDialogOpen, setZapDialogOpen] = useState(false);
   const [addToPlaylistOpen, setAddToPlaylistOpen] = useState(false);
 
-  // Disable page scrolling when expanded player is open
+  // Close expanded player and restore scrolling when route changes
+  useEffect(() => {
+    // Only close if the pathname actually changed (not on initial mount or isExpanded change)
+    if (prevPathnameRef.current !== location.pathname) {
+      if (isExpanded) {
+        setIsExpanded(false);
+        setShowQueue(false);
+        // Restore normal positioning
+        document.body.style.position = '';
+        document.body.style.top = '';
+        document.body.style.width = '';
+      }
+      prevPathnameRef.current = location.pathname;
+    }
+  }, [location.pathname, isExpanded]);
+
+  // Disable page scrolling when expanded player is open using position fixed
   useEffect(() => {
     if (isExpanded) {
-      // Store current overflow style
-      const originalStyle = document.body.style.overflow;
-      // Disable scrolling
-      document.body.style.overflow = 'hidden';
-
-      // Cleanup function to restore scrolling
-      return () => {
-        document.body.style.overflow = originalStyle;
-      };
+      // Get current scroll position
+      const scrollY = window.scrollY;
+      // Fix body position to prevent scrolling
+      document.body.style.position = 'fixed';
+      document.body.style.top = `-${scrollY}px`;
+      document.body.style.width = '100%';
+    } else {
+      // Restore normal positioning and scroll position
+      const scrollY = document.body.style.top;
+      document.body.style.position = '';
+      document.body.style.top = '';
+      document.body.style.width = '';
+      // Restore scroll position
+      if (scrollY) {
+        window.scrollTo(0, parseInt(scrollY.replace('-', '').replace('px', '')) || 0);
+      }
     }
+
+    // Cleanup function to always restore normal positioning when component unmounts
+    return () => {
+      document.body.style.position = '';
+      document.body.style.top = '';
+      document.body.style.width = '';
+    };
   }, [isExpanded]);
 
   if (!state.currentTrack) {
