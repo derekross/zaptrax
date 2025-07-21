@@ -24,6 +24,7 @@ type MusicPlayerAction =
   | { type: 'SET_VOLUME'; payload: number }
   | { type: 'SET_QUEUE'; payload: WavlakeTrack[] }
   | { type: 'SET_CURRENT_INDEX'; payload: number }
+  | { type: 'PLAY_TRACK_BY_INDEX'; payload: number }
   | { type: 'NEXT_TRACK' }
   | { type: 'PREVIOUS_TRACK' }
   | { type: 'SET_LOADING'; payload: boolean }
@@ -65,6 +66,16 @@ function musicPlayerReducer(state: MusicPlayerState, action: MusicPlayerAction):
       return { ...state, queue: action.payload };
     case 'SET_CURRENT_INDEX':
       return { ...state, currentIndex: action.payload };
+    case 'PLAY_TRACK_BY_INDEX':
+      if (action.payload >= 0 && action.payload < state.queue.length) {
+        return {
+          ...state,
+          currentIndex: action.payload,
+          currentTrack: state.queue[action.payload],
+          currentTime: 0,
+        };
+      }
+      return state;
     case 'NEXT_TRACK':
       if (state.currentIndex < state.queue.length - 1) {
         const nextIndex = state.currentIndex + 1;
@@ -103,6 +114,7 @@ interface MusicPlayerContextType {
   dispatch: React.Dispatch<MusicPlayerAction>;
   audioRef: React.RefObject<HTMLAudioElement>;
   playTrack: (track: WavlakeTrack, queue?: WavlakeTrack[]) => void;
+  playTrackByIndex: (index: number) => void;
   togglePlayPause: () => void;
   seekTo: (time: number) => void;
   setVolume: (volume: number) => void;
@@ -172,6 +184,10 @@ export function MusicPlayerProvider({ children }: { children: React.ReactNode })
 
   const previousTrack = () => {
     dispatch({ type: 'PREVIOUS_TRACK' });
+  };
+
+  const playTrackByIndex = (index: number) => {
+    dispatch({ type: 'PLAY_TRACK_BY_INDEX', payload: index });
   };
 
   // Audio event handlers (keep this useEffect for other event listeners)
@@ -302,6 +318,7 @@ export function MusicPlayerProvider({ children }: { children: React.ReactNode })
     dispatch,
     audioRef,
     playTrack,
+    playTrackByIndex,
     togglePlayPause,
     seekTo,
     setVolume,

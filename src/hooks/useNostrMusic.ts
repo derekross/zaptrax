@@ -76,16 +76,39 @@ export function useTrackReactions(trackUrl: string) {
         }
       ], { signal });
 
+      // Separate likes and unlikes
       const likes = events.filter(event =>
         event.content === '+' || event.content === '❤️' || event.content === ''
       );
 
+      const unlikes = events.filter(event =>
+        event.content === '-'
+      );
+
+      // For each user, find their most recent reaction
+      const userReactions = new Map<string, NostrEvent>();
+
+      // Process all reactions (likes and unlikes) to find the latest for each user
+      [...likes, ...unlikes].forEach(event => {
+        const existing = userReactions.get(event.pubkey);
+        if (!existing || event.created_at > existing.created_at) {
+          userReactions.set(event.pubkey, event);
+        }
+      });
+
+      // Filter to only include users whose latest reaction is a like
+      const finalLikes = Array.from(userReactions.values()).filter(event =>
+        event.content === '+' || event.content === '❤️' || event.content === ''
+      );
+
+
+
       return {
-        likes,
-        likeCount: likes.length,
+        likes: finalLikes,
+        likeCount: finalLikes.length,
       };
     },
-    staleTime: 30 * 1000, // 30 seconds
+    staleTime: 5 * 1000, // 5 seconds
   });
 }
 
@@ -105,16 +128,39 @@ export function useArtistReactions(artistNpub: string) {
         }
       ], { signal });
 
+      // Separate likes and unlikes
       const likes = events.filter(event =>
         event.content === '+' || event.content === '❤️' || event.content === ''
       );
 
+      const unlikes = events.filter(event =>
+        event.content === '-'
+      );
+
+      // For each user, find their most recent reaction
+      const userReactions = new Map<string, NostrEvent>();
+
+      // Process all reactions (likes and unlikes) to find the latest for each user
+      [...likes, ...unlikes].forEach(event => {
+        const existing = userReactions.get(event.pubkey);
+        if (!existing || event.created_at > existing.created_at) {
+          userReactions.set(event.pubkey, event);
+        }
+      });
+
+      // Filter to only include users whose latest reaction is a like
+      const finalLikes = Array.from(userReactions.values()).filter(event =>
+        event.content === '+' || event.content === '❤️' || event.content === ''
+      );
+
+
+
       return {
-        likes,
-        likeCount: likes.length,
+        likes: finalLikes,
+        likeCount: finalLikes.length,
       };
     },
-    staleTime: 30 * 1000, // 30 seconds
+    staleTime: 1 * 1000, // 1 second for debugging
   });
 }
 
@@ -136,7 +182,7 @@ export function useTrackComments(trackUrl: string) {
 
       return events.sort((a, b) => b.created_at - a.created_at);
     },
-    staleTime: 30 * 1000, // 30 seconds
+    staleTime: 1 * 1000, // 1 second for debugging
   });
 }
 
@@ -170,7 +216,7 @@ export function useNoteComments(noteId: string) {
       return replies.sort((a, b) => a.created_at - b.created_at); // Chronological order for comments
     },
     enabled: !!noteId,
-    staleTime: 30 * 1000, // 30 seconds
+    staleTime: 5 * 1000, // 5 seconds
   });
 }
 
@@ -686,6 +732,159 @@ export function useRemoveFromLikedSongs() {
         queryClient.invalidateQueries({ queryKey: ['liked-songs', user.pubkey] });
         queryClient.invalidateQueries({ queryKey: ['track-reactions', trackUrl] });
       }
+    },
+  });
+}
+
+// Hook to get note reactions (likes)
+export function useNoteReactions(noteId: string) {
+  const { nostr } = useNostr();
+
+  return useQuery({
+    queryKey: ['note-reactions', noteId],
+    queryFn: async (c) => {
+      if (!noteId) return { likes: [], likeCount: 0 };
+
+      const signal = AbortSignal.any([c.signal, AbortSignal.timeout(3000)]);
+      const events = await nostr.query([
+        {
+          kinds: [7], // Reactions
+          '#e': [noteId],
+          limit: 100,
+        }
+      ], { signal });
+
+      // Separate likes and unlikes
+      const likes = events.filter(event =>
+        event.content === '+' || event.content === '❤️' || event.content === ''
+      );
+
+      const unlikes = events.filter(event =>
+        event.content === '-'
+      );
+
+      // For each user, find their most recent reaction
+      const userReactions = new Map<string, NostrEvent>();
+
+      // Process all reactions (likes and unlikes) to find the latest for each user
+      [...likes, ...unlikes].forEach(event => {
+        const existing = userReactions.get(event.pubkey);
+        if (!existing || event.created_at > existing.created_at) {
+          userReactions.set(event.pubkey, event);
+        }
+      });
+
+      // Filter to only include users whose latest reaction is a like
+      const finalLikes = Array.from(userReactions.values()).filter(event =>
+        event.content === '+' || event.content === '❤️' || event.content === ''
+      );
+
+
+
+      return {
+        likes: finalLikes,
+        likeCount: finalLikes.length,
+      };
+    },
+    enabled: !!noteId,
+    staleTime: 0, // Always consider data stale
+    refetchOnWindowFocus: true,
+    refetchInterval: 5000, // Refetch every 5 seconds
+  });
+}
+
+// Hook to like/unlike a note
+export function useLikeNote() {
+  const { mutate: createEvent } = useNostrPublish();
+  const queryClient = useQueryClient();
+  const { user } = useCurrentUser();
+
+  return useMutation({
+    mutationFn: async ({ noteId, authorPubkey, wasLiked }: {
+      noteId: string;
+      authorPubkey: string;
+      wasLiked: boolean;
+    }) => {
+      if (wasLiked) {
+        // Unlike: Create a negative reaction
+        createEvent({
+          kind: 7, // Reaction
+          content: '-',
+          tags: [
+            ['e', noteId],
+            ['p', authorPubkey],
+            ['k', '1'], // Reacting to a text note
+          ],
+        });
+      } else {
+        // Like: Create a positive reaction
+        createEvent({
+          kind: 7, // Reaction
+          content: '❤️',
+          tags: [
+            ['e', noteId],
+            ['p', authorPubkey],
+            ['k', '1'], // Reacting to a text note
+          ],
+        });
+      }
+
+      return { noteId, authorPubkey, wasLiked };
+    },
+    onMutate: async ({ noteId }) => {
+      // Cancel any outgoing refetches (so they don't overwrite our optimistic update)
+      await queryClient.cancelQueries({ queryKey: ['note-reactions', noteId] });
+
+      // Snapshot the previous value
+      const previousReactions = queryClient.getQueryData(['note-reactions', noteId]) as { likes: NostrEvent[]; likeCount: number } | undefined;
+
+      // Optimistically update to the new value
+      if (previousReactions && user) {
+        const userHasLiked = previousReactions.likes.some(like => like.pubkey === user.pubkey);
+
+        if (userHasLiked) {
+          // Remove user's like
+          const updatedLikes = previousReactions.likes.filter(like => like.pubkey !== user.pubkey);
+          queryClient.setQueryData(['note-reactions', noteId], {
+            likes: updatedLikes,
+            likeCount: updatedLikes.length,
+          });
+        } else {
+          // Add user's like (create a mock reaction event)
+          const mockReaction: NostrEvent = {
+            id: `temp-${Date.now()}`,
+            pubkey: user.pubkey,
+            created_at: Math.floor(Date.now() / 1000),
+            kind: 7,
+            content: '❤️',
+            tags: [['e', noteId]],
+            sig: '',
+          };
+          const updatedLikes = [...previousReactions.likes, mockReaction];
+          queryClient.setQueryData(['note-reactions', noteId], {
+            likes: updatedLikes,
+            likeCount: updatedLikes.length,
+          });
+        }
+      }
+
+      // Return a context object with the snapshotted value and the original like state
+      return {
+        previousReactions,
+        userWasLiked: previousReactions?.likes.some(like => like.pubkey === user?.pubkey) || false
+      };
+    },
+    onError: (err, { noteId }, context) => {
+      // If the mutation fails, use the context returned from onMutate to roll back
+      if (context?.previousReactions) {
+        queryClient.setQueryData(['note-reactions', noteId], context.previousReactions);
+      }
+    },
+    onSettled: (_, __, { noteId }) => {
+      // Always refetch after error or success to ensure we have the latest data
+      setTimeout(() => {
+        queryClient.refetchQueries({ queryKey: ['note-reactions', noteId] });
+      }, 1000); // Shorter delay since we have optimistic updates
     },
   });
 }

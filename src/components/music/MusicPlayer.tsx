@@ -31,12 +31,14 @@ export function MusicPlayer() {
     seekTo,
     setVolume,
     nextTrack,
-    previousTrack
+    previousTrack,
+    playTrackByIndex
   } = useMusicPlayer();
   const { user } = useCurrentUser();
   const { mutate: likeTrack } = useLikeTrack();
   const { data: likedSongs } = useLikedSongs();
   const [isExpanded, setIsExpanded] = useState(false);
+  const [showQueue, setShowQueue] = useState(false);
   const [commentDialogOpen, setCommentDialogOpen] = useState(false);
   const [zapDialogOpen, setZapDialogOpen] = useState(false);
   const [addToPlaylistOpen, setAddToPlaylistOpen] = useState(false);
@@ -186,27 +188,30 @@ export function MusicPlayer() {
           size="icon"
           variant="ghost"
           className="h-10 w-10 rounded-full"
-          onClick={() => setIsExpanded(false)}
+          onClick={() => {
+            setIsExpanded(false);
+            setShowQueue(false);
+          }}
           aria-label="Collapse player"
         >
           <ChevronDown className="h-5 w-5" />
         </Button>
         <div className="text-center">
           <p className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
-            Now Playing
+            {showQueue ? 'Queue' : 'Now Playing'}
           </p>
         </div>
         <div className="w-10" /> {/* Spacer for centering */}
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col justify-center px-6 py-8">
-        {/* Album Art */}
-        <div className="flex justify-center mb-8">
+      <div className="flex-1 flex flex-col px-6 py-8 overflow-hidden">
+        {/* Album Art - shrinks when queue is shown */}
+        <div className={`flex justify-center transition-all duration-300 ${showQueue ? 'mb-4' : 'mb-8'}`}>
           <div className="relative">
-            <Avatar className="h-72 w-72 rounded-2xl shadow-2xl">
+            <Avatar className={`rounded-2xl shadow-2xl transition-all duration-300 ${showQueue ? 'h-32 w-32' : 'h-72 w-72'}`}>
               <AvatarImage src={currentTrack.albumArtUrl} alt={currentTrack.albumTitle} />
-              <AvatarFallback className="rounded-2xl bg-gradient-to-br from-primary to-primary/80 text-white text-8xl font-semibold">
+              <AvatarFallback className={`rounded-2xl bg-gradient-to-br from-primary to-primary/80 text-white font-semibold transition-all duration-300 ${showQueue ? 'text-4xl' : 'text-8xl'}`}>
                 {(currentTrack.title || '').charAt(0)}
               </AvatarFallback>
             </Avatar>
@@ -215,26 +220,69 @@ export function MusicPlayer() {
           </div>
         </div>
 
-        {/* Track Info */}
-        <div className="text-center mb-8 space-y-2">
-          <h1 className="text-2xl font-bold leading-tight px-4">
+        {/* Track Info - compact when queue is shown */}
+        <div className={`text-center space-y-2 transition-all duration-300 ${showQueue ? 'mb-4' : 'mb-8'}`}>
+          <h1 className={`font-bold leading-tight px-4 transition-all duration-300 ${showQueue ? 'text-lg' : 'text-2xl'}`}>
             {currentTrack.title}
           </h1>
           <Link
             to={`/artist/${currentTrack.artistId}`}
-            className="text-lg text-muted-foreground hover:text-foreground transition-colors"
+            className={`text-muted-foreground hover:text-foreground transition-colors ${showQueue ? 'text-sm' : 'text-lg'}`}
           >
             {currentTrack.artist}
           </Link>
-          {currentTrack.albumTitle && (
+          {currentTrack.albumTitle && !showQueue && (
             <p className="text-sm text-muted-foreground">
               {currentTrack.albumTitle}
             </p>
           )}
         </div>
 
-        {/* Progress Bar */}
-        <div className="mb-8 space-y-2">
+        {/* Queue List - only shown when showQueue is true */}
+        {showQueue && (
+          <div className="flex-1 overflow-y-auto mb-4">
+            <div className="space-y-2">
+              {state.queue.map((track, index) => (
+                <div
+                  key={`${track.id}-${index}`}
+                  className={`flex items-center space-x-3 p-3 rounded-lg cursor-pointer transition-colors ${
+                    index === state.currentIndex
+                      ? 'bg-primary/10 border border-primary/20'
+                      : 'hover:bg-muted'
+                  }`}
+                  onClick={() => playTrackByIndex(index)}
+                >
+                  <Avatar className="h-12 w-12 rounded-md">
+                    <AvatarImage src={track.albumArtUrl} alt={track.albumTitle} />
+                    <AvatarFallback className="rounded-md bg-gradient-to-br from-primary to-primary/80 text-white text-sm font-semibold">
+                      {(track.title || '').charAt(0)}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="flex-1 min-w-0">
+                    <h4 className={`font-medium text-sm truncate ${index === state.currentIndex ? 'text-primary' : ''}`}>
+                      {track.title}
+                    </h4>
+                    <p className="text-sm text-muted-foreground truncate">
+                      {track.artist}
+                    </p>
+                  </div>
+                  {index === state.currentIndex && (
+                    <div className="flex items-center">
+                      {isPlaying ? (
+                        <Pause className="h-4 w-4 text-primary" />
+                      ) : (
+                        <Play className="h-4 w-4 text-primary" />
+                      )}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Progress Bar - compact when queue is shown */}
+        <div className={`space-y-2 transition-all duration-300 ${showQueue ? 'mb-4' : 'mb-8'}`}>
           <Slider
             value={[currentTime]}
             max={duration || 100}
@@ -248,25 +296,29 @@ export function MusicPlayer() {
           </div>
         </div>
 
-        {/* Main Controls */}
-        <div className="flex items-center justify-center space-x-6 mb-8">
+        {/* Main Controls - compact when queue is shown */}
+        <div className={`flex items-center justify-center space-x-6 transition-all duration-300 ${showQueue ? 'mb-4' : 'mb-8'}`}>
           <Button
             size="icon"
             variant="ghost"
             onClick={previousTrack}
             disabled={state.currentIndex <= 0}
-            className="h-12 w-12 rounded-full hover:bg-muted"
+            className={`rounded-full hover:bg-muted transition-all duration-300 ${showQueue ? 'h-10 w-10' : 'h-12 w-12'}`}
           >
-            <SkipBack className="h-6 w-6" />
+            <SkipBack className={`transition-all duration-300 ${showQueue ? 'h-5 w-5' : 'h-6 w-6'}`} />
           </Button>
 
           <Button
             size="icon"
             onClick={togglePlayPause}
             disabled={state.isLoading}
-            className="h-16 w-16 rounded-full bg-foreground text-background hover:bg-foreground/90 shadow-lg"
+            className={`rounded-full bg-foreground text-background hover:bg-foreground/90 shadow-lg transition-all duration-300 ${showQueue ? 'h-12 w-12' : 'h-16 w-16'}`}
           >
-            {isPlaying ? <Pause className="h-8 w-8" /> : <Play className="h-8 w-8 ml-1" />}
+            {isPlaying ? (
+              <Pause className={`transition-all duration-300 ${showQueue ? 'h-6 w-6' : 'h-8 w-8'}`} />
+            ) : (
+              <Play className={`transition-all duration-300 ${showQueue ? 'h-6 w-6 ml-0.5' : 'h-8 w-8 ml-1'}`} />
+            )}
           </Button>
 
           <Button
@@ -274,15 +326,15 @@ export function MusicPlayer() {
             variant="ghost"
             onClick={nextTrack}
             disabled={state.currentIndex >= state.queue.length - 1}
-            className="h-12 w-12 rounded-full hover:bg-muted"
+            className={`rounded-full hover:bg-muted transition-all duration-300 ${showQueue ? 'h-10 w-10' : 'h-12 w-12'}`}
           >
-            <SkipForward className="h-6 w-6" />
+            <SkipForward className={`transition-all duration-300 ${showQueue ? 'h-5 w-5' : 'h-6 w-6'}`} />
           </Button>
         </div>
 
-        {/* Secondary Actions */}
-        {user && (
-          <div className="flex items-center justify-center space-x-4">
+        {/* Secondary Actions - hidden when queue is shown */}
+        {user && !showQueue && (
+          <div className="flex items-center justify-center space-x-4 mb-6">
             <Button
               size="icon"
               variant="ghost"
@@ -320,14 +372,34 @@ export function MusicPlayer() {
             </Button>
           </div>
         )}
+
+        {/* Volume Control - hidden when queue is shown */}
+        {!showQueue && (
+          <div className={`flex items-center justify-center space-x-4 px-8 ${user ? '' : 'mb-6'}`}>
+            <Volume2 className="h-5 w-5 text-muted-foreground" />
+            <Slider
+              value={[volume]}
+              max={1}
+              step={0.1}
+              onValueChange={handleVolumeChange}
+              className="flex-1 max-w-xs"
+            />
+          </div>
+        )}
       </div>
 
-      {/* Queue Preview (Optional) */}
+      {/* Queue Toggle */}
       <div className="border-t border-border/50 p-4">
-        <div className="flex items-center justify-between text-sm text-muted-foreground">
+        <button
+          onClick={() => setShowQueue(!showQueue)}
+          className="w-full flex items-center justify-between text-sm text-muted-foreground hover:text-foreground transition-colors"
+        >
           <span>Playing from queue</span>
-          <span>{state.currentIndex + 1} of {state.queue.length}</span>
-        </div>
+          <div className="flex items-center space-x-2">
+            <span>{state.currentIndex + 1} of {state.queue.length}</span>
+            <ChevronUp className={`h-4 w-4 transition-transform duration-200 ${showQueue ? 'rotate-180' : ''}`} />
+          </div>
+        </button>
       </div>
     </div>
   );

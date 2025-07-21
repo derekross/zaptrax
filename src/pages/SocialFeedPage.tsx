@@ -29,6 +29,7 @@ import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { useAuthor } from '@/hooks/useAuthor';
 import { useNostr } from '@nostrify/react';
+import { useLikeNote, useNoteReactions } from '@/hooks/useNostrMusic';
 import { useMusicPlayer } from '@/contexts/MusicPlayerContext';
 import { AddToPlaylistDialog } from '@/components/music/AddToPlaylistDialog';
 import { CommentDialog } from '@/components/music/CommentDialog';
@@ -37,6 +38,7 @@ import { NoteCommentDialog } from '@/components/music/NoteCommentDialog';
 import { NoteContent } from '@/components/NoteContent';
 import { genUserName } from '@/lib/genUserName';
 import { wavlakeAPI } from '@/lib/wavlake';
+import { cn } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
 import { nip19 } from 'nostr-tools';
 import type { NostrEvent } from '@nostrify/nostrify';
@@ -437,6 +439,9 @@ function FeedItem({ event, onAddToPlaylist, onComment, onZap, onCommentOnNote, o
   const metadata = author.data?.metadata;
   const displayName = metadata?.name ?? genUserName(event.pubkey);
   const profileImage = metadata?.picture;
+  const { user } = useCurrentUser();
+  const { mutate: likeNote } = useLikeNote();
+  const { data: noteReactions } = useNoteReactions(event.id);
 
   const formatDate = (timestamp: number) => {
     const date = new Date(timestamp * 1000);
@@ -508,6 +513,20 @@ function FeedItem({ event, onAddToPlaylist, onComment, onZap, onCommentOnNote, o
   };
 
   const activity = getActivityType();
+
+  const handleLikeNote = (e: React.MouseEvent<HTMLButtonElement>) => {
+    if (user) {
+      likeNote({
+        noteId: event.id,
+        authorPubkey: event.pubkey,
+        wasLiked: userHasLiked
+      });
+      // Remove focus from the button to hide the focus ring
+      e.currentTarget.blur();
+    }
+  };
+
+  const userHasLiked = noteReactions?.likes.some(like => like.pubkey === user?.pubkey) || false;
 
   const getActivityIcon = () => {
     switch (activity.type) {
@@ -649,10 +668,18 @@ function FeedItem({ event, onAddToPlaylist, onComment, onZap, onCommentOnNote, o
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="text-muted-foreground hover:text-foreground"
+                  onClick={handleLikeNote}
+                  disabled={!user}
+                  className={cn(
+                    "text-muted-foreground hover:text-foreground",
+                    userHasLiked && "text-pink-500 hover:text-pink-600"
+                  )}
                 >
-                  <Heart className="h-4 w-4 mr-1" />
+                  <Heart className={cn("h-4 w-4 mr-1", userHasLiked && "fill-current")} />
                   Like
+                  {noteReactions && noteReactions.likeCount > 0 && (
+                    <span className="ml-1 text-xs">({noteReactions.likeCount})</span>
+                  )}
                 </Button>
               </div>
             </div>
