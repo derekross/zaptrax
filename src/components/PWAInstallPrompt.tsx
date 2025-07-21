@@ -88,7 +88,7 @@ export function PWAInstallPrompt() {
   }
 
   return (
-    <div className="fixed bottom-4 left-4 right-4 z-50 sm:left-auto sm:right-4 sm:w-80">
+    <div className="fixed bottom-20 left-4 right-4 z-[60] sm:left-auto sm:right-4 sm:w-80 sm:bottom-24">
       <Card className="border-primary shadow-lg">
         <CardContent className="p-4">
           <div className="flex items-start justify-between mb-3">
