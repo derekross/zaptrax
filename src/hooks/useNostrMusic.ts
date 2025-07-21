@@ -17,15 +17,29 @@ export function useUserPlaylists(pubkey?: string) {
       if (!targetPubkey) return [];
 
       const signal = AbortSignal.any([c.signal, AbortSignal.timeout(3000)]);
+
+      // Query all bookmark sets from the user
       const events = await nostr.query([
         {
-          kinds: [30003], // Bookmark sets for playlists
+          kinds: [30003], // Bookmark sets
           authors: [targetPubkey],
-          '#t': ['music'], // Filter for music playlists
         }
       ], { signal });
 
-      return events.sort((a, b) => b.created_at - a.created_at);
+      // Filter for music playlists: either has 't: music' tag OR 'd' tag starts with 'playlist-'
+      const musicPlaylists = events.filter(event => {
+        const hasMusicTag = event.tags.some(tag => tag[0] === 't' && tag[1] === 'music');
+        const hasPlaylistDTag = event.tags.some(tag =>
+          tag[0] === 'd' && tag[1]?.startsWith('playlist-')
+        );
+
+        // Exclude the special "liked-songs" playlist as it's handled separately
+        const isLikedSongs = event.tags.some(tag => tag[0] === 'd' && tag[1] === 'liked-songs');
+
+        return (hasMusicTag || hasPlaylistDTag) && !isLikedSongs;
+      });
+
+      return musicPlaylists.sort((a, b) => b.created_at - a.created_at);
     },
     enabled: !!targetPubkey,
     staleTime: 10 * 1000, // 10 seconds
@@ -68,13 +82,35 @@ export function useTrackReactions(trackUrl: string) {
     queryKey: ['track-reactions', trackUrl],
     queryFn: async (c) => {
       const signal = AbortSignal.any([c.signal, AbortSignal.timeout(3000)]);
-      const events = await nostr.query([
-        {
-          kinds: [7], // Reactions
-          '#r': [trackUrl],
-          limit: 100,
-        }
-      ], { signal });
+
+      // Query both reactions and deletion events
+      const [reactionEvents, deletionEvents] = await Promise.all([
+        nostr.query([
+          {
+            kinds: [7], // Reactions
+            '#r': [trackUrl],
+            limit: 100,
+          }
+        ], { signal }),
+        nostr.query([
+          {
+            kinds: [5], // Deletion requests
+            limit: 100,
+          }
+        ], { signal })
+      ]);
+
+      // Create a set of deleted event IDs
+      const deletedEventIds = new Set(
+        deletionEvents.flatMap(deletion =>
+          deletion.tags
+            .filter(tag => tag[0] === 'e')
+            .map(tag => tag[1])
+        )
+      );
+
+      // Filter out deleted reactions
+      const events = reactionEvents.filter(event => !deletedEventIds.has(event.id));
 
       // Separate likes and unlikes
       const likes = events.filter(event =>
@@ -120,13 +156,35 @@ export function useArtistReactions(artistNpub: string) {
     queryKey: ['artist-reactions', artistNpub],
     queryFn: async (c) => {
       const signal = AbortSignal.any([c.signal, AbortSignal.timeout(3000)]);
-      const events = await nostr.query([
-        {
-          kinds: [7], // Reactions
-          '#p': [artistNpub],
-          limit: 100,
-        }
-      ], { signal });
+
+      // Query both reactions and deletion events
+      const [reactionEvents, deletionEvents] = await Promise.all([
+        nostr.query([
+          {
+            kinds: [7], // Reactions
+            '#p': [artistNpub],
+            limit: 100,
+          }
+        ], { signal }),
+        nostr.query([
+          {
+            kinds: [5], // Deletion requests
+            limit: 100,
+          }
+        ], { signal })
+      ]);
+
+      // Create a set of deleted event IDs
+      const deletedEventIds = new Set(
+        deletionEvents.flatMap(deletion =>
+          deletion.tags
+            .filter(tag => tag[0] === 'e')
+            .map(tag => tag[1])
+        )
+      );
+
+      // Filter out deleted reactions
+      const events = reactionEvents.filter(event => !deletedEventIds.has(event.id));
 
       // Separate likes and unlikes
       const likes = events.filter(event =>
@@ -346,15 +404,23 @@ export function useLikeTrack() {
           tags,
         });
 
-        // Create a negative reaction to indicate unlike
-        createEvent({
-          kind: 7, // Reaction
-          content: '-',
-          tags: [
-            ['r', trackUrl],
-            ['k', '1'], // Reacting to a note-like content
-          ],
+        // Find and delete the existing like reaction (NIP-09)
+        const trackReactions = await queryClient.fetchQuery({
+          queryKey: ['track-reactions', trackUrl],
         });
+
+        const userLikeReaction = (trackReactions as { likes: NostrEvent[] })?.likes.find(like => like.pubkey === user?.pubkey);
+
+        if (userLikeReaction) {
+          createEvent({
+            kind: 5, // Event Deletion Request
+            content: 'Unlike track',
+            tags: [
+              ['e', userLikeReaction.id], // Reference to the like reaction being deleted
+              ['k', '7'], // Kind of the event being deleted (reaction)
+            ],
+          });
+        }
       } else {
         // Like: Add to liked songs
         const tags = [
@@ -375,7 +441,7 @@ export function useLikeTrack() {
         // Create positive reaction
         createEvent({
           kind: 7, // Reaction
-          content: '❤️',
+          content: '+', // Standard like content as per NIP-25
           tags: [
             ['r', trackUrl],
             ['k', '1'], // Reacting to a note-like content
@@ -403,7 +469,7 @@ export function useLikeArtist() {
     mutationFn: async ({ artistNpub }: { artistNpub: string }) => {
       createEvent({
         kind: 7, // Reaction
-        content: '❤️',
+        content: '+', // Standard like content as per NIP-25
         tags: [
           ['p', artistNpub],
           ['k', '0'], // Reacting to a profile
@@ -717,15 +783,23 @@ export function useRemoveFromLikedSongs() {
         tags,
       });
 
-      // Create a negative reaction to indicate unlike
-      createEvent({
-        kind: 7, // Reaction
-        content: '-',
-        tags: [
-          ['r', trackUrl],
-          ['k', '1'], // Reacting to a note-like content
-        ],
+      // Find and delete the existing like reaction (NIP-09)
+      const trackReactions = await queryClient.fetchQuery({
+        queryKey: ['track-reactions', trackUrl],
       });
+
+      const userLikeReaction = (trackReactions as { likes: NostrEvent[] })?.likes.find(like => like.pubkey === user?.pubkey);
+
+      if (userLikeReaction) {
+        createEvent({
+          kind: 5, // Event Deletion Request
+          content: 'Unlike track',
+          tags: [
+            ['e', userLikeReaction.id], // Reference to the like reaction being deleted
+            ['k', '7'], // Kind of the event being deleted (reaction)
+          ],
+        });
+      }
     },
     onSuccess: (_, { trackUrl }) => {
       if (user?.pubkey) {
@@ -746,13 +820,35 @@ export function useNoteReactions(noteId: string) {
       if (!noteId) return { likes: [], likeCount: 0 };
 
       const signal = AbortSignal.any([c.signal, AbortSignal.timeout(3000)]);
-      const events = await nostr.query([
-        {
-          kinds: [7], // Reactions
-          '#e': [noteId],
-          limit: 100,
-        }
-      ], { signal });
+
+      // Query both reactions and deletion events
+      const [reactionEvents, deletionEvents] = await Promise.all([
+        nostr.query([
+          {
+            kinds: [7], // Reactions
+            '#e': [noteId],
+            limit: 100,
+          }
+        ], { signal }),
+        nostr.query([
+          {
+            kinds: [5], // Deletion requests
+            limit: 100,
+          }
+        ], { signal })
+      ]);
+
+      // Create a set of deleted event IDs
+      const deletedEventIds = new Set(
+        deletionEvents.flatMap(deletion =>
+          deletion.tags
+            .filter(tag => tag[0] === 'e')
+            .map(tag => tag[1])
+        )
+      );
+
+      // Filter out deleted reactions
+      const events = reactionEvents.filter(event => !deletedEventIds.has(event.id));
 
       // Separate likes and unlikes
       const likes = events.filter(event =>
@@ -806,21 +902,26 @@ export function useLikeNote() {
       wasLiked: boolean;
     }) => {
       if (wasLiked) {
-        // Unlike: Create a negative reaction
-        createEvent({
-          kind: 7, // Reaction
-          content: '-',
-          tags: [
-            ['e', noteId],
-            ['p', authorPubkey],
-            ['k', '1'], // Reacting to a text note
-          ],
-        });
+        // Unlike: Find the user's existing like reaction and delete it
+        const currentReactions = queryClient.getQueryData(['note-reactions', noteId]) as { likes: NostrEvent[]; likeCount: number } | undefined;
+        const userLikeReaction = currentReactions?.likes.find(like => like.pubkey === user?.pubkey);
+
+        if (userLikeReaction) {
+          // Create a deletion request for the like reaction (NIP-09)
+          createEvent({
+            kind: 5, // Event Deletion Request
+            content: 'Unlike',
+            tags: [
+              ['e', userLikeReaction.id], // Reference to the like reaction being deleted
+              ['k', '7'], // Kind of the event being deleted (reaction)
+            ],
+          });
+        }
       } else {
-        // Like: Create a positive reaction
+        // Like: Create a positive reaction (NIP-25)
         createEvent({
           kind: 7, // Reaction
-          content: '❤️',
+          content: '+', // Standard like content as per NIP-25
           tags: [
             ['e', noteId],
             ['p', authorPubkey],

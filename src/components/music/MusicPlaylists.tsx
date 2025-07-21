@@ -2,10 +2,17 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Plus, Music, FolderPlus } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Plus, Music, FolderPlus, Heart, Play, MoreHorizontal, MessageCircle, Edit, Share2 } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { PlaylistCard } from '@/components/music/PlaylistCard';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
-import { useUserPlaylists } from '@/hooks/useNostrMusic';
+import { useUserPlaylists, useLikedSongs } from '@/hooks/useNostrMusic';
 import { useNavigate } from 'react-router-dom';
 import { nip19 } from 'nostr-tools';
 import type { NostrEvent } from '@nostrify/nostrify';
@@ -19,6 +26,7 @@ import { PlaylistCommentDialog } from '@/components/music/PlaylistCommentDialog'
 export function MusicPlaylists() {
   const { user } = useCurrentUser();
   const { data: userPlaylists, isLoading: playlistsLoading } = useUserPlaylists();
+  const { data: likedSongs, isLoading: likedSongsLoading } = useLikedSongs();
   const navigate = useNavigate();
 
   const [createPlaylistOpen, setCreatePlaylistOpen] = useState(false);
@@ -42,6 +50,21 @@ export function MusicPlaylists() {
     }
   };
 
+  const handlePlayLikedSongs = () => {
+    // Navigate to the liked songs playlist page using naddr
+    if (likedSongs) {
+      const dTag = likedSongs.tags.find(tag => tag[0] === 'd')?.[1];
+      if (dTag) {
+        const naddr = nip19.naddrEncode({
+          identifier: dTag,
+          pubkey: likedSongs.pubkey,
+          kind: likedSongs.kind,
+        });
+        navigate(`/playlist/${naddr}`);
+      }
+    }
+  };
+
   const handleEditPlaylist = (playlist: NostrEvent) => {
     setSelectedPlaylist(playlist);
     setEditPlaylistOpen(true);
@@ -60,6 +83,109 @@ export function MusicPlaylists() {
   const handleCommentOnPlaylist = (playlist: NostrEvent) => {
     setSelectedPlaylist(playlist);
     setCommentDialogOpen(true);
+  };
+
+  const getLikedSongsInfo = () => {
+    if (!likedSongs) return { title: 'Liked Songs', description: 'Your favorite tracks', trackCount: 0 };
+    const titleTag = likedSongs.tags.find(tag => tag[0] === 'title');
+    const descriptionTag = likedSongs.tags.find(tag => tag[0] === 'description');
+    const trackTags = likedSongs.tags.filter(tag => tag[0] === 'r');
+    return {
+      title: titleTag?.[1] || 'Liked Songs',
+      description: descriptionTag?.[1] || 'Your favorite tracks',
+      trackCount: trackTags.length,
+    };
+  };
+
+  const LikedSongsCard = () => {
+    const { title, description, trackCount } = getLikedSongsInfo();
+
+    if (!likedSongs) return null;
+
+    return (
+      <Card className="group hover:shadow-md transition-shadow">
+        <CardContent className="p-4">
+          <div className="flex items-start space-x-4">
+            {/* Liked Songs Cover */}
+            <div className="relative flex-shrink-0">
+              <div className="h-16 w-16 rounded-md bg-gradient-to-br from-pink-500 to-red-500 flex items-center justify-center">
+                <Heart className="h-8 w-8 text-white fill-current" />
+              </div>
+              <Button
+                size="sm"
+                variant="secondary"
+                className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity bg-black/50 hover:bg-black/70 text-white border-0"
+                onClick={handlePlayLikedSongs}
+              >
+                <Play className="h-4 w-4" />
+              </Button>
+            </div>
+
+            {/* Liked Songs Info */}
+            <div className="flex-1 min-w-0">
+              <h3 className="font-semibold text-sm truncate">
+                {title}
+              </h3>
+              <p className="text-sm text-muted-foreground truncate mt-1">
+                {description}
+              </p>
+
+              <div className="flex items-center space-x-2 mt-2">
+                <Badge variant="outline" className="text-xs">
+                  {trackCount} {trackCount === 1 ? 'track' : 'tracks'}
+                </Badge>
+              </div>
+
+              {/* Author Info */}
+              <div className="flex items-center space-x-2 mt-2">
+                <span className="text-xs text-muted-foreground truncate">
+                  by You
+                </span>
+              </div>
+            </div>
+
+            {/* Actions */}
+            <div className="flex items-center space-x-1">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button size="sm" variant="ghost" className="h-8 w-8 p-0">
+                    <MoreHorizontal className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent
+                  align="end"
+                  side="bottom"
+                  sideOffset={4}
+                  alignOffset={-4}
+                  avoidCollisions={true}
+                  collisionPadding={16}
+                  className="min-w-[160px] max-w-[calc(100vw-32px)]"
+                >
+                  <DropdownMenuItem onClick={handlePlayLikedSongs}>
+                    <Play className="h-4 w-4 mr-2" />
+                    Play Playlist
+                  </DropdownMenuItem>
+                  {user && (
+                    <DropdownMenuItem onClick={() => handleCommentOnPlaylist(likedSongs)}>
+                      <MessageCircle className="h-4 w-4 mr-2" />
+                      Comment
+                    </DropdownMenuItem>
+                  )}
+                  <DropdownMenuItem onClick={() => handleEditPlaylist(likedSongs)}>
+                    <Edit className="h-4 w-4 mr-2" />
+                    Edit Playlist
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleSharePlaylist(likedSongs)}>
+                    <Share2 className="h-4 w-4 mr-2" />
+                    Share Playlist
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    );
   };
 
   if (!user) {
@@ -102,7 +228,7 @@ export function MusicPlaylists() {
               <div className="flex items-center gap-4 text-sm text-muted-foreground">
                 <div className="flex items-center gap-1">
                   <Music className="h-4 w-4" />
-                  <span>{userPlaylists?.length || 0} playlist{(userPlaylists?.length || 0) !== 1 ? 's' : ''}</span>
+                  <span>{(userPlaylists?.length || 0) + (likedSongs ? 1 : 0)} playlist{((userPlaylists?.length || 0) + (likedSongs ? 1 : 0)) !== 1 ? 's' : ''}</span>
                 </div>
               </div>
 
@@ -123,7 +249,7 @@ export function MusicPlaylists() {
       </Card>
 
       {/* Playlists Grid */}
-      {playlistsLoading ? (
+      {playlistsLoading || likedSongsLoading ? (
         <Card>
           <CardHeader>
             <div className="flex items-center justify-between">
@@ -145,17 +271,25 @@ export function MusicPlaylists() {
             </div>
           </CardContent>
         </Card>
-      ) : userPlaylists && userPlaylists.length > 0 ? (
+      ) : (likedSongs && getLikedSongsInfo().trackCount > 0) || (userPlaylists && userPlaylists.length > 0) ? (
         <Card>
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
               <h2 className="text-lg font-semibold">Your Playlists</h2>
-              <p className="text-sm text-muted-foreground">{userPlaylists.length} playlists</p>
+              <p className="text-sm text-muted-foreground">
+                {(likedSongs && getLikedSongsInfo().trackCount > 0 ? 1 : 0) + (userPlaylists?.length || 0)} playlist{((likedSongs && getLikedSongsInfo().trackCount > 0 ? 1 : 0) + (userPlaylists?.length || 0)) !== 1 ? 's' : ''}
+              </p>
             </div>
           </CardHeader>
           <CardContent>
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {userPlaylists.map((playlist) => (
+              {/* Liked Songs Card */}
+              {likedSongs && getLikedSongsInfo().trackCount > 0 && (
+                <LikedSongsCard />
+              )}
+
+              {/* Regular Playlists */}
+              {userPlaylists?.map((playlist) => (
                 <PlaylistCard
                   key={playlist.id}
                   playlist={playlist}

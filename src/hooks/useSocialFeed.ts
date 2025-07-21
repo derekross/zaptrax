@@ -61,8 +61,7 @@ export function useSocialFeed(feedType: 'following' | 'global') {
           {
             kinds: [30003], // Bookmark sets (playlists)
             authors: followedPubkeys,
-            '#t': ['music'], // Music playlists
-            limit: 30,
+            limit: 50, // Increased limit since we'll filter in JS
             until,
           },
           {
@@ -94,8 +93,7 @@ export function useSocialFeed(feedType: 'following' | 'global') {
           },
           {
             kinds: [30003], // Bookmark sets (playlists)
-            '#t': ['music'], // Music playlists
-            limit: 30,
+            limit: 50, // Increased limit since we'll filter in JS
             until,
           },
           {
@@ -151,11 +149,14 @@ export function useSocialFeed(feedType: 'following' | 'global') {
           );
         }
 
-        // For playlists, check if they have music tag and contain tracks
+        // For playlists, check if they have music tag OR 'd' tag starts with 'playlist-' OR is 'liked-songs'
         if (event.kind === 30003) {
           const hasMusicTag = event.tags.some(tag => tag[0] === 't' && tag[1] === 'music');
-          const hasTracks = event.tags.some(tag => tag[0] === 'r');
-          return hasMusicTag && hasTracks;
+          const hasPlaylistDTag = event.tags.some(tag =>
+            tag[0] === 'd' && tag[1]?.startsWith('playlist-')
+          );
+          const isLikedSongs = event.tags.some(tag => tag[0] === 'd' && tag[1] === 'liked-songs');
+          return hasMusicTag || hasPlaylistDTag || isLikedSongs;
         }
 
         // For playlist comments, check if they reference a music playlist

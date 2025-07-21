@@ -301,7 +301,7 @@ export function PlaylistPage() {
             </div>
 
             {/* Playlist Info */}
-            <div className="flex-1 space-y-4">
+            <div className="flex-1 space-y-4 pr-20">
               <div>
                 <p className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
                   Playlist
@@ -335,7 +335,7 @@ export function PlaylistPage() {
               </div>
 
               {/* Action Buttons */}
-              <div className="flex items-center gap-3 pt-2">
+              <div className="flex items-center gap-3 pt-2 flex-wrap">
                 <Button
                   onClick={handlePlayPlaylist}
                   disabled={allPlaylistTracksLoading || allPlaylistTracks.length === 0}

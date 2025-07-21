@@ -480,16 +480,29 @@ function FeedItem({ event, onAddToPlaylist, onComment, onZap, onCommentOnNote, o
       // Default to general note
       return { type: 'note' };
     } else if (event.kind === 30003) {
-      // Playlist creation or update
+      // Check if this is a "Liked Songs" playlist update
+      const dTag = event.tags.find(tag => tag[0] === 'd')?.[1];
       const titleTag = event.tags.find(tag => tag[0] === 'title');
       const trackTags = event.tags.filter(tag => tag[0] === 'r');
       const trackUrls = trackTags.map(tag => tag[1]).filter(url => url?.includes('wavlake.com/track/'));
-      return {
-        type: 'playlist',
-        title: titleTag?.[1] || 'Untitled Playlist',
-        trackCount: trackUrls.length,
-        trackUrls
-      };
+
+      if (dTag === 'liked-songs') {
+        // This is a liked songs update - treat it as a like activity
+        return {
+          type: 'liked-songs-update',
+          title: titleTag?.[1] || 'Liked Songs',
+          trackCount: trackUrls.length,
+          trackUrls
+        };
+      } else {
+        // Regular playlist creation or update
+        return {
+          type: 'playlist',
+          title: titleTag?.[1] || 'Untitled Playlist',
+          trackCount: trackUrls.length,
+          trackUrls
+        };
+      }
     } else if (event.kind === 7) {
       // Reaction (like)
       const trackUrl = event.tags.find(tag => tag[0] === 'r' && tag[1]?.includes('wavlake.com/track/'));
@@ -534,6 +547,8 @@ function FeedItem({ event, onAddToPlaylist, onComment, onZap, onCommentOnNote, o
         return <MessageCircle className="h-4 w-4" />;
       case 'playlist':
         return <PlayCircle className="h-4 w-4" />;
+      case 'liked-songs-update':
+        return <Heart className="h-4 w-4 text-pink-500" />;
       case 'playlist-comment':
         return <MessageCircle className="h-4 w-4 text-blue-500" />;
 
@@ -554,6 +569,8 @@ function FeedItem({ event, onAddToPlaylist, onComment, onZap, onCommentOnNote, o
         return 'commented on a track';
       case 'playlist':
         return (activity.trackCount || 0) > 0 ? 'updated a playlist' : 'created a playlist';
+      case 'liked-songs-update':
+        return 'liked a track';
       case 'playlist-comment':
         return 'commented on a playlist';
 
@@ -623,6 +640,15 @@ function FeedItem({ event, onAddToPlaylist, onComment, onZap, onCommentOnNote, o
               {activity.type === 'like' && activity.trackUrl && (
                 <TrackReference
                   trackUrl={activity.trackUrl}
+                  onAddToPlaylist={onAddToPlaylist}
+                  onComment={onComment}
+                  onZap={onZap}
+                />
+              )}
+
+              {activity.type === 'liked-songs-update' && activity.trackUrls && activity.trackUrls.length > 0 && (
+                <TrackReference
+                  trackUrl={activity.trackUrls[activity.trackUrls.length - 1]} // Show the most recently added track
                   onAddToPlaylist={onAddToPlaylist}
                   onComment={onComment}
                   onZap={onZap}
