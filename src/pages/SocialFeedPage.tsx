@@ -676,9 +676,12 @@ function FeedItem({ event, onAddToPlaylist, onComment, onZap, onCommentOnNote, o
                 </div>
               )}
 
-              <div className="text-sm">
-                <NoteContent event={event} />
-              </div>
+              {/* Only show content for non-reaction events */}
+              {event.kind !== 7 && (
+                <div className="text-sm">
+                  <NoteContent event={event} />
+                </div>
+              )}
 
               {/* Note Actions */}
               <div className="flex items-center space-x-4 pt-2 border-t border-border/50">
