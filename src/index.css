@@ -75,34 +75,31 @@
     overflow-x: hidden;
     /* Force scrollbar to always be visible to prevent layout shifts */
     overflow-y: scroll;
-    /* Ensure fixed positioning context */
-    position: relative;
+    /* Ensure sticky positioning works */
+    height: 100%;
   }
   body {
     @apply bg-background text-foreground;
     font-feature-settings: "rlig" 1, "calt" 1;
     overflow-x: hidden;
-    position: relative;
-    /* Ensure body doesn't have its own scrollbar */
-    overflow-y: visible;
-    /* Ensure fixed elements work properly */
-    transform: none;
+    /* Ensure sticky positioning works */
+    min-height: 100%;
+    /* Allow normal overflow for sticky positioning */
+    overflow-y: auto;
   }
 
   /* Prevent horizontal scrolling from dropdown menus */
   #root {
     overflow-x: hidden;
-    position: relative;
     width: 100%;
     min-height: 100vh;
-    contain: layout;
-    /* Ensure no parent elements interfere with fixed positioning */
-    transform: none;
+    /* Ensure sticky positioning works properly */
+    position: relative;
   }
 
-  /* Ensure main container is stable */
+  /* Ensure main container is stable but allow sticky positioning */
   .container {
-    contain: layout;
+    /* Remove contain: layout to allow sticky positioning to work properly */
   }
 }
 
@@ -171,23 +168,16 @@
   }
 }
 
-/* Universal fix for scrollbar layout shifts */
+/* Minimal CSS for sticky positioning */
 @layer utilities {
-  /* Aggressive fix - Force scrollbar to always be present */
+  /* Basic scrollbar setup */
   html {
-    overflow-y: scroll !important;
-    scrollbar-gutter: stable;
+    overflow-y: scroll;
   }
 
-  /* Prevent ANY attempt to hide body overflow */
-  body,
-  body[style],
-  body[style*="overflow"],
-  body[style*="overflow: hidden"],
-  body[style*="overflow-y: hidden"] {
-    /* Don't hide overflow, use position fixed instead */
-    overflow: visible !important;
-    overflow-y: visible !important;
+  /* Allow normal body behavior */
+  body {
+    overflow-x: hidden;
   }
 
   /* When body is position fixed (modal open), ensure no layout shift */
@@ -200,7 +190,7 @@
   /* Ensure scrollbar is always visible even with modern CSS */
   @supports (scrollbar-gutter: stable) {
     html {
-      scrollbar-gutter: stable both-edges !important;
+      scrollbar-gutter: stable both-edges;
     }
   }
 
@@ -249,5 +239,46 @@
   [data-radix-select-content][data-state="open"] {
     transform: translateZ(0);
     backface-visibility: hidden;
+  }
+
+  /* Complete override of sticky positioning */
+  .sticky,
+  [class*="sticky"] {
+    position: -webkit-sticky !important;
+    position: sticky !important;
+  }
+
+  /* Force specific sticky elements */
+  header.sticky {
+    position: -webkit-sticky !important;
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 50 !important;
+    width: 100% !important;
+  }
+
+  .sticky.top-16 {
+    position: -webkit-sticky !important;
+    position: sticky !important;
+    top: 4rem !important;
+    z-index: 40 !important;
+    width: 100% !important;
+  }
+
+  /* Override any Tailwind utilities that might interfere */
+  .top-0 {
+    top: 0 !important;
+  }
+
+  .top-16 {
+    top: 4rem !important;
+  }
+
+  .z-50 {
+    z-index: 50 !important;
+  }
+
+  .z-40 {
+    z-index: 40 !important;
   }
 }

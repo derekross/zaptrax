@@ -31,8 +31,16 @@ export function Layout() {
     "data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md data-[state=active]:border-primary data-[state=active]:border-b-4 data-[state=active]:rounded-none";
 
   return (
-    <div className="min-h-screen">
-      <div className="sticky top-16 z-40 w-full">
+    <div>
+      <div
+        className="w-full bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60"
+        style={{
+          position: 'fixed',
+          top: '4rem',
+          zIndex: 40,
+          width: '100%'
+        }}
+      >
         <Tabs value={getActiveTab()}>
           <TabsList className="flex w-full h-12 bg-card border-2 border-primary punk-card px-0 overflow-hidden rounded-b-lg">
           {user && (
@@ -96,7 +104,7 @@ export function Layout() {
       </div>
 
       {/* The content for each tab will be rendered by the Outlet */}
-      <div className="container mx-auto px-2 sm:px-4 py-4 sm:py-8 space-y-4 sm:space-y-8 pb-32">
+      <div className="container mx-auto px-2 sm:px-4 py-4 sm:py-8 space-y-4 sm:space-y-8 pb-32" style={{ marginTop: '7rem' }}>
         <Outlet />
       </div>
     </div>

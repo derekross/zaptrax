@@ -5,7 +5,15 @@ import { ThemeToggle } from './ThemeToggle';
 
 export function Header() {
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <header
+      className="w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60"
+      style={{
+        position: 'fixed',
+        top: 0,
+        zIndex: 50,
+        width: '100%'
+      }}
+    >
       <div className="container flex h-16 items-center space-x-4 sm:justify-between sm:space-x-0 px-4">
         <div className="flex gap-6 md:gap-10">
           <Link to="/" className="flex items-center space-x-2">
