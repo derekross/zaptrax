@@ -253,13 +253,24 @@ export function MusicPlayer() {
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col px-6 py-8 overflow-hidden">
-        {/* Album Art - shrinks when queue is shown */}
-        <div className={`flex justify-center transition-all duration-300 ${showQueue ? 'mb-4' : 'mb-8'}`}>
+      <div className="flex-1 flex flex-col px-4 py-2 overflow-hidden min-h-0" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
+        {/* Album Art - fully responsive using viewport units */}
+        <div className={`flex justify-center transition-all duration-300 ${showQueue ? 'mb-2' : 'mb-4'}`}>
           <div className="relative">
-            <Avatar className={`rounded-2xl shadow-2xl transition-all duration-300 ${showQueue ? 'h-32 w-32' : 'h-72 w-72'}`}>
+            <Avatar
+              className="rounded-2xl shadow-2xl transition-all duration-300"
+              style={{
+                width: showQueue ? 'min(20vw, 8rem)' : 'min(65vw, 20rem)',
+                height: showQueue ? 'min(20vw, 8rem)' : 'min(65vw, 20rem)',
+              }}
+            >
               <AvatarImage src={currentTrack.albumArtUrl} alt={currentTrack.albumTitle} />
-              <AvatarFallback className={`rounded-2xl bg-gradient-to-br from-primary to-primary/80 text-white font-semibold transition-all duration-300 ${showQueue ? 'text-4xl' : 'text-8xl'}`}>
+              <AvatarFallback
+                className="rounded-2xl bg-gradient-to-br from-primary to-primary/80 text-white font-semibold transition-all duration-300"
+                style={{
+                  fontSize: showQueue ? 'min(4vw, 1.5rem)' : 'min(12vw, 4rem)',
+                }}
+              >
                 {(currentTrack.title || '').charAt(0)}
               </AvatarFallback>
             </Avatar>
@@ -268,19 +279,32 @@ export function MusicPlayer() {
           </div>
         </div>
 
-        {/* Track Info - compact when queue is shown */}
-        <div className={`text-center space-y-2 transition-all duration-300 ${showQueue ? 'mb-4' : 'mb-8'}`}>
-          <h1 className={`font-bold leading-tight px-4 transition-all duration-300 ${showQueue ? 'text-lg' : 'text-2xl'}`}>
+        {/* Track Info - responsive typography */}
+        <div className={`text-center space-y-1 transition-all duration-300 ${showQueue ? 'mb-2' : 'mb-4'}`}>
+          <h1
+            className="font-bold leading-tight px-4 transition-all duration-300"
+            style={{
+              fontSize: showQueue ? 'min(4vw, 1.125rem)' : 'min(6vw, 1.5rem)',
+            }}
+          >
             {currentTrack.title}
           </h1>
           <Link
             to={`/artist/${currentTrack.artistId}`}
-            className={`text-muted-foreground hover:text-foreground transition-colors ${showQueue ? 'text-sm' : 'text-lg'}`}
+            className="text-muted-foreground hover:text-foreground transition-colors"
+            style={{
+              fontSize: showQueue ? 'min(3.5vw, 0.875rem)' : 'min(4.5vw, 1.125rem)',
+            }}
           >
             {currentTrack.artist}
           </Link>
           {currentTrack.albumTitle && !showQueue && (
-            <p className="text-sm text-muted-foreground">
+            <p
+              className="text-muted-foreground"
+              style={{
+                fontSize: 'min(3.5vw, 0.875rem)',
+              }}
+            >
               {currentTrack.albumTitle}
             </p>
           )}
@@ -288,21 +312,21 @@ export function MusicPlayer() {
 
         {/* Queue List - only shown when showQueue is true */}
         {showQueue && (
-          <div className="flex-1 overflow-y-auto mb-4">
+          <div className="flex-1 overflow-y-auto mb-4 min-h-0 max-h-[40vh]">
             <div className="space-y-2">
               {state.queue.map((track, index) => (
                 <div
                   key={`${track.id}-${index}`}
-                  className={`flex items-center space-x-3 p-3 rounded-lg cursor-pointer transition-colors ${
+                  className={`flex items-center space-x-3 p-2 rounded-lg cursor-pointer transition-colors ${
                     index === state.currentIndex
                       ? 'bg-primary/10 border border-primary/20'
                       : 'hover:bg-muted'
                   }`}
                   onClick={() => playTrackByIndex(index)}
                 >
-                  <Avatar className="h-12 w-12 rounded-md">
+                  <Avatar className="h-10 w-10 rounded-md">
                     <AvatarImage src={track.albumArtUrl} alt={track.albumTitle} />
-                    <AvatarFallback className="rounded-md bg-gradient-to-br from-primary to-primary/80 text-white text-sm font-semibold">
+                    <AvatarFallback className="rounded-md bg-gradient-to-br from-primary to-primary/80 text-white text-xs font-semibold">
                       {(track.title || '').charAt(0)}
                     </AvatarFallback>
                   </Avatar>
@@ -310,16 +334,16 @@ export function MusicPlayer() {
                     <h4 className={`font-medium text-sm truncate ${index === state.currentIndex ? 'text-primary' : ''}`}>
                       {track.title}
                     </h4>
-                    <p className="text-sm text-muted-foreground truncate">
+                    <p className="text-xs text-muted-foreground truncate">
                       {track.artist}
                     </p>
                   </div>
                   {index === state.currentIndex && (
                     <div className="flex items-center">
                       {isPlaying ? (
-                        <Pause className="h-4 w-4 text-primary" />
+                        <Pause className="h-3 w-3 text-primary" />
                       ) : (
-                        <Play className="h-4 w-4 text-primary" />
+                        <Play className="h-3 w-3 text-primary" />
                       )}
                     </div>
                   )}
@@ -329,8 +353,8 @@ export function MusicPlayer() {
           </div>
         )}
 
-        {/* Progress Bar - compact when queue is shown */}
-        <div className={`space-y-2 transition-all duration-300 ${showQueue ? 'mb-4' : 'mb-8'}`}>
+        {/* Progress Bar - responsive spacing */}
+        <div className={`space-y-1 transition-all duration-300 ${showQueue ? 'mb-2' : 'mb-4'}`}>
           <Slider
             value={[currentTime]}
             max={duration || 100}
@@ -338,34 +362,69 @@ export function MusicPlayer() {
             onValueChange={handleSeek}
             className="w-full"
           />
-          <div className="flex justify-between text-sm text-muted-foreground">
+          <div
+            className="flex justify-between text-muted-foreground"
+            style={{
+              fontSize: 'min(3vw, 0.75rem)',
+            }}
+          >
             <span>{formatTime(currentTime)}</span>
             <span>{formatTime(duration)}</span>
           </div>
         </div>
 
-        {/* Main Controls - compact when queue is shown */}
-        <div className={`flex items-center justify-center space-x-6 transition-all duration-300 ${showQueue ? 'mb-4' : 'mb-8'}`}>
+        {/* Main Controls - fully responsive using viewport units */}
+        <div
+          className="flex items-center justify-center transition-all duration-300"
+          style={{
+            gap: showQueue ? 'min(4vw, 1rem)' : 'min(6vw, 1.5rem)',
+            marginBottom: showQueue ? 'min(2vw, 0.5rem)' : 'min(4vw, 1rem)',
+          }}
+        >
           <Button
             size="icon"
             variant="ghost"
             onClick={previousTrack}
             disabled={state.currentIndex <= 0}
-            className={`rounded-full hover:bg-muted transition-all duration-300 ${showQueue ? 'h-10 w-10' : 'h-12 w-12'}`}
+            className="rounded-full hover:bg-muted transition-all duration-300"
+            style={{
+              width: showQueue ? 'min(8vw, 2.5rem)' : 'min(12vw, 3rem)',
+              height: showQueue ? 'min(8vw, 2.5rem)' : 'min(12vw, 3rem)',
+            }}
           >
-            <SkipBack className={`transition-all duration-300 ${showQueue ? 'h-5 w-5' : 'h-6 w-6'}`} />
+            <SkipBack
+              style={{
+                width: showQueue ? 'min(4vw, 1.25rem)' : 'min(6vw, 1.5rem)',
+                height: showQueue ? 'min(4vw, 1.25rem)' : 'min(6vw, 1.5rem)',
+              }}
+            />
           </Button>
 
           <Button
             size="icon"
             onClick={togglePlayPause}
             disabled={state.isLoading}
-            className={`rounded-full bg-foreground text-background hover:bg-foreground/90 shadow-lg transition-all duration-300 ${showQueue ? 'h-12 w-12' : 'h-16 w-16'}`}
+            className="rounded-full bg-foreground text-background hover:bg-foreground/90 shadow-lg transition-all duration-300"
+            style={{
+              width: showQueue ? 'min(12vw, 3rem)' : 'min(16vw, 4rem)',
+              height: showQueue ? 'min(12vw, 3rem)' : 'min(16vw, 4rem)',
+            }}
           >
             {isPlaying ? (
-              <Pause className={`transition-all duration-300 ${showQueue ? 'h-6 w-6' : 'h-8 w-8'}`} />
+              <Pause
+                style={{
+                  width: showQueue ? 'min(6vw, 1.5rem)' : 'min(8vw, 2rem)',
+                  height: showQueue ? 'min(6vw, 1.5rem)' : 'min(8vw, 2rem)',
+                }}
+              />
             ) : (
-              <Play className={`transition-all duration-300 ${showQueue ? 'h-6 w-6 ml-0.5' : 'h-8 w-8 ml-1'}`} />
+              <Play
+                style={{
+                  width: showQueue ? 'min(6vw, 1.5rem)' : 'min(8vw, 2rem)',
+                  height: showQueue ? 'min(6vw, 1.5rem)' : 'min(8vw, 2rem)',
+                  marginLeft: '0.125rem',
+                }}
+              />
             )}
           </Button>
 
@@ -374,70 +433,135 @@ export function MusicPlayer() {
             variant="ghost"
             onClick={nextTrack}
             disabled={state.currentIndex >= state.queue.length - 1}
-            className={`rounded-full hover:bg-muted transition-all duration-300 ${showQueue ? 'h-10 w-10' : 'h-12 w-12'}`}
+            className="rounded-full hover:bg-muted transition-all duration-300"
+            style={{
+              width: showQueue ? 'min(8vw, 2.5rem)' : 'min(12vw, 3rem)',
+              height: showQueue ? 'min(8vw, 2.5rem)' : 'min(12vw, 3rem)',
+            }}
           >
-            <SkipForward className={`transition-all duration-300 ${showQueue ? 'h-5 w-5' : 'h-6 w-6'}`} />
+            <SkipForward
+              style={{
+                width: showQueue ? 'min(4vw, 1.25rem)' : 'min(6vw, 1.5rem)',
+                height: showQueue ? 'min(4vw, 1.25rem)' : 'min(6vw, 1.5rem)',
+              }}
+            />
           </Button>
         </div>
 
-        {/* Secondary Actions - hidden when queue is shown */}
-        {user && !showQueue && (
-          <div className="flex items-center justify-center space-x-4 mb-6">
+        {/* Secondary Actions - fully responsive */}
+        {user && (
+          <div
+            className="flex items-center justify-center transition-all duration-300"
+            style={{
+              gap: showQueue ? 'min(3vw, 0.75rem)' : 'min(4vw, 1rem)',
+              marginBottom: showQueue ? 'min(2vw, 0.5rem)' : 'min(3vw, 0.75rem)',
+            }}
+          >
             <Button
               size="icon"
               variant="ghost"
               onClick={handleLike}
-              className={`h-12 w-12 rounded-full hover:bg-muted ${isLiked ? 'text-pink-500' : ''}`}
+              className={`rounded-full hover:bg-muted transition-all duration-300 ${isLiked ? 'text-pink-500' : ''}`}
+              style={{
+                width: showQueue ? 'min(8vw, 2.5rem)' : 'min(10vw, 2.75rem)',
+                height: showQueue ? 'min(8vw, 2.5rem)' : 'min(10vw, 2.75rem)',
+              }}
             >
-              <Heart className={`h-5 w-5 ${isLiked ? 'fill-current' : ''}`} />
+              <Heart
+                className={`transition-all duration-300 ${isLiked ? 'fill-current' : ''}`}
+                style={{
+                  width: showQueue ? 'min(4vw, 1rem)' : 'min(5vw, 1.25rem)',
+                  height: showQueue ? 'min(4vw, 1rem)' : 'min(5vw, 1.25rem)',
+                }}
+              />
             </Button>
 
             <Button
               size="icon"
               variant="ghost"
               onClick={handleAddToPlaylist}
-              className="h-12 w-12 rounded-full hover:bg-muted"
+              className="rounded-full hover:bg-muted transition-all duration-300"
+              style={{
+                width: showQueue ? 'min(8vw, 2.5rem)' : 'min(10vw, 2.75rem)',
+                height: showQueue ? 'min(8vw, 2.5rem)' : 'min(10vw, 2.75rem)',
+              }}
             >
-              <Plus className="h-5 w-5" />
+              <Plus
+                style={{
+                  width: showQueue ? 'min(4vw, 1rem)' : 'min(5vw, 1.25rem)',
+                  height: showQueue ? 'min(4vw, 1rem)' : 'min(5vw, 1.25rem)',
+                }}
+              />
             </Button>
 
             <Button
               size="icon"
               variant="ghost"
               onClick={handleZap}
-              className="h-12 w-12 rounded-full hover:bg-muted text-yellow-500 hover:text-yellow-600"
+              className="rounded-full hover:bg-muted text-yellow-500 hover:text-yellow-600 transition-all duration-300"
+              style={{
+                width: showQueue ? 'min(8vw, 2.5rem)' : 'min(10vw, 2.75rem)',
+                height: showQueue ? 'min(8vw, 2.5rem)' : 'min(10vw, 2.75rem)',
+              }}
             >
-              <Zap className="h-5 w-5" />
+              <Zap
+                style={{
+                  width: showQueue ? 'min(4vw, 1rem)' : 'min(5vw, 1.25rem)',
+                  height: showQueue ? 'min(4vw, 1rem)' : 'min(5vw, 1.25rem)',
+                }}
+              />
             </Button>
 
             <Button
               size="icon"
               variant="ghost"
               onClick={handleComment}
-              className="h-12 w-12 rounded-full hover:bg-muted"
+              className="rounded-full hover:bg-muted transition-all duration-300"
+              style={{
+                width: showQueue ? 'min(8vw, 2.5rem)' : 'min(10vw, 2.75rem)',
+                height: showQueue ? 'min(8vw, 2.5rem)' : 'min(10vw, 2.75rem)',
+              }}
             >
-              <MessageCircle className="h-5 w-5" />
+              <MessageCircle
+                style={{
+                  width: showQueue ? 'min(4vw, 1rem)' : 'min(5vw, 1.25rem)',
+                  height: showQueue ? 'min(4vw, 1rem)' : 'min(5vw, 1.25rem)',
+                }}
+              />
             </Button>
           </div>
         )}
 
-        {/* Volume Control - hidden when queue is shown */}
-        {!showQueue && (
-          <div className={`flex items-center justify-center space-x-4 px-8 ${user ? '' : 'mb-6'}`}>
-            <Volume2 className="h-5 w-5 text-muted-foreground" />
-            <Slider
-              value={[volume]}
-              max={1}
-              step={0.1}
-              onValueChange={handleVolumeChange}
-              className="flex-1 max-w-xs"
-            />
-          </div>
-        )}
+        {/* Volume Control - fully responsive */}
+        <div
+          className="flex items-center justify-center px-8 transition-all duration-300"
+          style={{
+            gap: 'min(3vw, 1rem)',
+            marginBottom: showQueue ? 'min(2vw, 0.5rem)' : user ? 'min(2vw, 0.5rem)' : 'min(3vw, 0.75rem)',
+          }}
+        >
+          <Volume2
+            className="text-muted-foreground transition-all duration-300"
+            style={{
+              width: showQueue ? 'min(4vw, 1rem)' : 'min(5vw, 1.25rem)',
+              height: showQueue ? 'min(4vw, 1rem)' : 'min(5vw, 1.25rem)',
+            }}
+          />
+          <Slider
+            value={[volume]}
+            max={1}
+            step={0.1}
+            onValueChange={handleVolumeChange}
+            className="flex-1 transition-all duration-300"
+            style={{
+              maxWidth: showQueue ? 'min(40vw, 12rem)' : 'min(60vw, 20rem)',
+            }}
+          />
+        </div>
       </div>
 
       {/* Queue Toggle */}
-      <div className="border-t border-border/50 p-4">
+      <div className="border-t border-border/50 p-4 mt-auto flex-shrink-0">
         <button
           onClick={() => setShowQueue(!showQueue)}
           className="w-full flex items-center justify-between text-sm text-muted-foreground hover:text-foreground transition-colors"

@@ -90,7 +90,7 @@ export function TrackCard({
   };
 
   return (
-    <Card className={cn("group punk-card border-2 border-primary bg-card hover:neon-glow transition-all", className)}>
+    <Card className={cn("group punk-card border-2 border-primary bg-card hover:neon-glow transition-all cursor-pointer", className)} onClick={handlePlayPause}>
       <CardContent className="p-3 sm:p-4">
         {/* Top row: Album art and track info side by side */}
         <div className="flex flex-row items-start gap-3 sm:gap-4">
@@ -105,7 +105,10 @@ export function TrackCard({
               size="icon"
               variant="secondary"
               className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity bg-primary/80 hover:bg-primary text-primary-foreground border-2 border-foreground punk-button"
-              onClick={handlePlayPause}
+              onClick={(e) => {
+                e.stopPropagation();
+                handlePlayPause();
+              }}
             >
               {isPlaying ? (
                 <Pause className="h-10 w-10 sm:h-12 sm:w-12" />
@@ -116,16 +119,17 @@ export function TrackCard({
           </div>
           <div className="flex-1 min-w-0 space-y-1">
             {/* Song title */}
-            <button
-              onClick={handlePlayPause}
-              className="font-bold text-sm sm:text-base truncate uppercase tracking-wide text-left w-full hover:text-primary transition-colors cursor-pointer"
-            >
+            <h3 className="font-bold text-sm sm:text-base truncate uppercase tracking-wide hover:text-primary transition-colors">
               {track.title}
-            </button>
+            </h3>
 
             {/* Artist name */}
             {showArtist && (
-              <Link to={`/artist/${track.artistId}`} className="block text-xs sm:text-sm text-accent truncate font-metal hover:underline">
+              <Link
+                to={`/artist/${track.artistId}`}
+                className="block text-xs sm:text-sm text-accent truncate font-metal hover:underline"
+                onClick={(e) => e.stopPropagation()}
+              >
                 {track.artist}
               </Link>
             )}
@@ -152,13 +156,16 @@ export function TrackCard({
         </div>
 
         {/* Actions row */}
-        <div className="flex items-center justify-end space-x-2 sm:space-x-1 mt-3">
+        <div className="flex items-center justify-end space-x-2 sm:space-x-1 mt-3" onClick={(e) => e.stopPropagation()}>
             {user && (
             <>
               <Button
                 size="icon"
                 variant="ghost"
-                onClick={handleLike}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleLike();
+                }}
                 className={cn(
                   "h-11 w-11 sm:h-8 sm:w-8 p-0 border border-primary",
                   isLiked ? "bg-primary text-primary-foreground" : "hover:bg-primary hover:text-primary-foreground"
@@ -170,7 +177,10 @@ export function TrackCard({
               <Button
                 size="icon"
                 variant="ghost"
-                onClick={() => onComment?.(track)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onComment?.(track);
+                }}
                 className="h-11 w-11 sm:h-8 sm:w-8 p-0 hover:bg-accent hover:text-accent-foreground border border-accent"
               >
                 <MessageCircle className="h-6 w-6 sm:h-4 sm:w-4" />
@@ -179,7 +189,10 @@ export function TrackCard({
               <Button
                 size="icon"
                 variant="ghost"
-                onClick={() => onZap?.(track)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onZap?.(track);
+                }}
                 className="h-11 w-11 sm:h-8 sm:w-8 p-0 text-yellow-500 hover:bg-yellow-500 hover:text-black border border-yellow-500"
               >
                 <Zap className="h-6 w-6 sm:h-4 sm:w-4" />
@@ -189,7 +202,12 @@ export function TrackCard({
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button size="icon" variant="ghost" className="h-11 w-11 sm:h-8 sm:w-8 p-0 border border-muted-foreground">
+              <Button
+                size="icon"
+                variant="ghost"
+                className="h-11 w-11 sm:h-8 sm:w-8 p-0 border border-muted-foreground"
+                onClick={(e) => e.stopPropagation()}
+              >
                 <MoreHorizontal className="h-6 w-6 sm:h-4 sm:w-4" />
               </Button>
             </DropdownMenuTrigger>
@@ -204,7 +222,10 @@ export function TrackCard({
             >
               {user && (
                 <DropdownMenuItem
-                  onClick={() => onAddToPlaylist?.(track)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onAddToPlaylist?.(track);
+                  }}
                   className="font-bold uppercase tracking-wide"
                 >
                   <Plus className="h-4 w-4 mr-2" />
@@ -212,7 +233,10 @@ export function TrackCard({
                 </DropdownMenuItem>
               )}
               <DropdownMenuItem
-                onClick={() => window.open(trackUrl, '_blank')}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  window.open(trackUrl, '_blank');
+                }}
                 className="font-bold uppercase tracking-wide"
               >
                 <Play className="h-4 w-4 mr-2" />
