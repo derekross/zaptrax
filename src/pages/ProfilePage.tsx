@@ -13,10 +13,11 @@ import {
   Globe
 } from 'lucide-react';
 import { useAuthor } from '@/hooks/useAuthor';
-import { useUserPlaylists } from '@/hooks/useNostrMusic';
+import { useUserPlaylists, useLikedSongs } from '@/hooks/useNostrMusic';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { genUserName } from '@/lib/genUserName';
 import { PlaylistCard } from '@/components/music/PlaylistCard';
+import { LikedSongsCard } from '@/components/music/LikedSongsCard';
 import { CreatePlaylistDialog } from '@/components/music/CreatePlaylistDialog';
 import { SharePlaylistDialog } from '@/components/music/SharePlaylistDialog';
 import { useToast } from '@/hooks/useToast';
@@ -50,6 +51,7 @@ export function ProfilePage() {
   // Always call hooks in the same order
   const author = useAuthor(pubkey || undefined);
   const { data: userPlaylists, isLoading: playlistsLoading } = useUserPlaylists(pubkey || undefined);
+  const { data: likedSongs, isLoading: likedSongsLoading } = useLikedSongs(pubkey || undefined);
 
   // Handle decode error after hooks
   if (decodeError) {
@@ -88,6 +90,8 @@ export function ProfilePage() {
       navigate(`/playlist/${naddr}`);
     }
   };
+
+
 
   const handleClonePlaylist = async (playlist: NostrEvent) => {
     if (!currentUser) {
@@ -267,14 +271,14 @@ export function ProfilePage() {
               {isOwnProfile ? 'Your Playlists' : `${displayName}'s Playlists`}
             </h2>
           </div>
-          {userPlaylists && userPlaylists.length > 0 && (
+          {(userPlaylists && userPlaylists.length > 0) || (likedSongs && likedSongs.tags.filter(tag => tag[0] === 'r').length > 0) ? (
             <Badge variant="outline">
-              {userPlaylists.length} {userPlaylists.length === 1 ? 'Playlist' : 'Playlists'}
+              {(userPlaylists?.length || 0) + (likedSongs && likedSongs.tags.filter(tag => tag[0] === 'r').length > 0 ? 1 : 0)} {((userPlaylists?.length || 0) + (likedSongs && likedSongs.tags.filter(tag => tag[0] === 'r').length > 0 ? 1 : 0)) === 1 ? 'Playlist' : 'Playlists'}
             </Badge>
-          )}
+          ) : null}
         </div>
 
-        {playlistsLoading ? (
+        {playlistsLoading || likedSongsLoading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {[...Array(6)].map((_, i) => (
               <Card key={i}>
@@ -286,11 +290,23 @@ export function ProfilePage() {
               </Card>
             ))}
           </div>
-        ) : userPlaylists && userPlaylists.length > 0 ? (
+        ) : (userPlaylists && userPlaylists.length > 0) || (likedSongs && likedSongs.tags.filter(tag => tag[0] === 'r').length > 0) ? (
           <Card>
             <CardContent className="p-6">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {userPlaylists.map((playlist) => (
+                {/* Show Liked Songs first if it has tracks */}
+                {likedSongs && likedSongs.tags.filter(tag => tag[0] === 'r').length > 0 && (
+                  <LikedSongsCard
+                    key="liked-songs"
+                    likedSongs={likedSongs}
+                    pubkey={pubkey || ''}
+                    onShare={handleSharePlaylist}
+                    onClone={!isOwnProfile ? handleClonePlaylist : undefined}
+                    showCloneButton={!isOwnProfile && !!currentUser}
+                  />
+                )}
+                {/* Show regular playlists */}
+                {userPlaylists?.map((playlist) => (
                   <PlaylistCard
                     key={playlist.id}
                     playlist={playlist}
