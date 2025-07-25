@@ -6,7 +6,6 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
   Play,
-  Pause,
   Heart,
   MessageCircle,
   Zap,
@@ -55,7 +54,6 @@ export function TrackCard({
   const { data: _reactions } = useTrackReactions(trackUrl);
 
   const isCurrentTrack = state.currentTrack?.id === track.id;
-  const isPlaying = isCurrentTrack && state.isPlaying;
 
   const isLiked = likedSongs?.tags.some(tag => tag[0] === 'r' && tag[1] === trackUrl);
 
@@ -101,21 +99,6 @@ export function TrackCard({
                 {track.title.charAt(0)}
               </AvatarFallback>
             </Avatar>
-            <Button
-              size="icon"
-              variant="secondary"
-              className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity bg-primary/80 hover:bg-primary text-primary-foreground border-2 border-foreground punk-button"
-              onClick={(e) => {
-                e.stopPropagation();
-                handlePlayPause();
-              }}
-            >
-              {isPlaying ? (
-                <Pause className="h-10 w-10 sm:h-12 sm:w-12" />
-              ) : (
-                <Play className="h-10 w-10 sm:h-12 sm:w-12" />
-              )}
-            </Button>
           </div>
           <div className="flex-1 min-w-0 space-y-1">
             {/* Song title */}
