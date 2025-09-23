@@ -70,7 +70,7 @@ export function useLikedSongs(pubkey?: string) {
       return events.sort((a, b) => b.created_at - a.created_at)[0] || null;
     },
     enabled: !!targetPubkey,
-    staleTime: 10 * 1000, // 10 seconds
+    staleTime: 2 * 1000, // 2 seconds for faster like updates
   });
 }
 

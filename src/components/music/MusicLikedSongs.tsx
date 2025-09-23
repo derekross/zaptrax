@@ -80,7 +80,7 @@ export function MusicLikedSongs() {
   const trackCount = likedTrackUrls.length;
 
   return (
-    <div className="min-h-screen bg-black text-white pb-20">
+    <div className="min-h-screen bg-black text-white pb-32">
       {/* Header Section */}
       <div className="flex items-start gap-6 p-6 pb-8">
         {/* Liked Music Icon */}

@@ -23,6 +23,7 @@ import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { CommentDialog } from './CommentDialog';
 import { ZapDialog } from './ZapDialog';
 import { AddToPlaylistDialog } from './AddToPlaylistDialog';
+import { useQueryClient } from '@tanstack/react-query';
 
 export function MusicPlayer() {
   const {
@@ -35,7 +36,8 @@ export function MusicPlayer() {
     playTrackByIndex
   } = useMusicPlayer();
   const { user } = useCurrentUser();
-  const { mutate: likeTrack } = useLikeTrack();
+  const queryClient = useQueryClient();
+  const { mutate: likeTrack, isPending: likePending } = useLikeTrack();
   const { data: likedSongs } = useLikedSongs();
   const location = useLocation();
   const prevPathnameRef = useRef(location.pathname);
@@ -44,6 +46,7 @@ export function MusicPlayer() {
   const [commentDialogOpen, setCommentDialogOpen] = useState(false);
   const [zapDialogOpen, setZapDialogOpen] = useState(false);
   const [addToPlaylistOpen, setAddToPlaylistOpen] = useState(false);
+  const [optimisticLikes, setOptimisticLikes] = useState<Set<string>>(new Set());
 
   // Close expanded player and restore scrolling when route changes
   useEffect(() => {
@@ -90,6 +93,29 @@ export function MusicPlayer() {
     };
   }, [isExpanded]);
 
+  // Clear optimistic state when real data updates to match
+  useEffect(() => {
+    if (likedSongs && optimisticLikes.size > 0) {
+      const tracksToRemove: string[] = [];
+
+      optimisticLikes.forEach(trackUrl => {
+        const isCurrentlyLiked = likedSongs.tags.some(tag => tag[0] === 'r' && tag[1] === trackUrl);
+        // If the real data now shows the track as liked (matching our optimistic state), clear the optimistic state
+        if (isCurrentlyLiked) {
+          tracksToRemove.push(trackUrl);
+        }
+      });
+
+      if (tracksToRemove.length > 0) {
+        setOptimisticLikes(prev => {
+          const newSet = new Set(prev);
+          tracksToRemove.forEach(trackUrl => newSet.delete(trackUrl));
+          return newSet;
+        });
+      }
+    }
+  }, [likedSongs, optimisticLikes]);
+
   if (!state.currentTrack) {
     return null;
   }
@@ -97,8 +123,11 @@ export function MusicPlayer() {
   const { currentTrack, isPlaying, currentTime, duration, volume } = state;
   const trackUrl = `https://wavlake.com/track/${currentTrack.id}`;
 
-  // Check if current track is liked
-  const isLiked = likedSongs?.tags.some(tag => tag[0] === 'r' && tag[1] === trackUrl);
+  // Check if current track is liked (including optimistic updates)
+  const actuallyLiked = likedSongs?.tags.some(tag => tag[0] === 'r' && tag[1] === trackUrl) || false;
+  const hasOptimisticLike = optimisticLikes.has(trackUrl);
+  const isLiked = hasOptimisticLike ? !actuallyLiked : actuallyLiked;
+
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -116,7 +145,19 @@ export function MusicPlayer() {
 
   const handleLike = () => {
     if (user && currentTrack) {
-      likeTrack({ track: currentTrack, trackUrl });
+      // Add to optimistic likes to show immediate feedback
+      setOptimisticLikes(prev => new Set(prev).add(trackUrl));
+
+      likeTrack({ track: currentTrack, trackUrl }, {
+        onError: () => {
+          // Only clear optimistic state on error - let successful likes stay optimistic
+          setOptimisticLikes(prev => {
+            const newSet = new Set(prev);
+            newSet.delete(trackUrl);
+            return newSet;
+          });
+        }
+      });
     }
   };
 
@@ -173,8 +214,9 @@ export function MusicPlayer() {
                 <Button
                   size="icon"
                   variant="ghost"
-                  className={`h-10 w-10 rounded-full ${isLiked ? 'text-pink-500' : ''}`}
+                  className={`h-10 w-10 rounded-full ${isLiked ? 'text-pink-500' : ''} ${likePending ? 'opacity-50' : ''}`}
                   onClick={handleLike}
+                  disabled={likePending}
                   aria-label="Like song"
                 >
                   <Heart className={`h-4 w-4 ${isLiked ? 'fill-current' : ''}`} />
@@ -460,7 +502,8 @@ export function MusicPlayer() {
               size="icon"
               variant="ghost"
               onClick={handleLike}
-              className={`rounded-full hover:bg-muted transition-all duration-300 ${isLiked ? 'text-pink-500' : ''}`}
+              disabled={likePending}
+              className={`rounded-full hover:bg-muted transition-all duration-300 ${isLiked ? 'text-pink-500' : ''} ${likePending ? 'opacity-50' : ''}`}
               style={{
                 width: showQueue ? 'min(8vw, 2.5rem)' : 'min(10vw, 2.75rem)',
                 height: showQueue ? 'min(8vw, 2.5rem)' : 'min(10vw, 2.75rem)',
@@ -664,7 +707,8 @@ export function MusicPlayer() {
                   size="icon"
                   variant="ghost"
                   onClick={handleLike}
-                  className={`h-8 w-8 rounded-full hover:bg-muted ${isLiked ? 'text-pink-500' : ''}`}
+                  disabled={likePending}
+                  className={`h-8 w-8 rounded-full hover:bg-muted ${isLiked ? 'text-pink-500' : ''} ${likePending ? 'opacity-50' : ''}`}
                 >
                   <Heart className={`h-4 w-4 ${isLiked ? 'fill-current' : ''}`} />
                 </Button>
@@ -854,7 +898,8 @@ export function MusicPlayer() {
                     size="icon"
                     variant="ghost"
                     onClick={handleLike}
-                    className={`h-12 w-12 rounded-full hover:bg-muted ${isLiked ? 'text-pink-500' : ''}`}
+                    disabled={likePending}
+                    className={`h-12 w-12 rounded-full hover:bg-muted ${isLiked ? 'text-pink-500' : ''} ${likePending ? 'opacity-50' : ''}`}
                   >
                     <Heart className={`h-6 w-6 ${isLiked ? 'fill-current' : ''}`} />
                   </Button>
