@@ -1,6 +1,6 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { Moon, Sun, Skull } from 'lucide-react';
+import { Moon, Sun, Monitor } from 'lucide-react';
 import { useTheme } from '@/hooks/useTheme';
 import {
   DropdownMenu,
@@ -22,7 +22,7 @@ export function ThemeToggle() {
         >
           {theme === 'light' && <Sun className="h-4 w-4" />}
           {theme === 'dark' && <Moon className="h-4 w-4" />}
-          {theme === 'system' && <Skull className="h-4 w-4" />}
+          {theme === 'system' && <Monitor className="h-4 w-4" />}
           <span className="sr-only">Toggle theme</span>
         </Button>
       </DropdownMenuTrigger>
@@ -53,7 +53,7 @@ export function ThemeToggle() {
           onClick={() => setTheme('system')}
           className="font-bold uppercase tracking-wide"
         >
-          <Skull className="mr-2 h-4 w-4" />
+          <Monitor className="mr-2 h-4 w-4" />
           System
         </DropdownMenuItem>
       </DropdownMenuContent>

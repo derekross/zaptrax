@@ -5,19 +5,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Button } from '@/components/ui/button';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { Search, Music, User, Disc, CheckCircle, XCircle, AtSign, MoreHorizontal, Plus, Play, Pause } from 'lucide-react';
+import { Search, Music, User, Disc, CheckCircle, XCircle, AtSign } from 'lucide-react';
+import { SearchTrackItem } from './SearchTrackItem';
 import { useWavlakeSearch } from '@/hooks/useWavlake';
 import { useNostrSearch } from '@/hooks/useNostrSearch';
 import { useAuthor } from '@/hooks/useAuthor';
 import { useMusicPlayer } from '@/contexts/MusicPlayerContext';
-import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { wavlakeAPI } from '@/lib/wavlake';
 import { useDebounce } from '@/hooks/useDebounce';
 import { createNpub, isNpub, isNip05 } from '@/lib/nostrSearch';
@@ -51,10 +44,8 @@ export function MusicSearch({
   onAddToPlaylist
 }: MusicSearchProps) {
   const [searchTerm, setSearchTerm] = useState('');
-  const [hoveredTrackId, setHoveredTrackId] = useState<string | null>(null);
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
-  const { playTrack, togglePlayPause, dispatch, state } = useMusicPlayer();
-  const { user } = useCurrentUser();
+  const { dispatch, playTrack } = useMusicPlayer();
   const navigate = useNavigate();
 
   // Check if search term looks like Nostr identifier
@@ -82,22 +73,6 @@ export function MusicSearch({
       albums: searchResults.filter(r => r.type === 'album'),
     };
   }, [searchResults]);
-
-  const handlePlayPause = async (result: WavlakeSearchResult, e: React.MouseEvent) => {
-    e.stopPropagation();
-    
-    // Check if this is the current track
-    const isCurrentTrack = state.currentTrack?.id === result.id;
-    
-    if (isCurrentTrack) {
-      // If it's the current track, just toggle play/pause
-      togglePlayPause();
-      return;
-    }
-    
-    // Otherwise play the new track  
-    await handleTrackPlay(result);
-  };
 
   const handleTrackPlay = async (result: WavlakeSearchResult) => {
     if (result.type !== 'track') return;
@@ -184,11 +159,6 @@ export function MusicSearch({
     }
   };
 
-  const formatDuration = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
-  };
 
   const getResultIcon = (type: string) => {
     switch (type) {
@@ -356,120 +326,16 @@ export function MusicSearch({
                   <span>Tracks</span>
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-2">
-                {groupedResults.tracks.map((result) => {
-                  const isCurrentTrack = state.currentTrack?.id === result.id;
-                  const isPlaying = isCurrentTrack && state.isPlaying;
-                  const isHovered = hoveredTrackId === result.id;
-                  
-                  return (
-                    <div
-                      key={result.id}
-                      className="flex items-center space-x-3 p-2 rounded-lg hover:bg-muted/50 group cursor-pointer"
-                      onClick={() => handleTrackPlay(result)}
-                      onMouseEnter={() => setHoveredTrackId(result.id)}
-                      onMouseLeave={() => setHoveredTrackId(null)}
-                    >
-                      <div className="relative">
-                        <Avatar className="h-12 w-12 rounded-md">
-                          <AvatarImage src={result.albumArtUrl} alt={result.name} />
-                          <AvatarFallback className="rounded-md">
-                            {result.name.charAt(0)}
-                          </AvatarFallback>
-                        </Avatar>
-                        {(isHovered || isCurrentTrack) && (
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            className="absolute inset-0 h-12 w-12 p-0 bg-black/60 hover:bg-black/80 text-white"
-                            onClick={(e) => handlePlayPause(result, e)}
-                          >
-                            {isPlaying ? (
-                              <Pause className="h-4 w-4" />
-                            ) : (
-                              <Play className="h-4 w-4" />
-                            )}
-                          </Button>
-                        )}
-                      </div>
-
-                      <div className="flex-1 min-w-0">
-                        <h4 className="font-medium text-sm truncate">
-                          {result.name}
-                        </h4>
-                        <p className="text-sm text-muted-foreground truncate">
-                          {result.artist}
-                        </p>
-                        {result.albumTitle && (
-                          <p className="text-xs text-muted-foreground truncate">
-                            {result.albumTitle}
-                          </p>
-                        )}
-                      </div>
-
-                      <div className="flex items-center space-x-2">
-                        {result.duration && (
-                          <Badge variant="outline" className="text-xs">
-                            {formatDuration(result.duration)}
-                          </Badge>
-                        )}
-
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button size="icon" variant="ghost" className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity">
-                              <MoreHorizontal className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={() => handleTrackPlay(result)}>
-                              <Play className="h-4 w-4 mr-2" />
-                              Play
-                            </DropdownMenuItem>
-                            {user && onAddToPlaylist && (
-                              <DropdownMenuItem
-                                onClick={async () => {
-                                  try {
-                                    const trackData = await wavlakeAPI.getTrack(result.id);
-                                    const fullTrack = Array.isArray(trackData) ? trackData[0] : trackData;
-
-                                    const normalizedTrack: WavlakeTrack = {
-                                      id: fullTrack.id,
-                                      title: fullTrack.title || result.name,
-                                      albumTitle: fullTrack.albumTitle || result.albumTitle || '',
-                                      artist: fullTrack.artist || result.artist || '',
-                                      artistId: fullTrack.artistId || result.artistId || '',
-                                      albumId: fullTrack.albumId || result.albumId || '',
-                                      artistArtUrl: fullTrack.artistArtUrl || result.artistArtUrl || '',
-                                      albumArtUrl: fullTrack.albumArtUrl || result.albumArtUrl || '',
-                                      mediaUrl: fullTrack.mediaUrl || '',
-                                      duration: fullTrack.duration || result.duration || 0,
-                                      releaseDate: fullTrack.releaseDate || '',
-                                      msatTotal: fullTrack.msatTotal || '',
-                                      artistNpub: fullTrack.artistNpub || '',
-                                      order: fullTrack.order || 0,
-                                      url: fullTrack.url || `https://wavlake.com/track/${fullTrack.id}`
-                                    };
-
-                                    onAddToPlaylist(normalizedTrack);
-                                  } catch (e) {
-                                    console.error('Failed to fetch track for playlist:', e);
-                                  }
-                                }}
-                              >
-                                <Plus className="h-4 w-4 mr-2" />
-                                Add to Playlist
-                              </DropdownMenuItem>
-                            )}
-                            <DropdownMenuItem onClick={() => window.open(`https://wavlake.com/track/${result.id}`, '_blank')}>
-                              <Music className="h-4 w-4 mr-2" />
-                              View on Wavlake
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </div>
-                    </div>
-                  );
-                })}
+              <CardContent className="space-y-1">
+                {groupedResults.tracks.map((result, idx) => (
+                  <SearchTrackItem
+                    key={result.id}
+                    result={result}
+                    index={idx + 1}
+                    onPlay={handleTrackPlay}
+                    onAddToPlaylist={onAddToPlaylist}
+                  />
+                ))}
               </CardContent>
             </Card>
           )}

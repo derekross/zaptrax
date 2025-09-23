@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { TrendingUp, Filter, Trophy, Music, Play, Pause } from 'lucide-react';
+import { TrendingUp, Filter, Trophy, Music } from 'lucide-react';
+import { UnifiedTrackItem } from './UnifiedTrackItem';
 import {
   Select,
   SelectContent,
@@ -10,11 +11,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { TrackCard } from './TrackCard';
 import { useWavlakeRankings } from '@/hooks/useWavlake';
 import { useMusicPlayer } from '@/contexts/MusicPlayerContext';
 import type { WavlakeTrack } from '@/lib/wavlake';
-import { cn } from '@/lib/utils';
 
 interface TopTracksProps {
   onAddToPlaylist?: (track: WavlakeTrack) => void;
@@ -29,9 +28,8 @@ export function TopTracks({
 }: TopTracksProps) {
   const [timeRange, setTimeRange] = React.useState<string>('7');
   const [genre, setGenre] = React.useState<string>('all');
-  const [hoveredTrackId, setHoveredTrackId] = useState<string | null>(null);
-  
-  const { state, playTrack, togglePlayPause } = useMusicPlayer();
+
+  const { playTrack } = useMusicPlayer();
 
   const { data: topTracks, isLoading, error } = useWavlakeRankings({
     sort: 'sats',
@@ -95,16 +93,8 @@ export function TopTracks({
     return option?.label || 'All genres';
   };
 
-  const handlePlayPause = (track: WavlakeTrack, e: React.MouseEvent) => {
-    e.stopPropagation();
-    
-    const isCurrentTrack = state.currentTrack?.id === track.id;
-    
-    if (isCurrentTrack) {
-      togglePlayPause();
-    } else {
-      playTrack(track, topTracks);
-    }
+  const handleTrackClick = (track: WavlakeTrack) => {
+    playTrack(track, topTracks);
   };
 
   return (
@@ -213,58 +203,19 @@ export function TopTracks({
               <p className="text-sm text-muted-foreground">{topTracks.length} tracks</p>
             </div>
           </CardHeader>
-          <CardContent className="space-y-3 sm:space-y-2 p-2 sm:p-6">
-            {topTracks.map((track, index) => {
-              const isCurrentTrack = state.currentTrack?.id === track.id;
-              const isPlaying = isCurrentTrack && state.isPlaying;
-              const isHovered = hoveredTrackId === track.id;
-
-              return (
-                <div 
-                  key={track.id} 
-                  className="relative group"
-                  onMouseEnter={() => setHoveredTrackId(track.id)}
-                  onMouseLeave={() => setHoveredTrackId(null)}
-                >
-                  {/* Ranking Badge / Play Button */}
-                  <div className="absolute left-1 sm:left-2 top-1/2 -translate-y-1/2 z-10">
-                    {isHovered || isCurrentTrack ? (
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        className="h-7 w-7 sm:h-6 sm:w-6 p-0 hover:bg-transparent"
-                        onClick={(e) => handlePlayPause(track, e)}
-                      >
-                        {isPlaying ? (
-                          <Pause className="h-4 w-4" />
-                        ) : (
-                          <Play className="h-4 w-4" />
-                        )}
-                      </Button>
-                    ) : (
-                      <div className={cn(
-                        "text-sm font-bold w-7 h-7 sm:w-6 sm:h-6 flex items-center justify-center rounded-full",
-                        index < 3
-                          ? 'bg-gradient-to-r from-yellow-400 to-orange-500 text-white'
-                          : 'bg-muted text-muted-foreground'
-                      )}>
-                        {index + 1}
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="pl-9 sm:pl-10">
-                    <TrackCard
-                      track={track}
-                      queue={topTracks}
-                      onAddToPlaylist={onAddToPlaylist}
-                      onComment={onComment}
-                      onZap={onZap}
-                    />
-                  </div>
-                </div>
-              );
-            })}
+          <CardContent className="space-y-1 p-2 sm:p-6">
+            {topTracks.map((track, index) => (
+              <UnifiedTrackItem
+                key={track.id}
+                track={track}
+                index={index + 1}
+                onClick={handleTrackClick}
+                onAddToPlaylist={onAddToPlaylist}
+                onComment={onComment}
+                onZap={onZap}
+                showAlbum={false}
+              />
+            ))}
           </CardContent>
         </Card>
       ) : (

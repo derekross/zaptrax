@@ -20,6 +20,7 @@ export function useSocialFeed(feedType: 'following' | 'global') {
         authors?: string[];
         '#t'?: string[];
         '#r'?: string[];
+        '#d'?: string[];
         limit: number;
         until?: number;
       }> = [];
@@ -59,9 +60,16 @@ export function useSocialFeed(feedType: 'following' | 'global') {
             until,
           },
           {
-            kinds: [30003], // Bookmark sets (playlists)
+            kinds: [30003], // Bookmark sets (playlists and liked songs)
             authors: followedPubkeys,
-            limit: 50, // Increased limit since we'll filter in JS
+            '#d': ['liked-songs'], // Specifically get liked-songs updates
+            limit: 50,
+            until,
+          },
+          {
+            kinds: [30003], // All bookmark sets (including other playlists)
+            authors: followedPubkeys,
+            limit: 50,
             until,
           },
           {
@@ -92,8 +100,14 @@ export function useSocialFeed(feedType: 'following' | 'global') {
             until,
           },
           {
-            kinds: [30003], // Bookmark sets (playlists)
-            limit: 50, // Increased limit since we'll filter in JS
+            kinds: [30003], // Bookmark sets (playlists and liked songs)
+            '#d': ['liked-songs'], // Specifically get liked-songs updates
+            limit: 50,
+            until,
+          },
+          {
+            kinds: [30003], // All bookmark sets
+            limit: 50,
             until,
           },
           {
@@ -153,10 +167,13 @@ export function useSocialFeed(feedType: 'following' | 'global') {
         if (event.kind === 30003) {
           const hasMusicTag = event.tags.some(tag => tag[0] === 't' && tag[1] === 'music');
           const hasPlaylistDTag = event.tags.some(tag =>
-            tag[0] === 'd' && tag[1]?.startsWith('playlist-')
+            tag[0] === 'd' && (tag[1]?.startsWith('playlist-') || tag[1] === 'liked-songs')
           );
-          const isLikedSongs = event.tags.some(tag => tag[0] === 'd' && tag[1] === 'liked-songs');
-          return hasMusicTag || hasPlaylistDTag || isLikedSongs;
+          // Also check if it contains wavlake tracks
+          const hasWavlakeTracks = event.tags.some(tag =>
+            tag[0] === 'r' && tag[1]?.includes('wavlake.com/track/')
+          );
+          return hasMusicTag || hasPlaylistDTag || hasWavlakeTracks;
         }
 
         // For playlist comments, check if they reference a music playlist
