@@ -62,19 +62,19 @@ export function MusicPlaylists() {
   return (
     <div className="min-h-screen bg-black text-white pb-20">
       {/* Header Section */}
-      <div className="flex items-start gap-6 p-6 pb-8">
+      <div className="flex flex-col md:flex-row items-center md:items-start gap-4 md:gap-6 p-4 md:p-6 pb-6 md:pb-8">
         {/* Playlists Icon */}
         <div className="flex-shrink-0">
-          <div className="h-64 w-64 rounded-lg bg-gradient-to-br from-purple-600 via-purple-700 to-purple-900 flex items-center justify-center shadow-2xl">
-            <List className="h-24 w-24 text-white" />
+          <div className="h-40 w-40 md:h-64 md:w-64 rounded-lg bg-gradient-to-br from-purple-600 via-purple-700 to-purple-900 flex items-center justify-center shadow-2xl">
+            <List className="h-16 w-16 md:h-24 md:w-24 text-white" />
           </div>
         </div>
 
         {/* Playlist Info */}
-        <div className="flex-1 space-y-6 pt-16">
+        <div className="flex-1 space-y-4 md:space-y-6 text-center md:text-left md:pt-16">
           <div>
-            <h1 className="text-6xl font-bold mb-6 text-white">Playlists</h1>
-            <div className="flex items-center gap-2 text-gray-300">
+            <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold mb-3 md:mb-6 text-white">Playlists</h1>
+            <div className="flex flex-wrap items-center justify-center md:justify-start gap-2 text-gray-300">
               <span className="text-white font-medium">Your Library</span>
               <span>•</span>
               <span>Music Collection</span>
@@ -90,7 +90,7 @@ export function MusicPlaylists() {
           </div>
 
           {/* Category Pills */}
-          <div className="flex gap-2">
+          <div className="flex flex-wrap justify-center md:justify-start gap-2">
             {categories.map((category) => (
               <Button
                 key={category}
@@ -111,7 +111,7 @@ export function MusicPlaylists() {
       </div>
 
       {/* Content Grid */}
-      <div className="p-6">
+      <div className="p-4 md:p-6">
         {selectedCategory === 'Playlists' && (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
             {/* Liked Music Card */}

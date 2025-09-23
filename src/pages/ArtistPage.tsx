@@ -78,7 +78,7 @@ export function ArtistPage() {
   return (
     <div className="min-h-screen bg-black text-white pb-20">
       {/* Hero Section with Background Image */}
-      <div className="relative h-[400px] overflow-hidden">
+      <div className="relative h-[300px] md:h-[400px] overflow-hidden">
         {/* Background Image */}
         <div
           className="absolute inset-0 bg-cover bg-center bg-no-repeat"
@@ -93,18 +93,18 @@ export function ArtistPage() {
         <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent" />
 
         {/* Artist Info */}
-        <div className="absolute bottom-0 left-0 right-0 p-8">
+        <div className="absolute bottom-0 left-0 right-0 p-4 md:p-8">
           <div className="max-w-7xl mx-auto">
-            <h1 className="text-6xl font-bold mb-4">{artist.name}</h1>
-            <p className="text-lg text-gray-300 mb-6 max-w-2xl">
+            <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold mb-2 md:mb-4">{artist.name}</h1>
+            <p className="text-sm md:text-lg text-gray-300 mb-4 md:mb-6 max-w-2xl line-clamp-2 md:line-clamp-none">
               {artist.bio || nostrProfile?.about || 'Artist on ZapTrax'}
             </p>
 
             {/* Action Buttons */}
-            <div className="flex items-center gap-4">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4">
               <Button
                 size="lg"
-                className="bg-purple-600 hover:bg-purple-700 text-white px-8 py-3 rounded-full font-medium"
+                className="bg-purple-600 hover:bg-purple-700 text-white px-6 md:px-8 py-2 md:py-3 rounded-full font-medium w-full sm:w-auto"
                 onClick={() => {
                   if (tracks.length > 0) {
                     // Create a shuffled copy of the tracks array
@@ -113,14 +113,14 @@ export function ArtistPage() {
                   }
                 }}
               >
-                <Play className="h-5 w-5 mr-2" />
+                <Play className="h-4 w-4 md:h-5 md:w-5 mr-2" />
                 Shuffle
               </Button>
 
               <Button
                 variant="outline"
                 size="lg"
-                className="border-gray-600 text-white hover:bg-gray-800 px-6 py-3 rounded-full"
+                className="border-gray-600 text-white hover:bg-gray-800 px-4 md:px-6 py-2 md:py-3 rounded-full w-full sm:w-auto"
                 onClick={() => {
                   if (radioTracks && radioTracks.length > 0) {
                     // If artist has tracks, start with one of their tracks, otherwise start with radio
@@ -136,7 +136,7 @@ export function ArtistPage() {
                 }}
                 disabled={!radioTracks || radioTracks.length === 0}
               >
-                <Disc className="h-5 w-5 mr-2" />
+                <Disc className="h-4 w-4 md:h-5 md:w-5 mr-2" />
                 Radio
               </Button>
 
@@ -144,7 +144,7 @@ export function ArtistPage() {
                 <Button
                   variant="outline"
                   size="lg"
-                  className="border-gray-600 text-white hover:bg-gray-800 px-6 py-3 rounded-full"
+                  className="border-gray-600 text-white hover:bg-gray-800 px-4 md:px-6 py-2 md:py-3 rounded-full w-full sm:w-auto"
                 >
                   Follow
                 </Button>
@@ -155,7 +155,7 @@ export function ArtistPage() {
       </div>
 
       {/* Content Section */}
-      <div className="max-w-7xl mx-auto px-8 py-8">
+      <div className="max-w-7xl mx-auto px-4 md:px-8 py-6 md:py-8">
         {/* Top Songs Section */}
         {tracks.length > 0 && (
           <div className="mb-12">
@@ -241,7 +241,7 @@ export function ArtistPage() {
                 Show all
               </Button>
             </div>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 md:gap-4">
               {albums.slice(0, 6).map((album) => (
                 <div
                   key={album.id}

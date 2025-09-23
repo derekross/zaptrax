@@ -84,21 +84,21 @@ export function AlbumPage() {
         <div className="absolute inset-0 bg-gradient-to-t from-black via-black/70 to-transparent" />
 
         {/* Album Info */}
-        <div className="absolute bottom-0 left-0 right-0 p-8">
-          <div className="max-w-7xl mx-auto flex items-end gap-6">
+        <div className="absolute bottom-0 left-0 right-0 p-4 md:p-8">
+          <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center md:items-end gap-4 md:gap-6">
             {/* Album Cover */}
             <img
               src={album.albumArtUrl}
               alt={album.albumTitle}
-              className="w-60 h-60 rounded-lg shadow-2xl flex-shrink-0"
+              className="w-40 h-40 md:w-60 md:h-60 rounded-lg shadow-2xl flex-shrink-0"
             />
 
             {/* Album Details */}
-            <div className="flex-1 pb-4">
+            <div className="flex-1 text-center md:text-left md:pb-4">
               <p className="text-sm text-gray-300 mb-2">Album</p>
-              <h1 className="text-5xl font-bold mb-4">{album.albumTitle}</h1>
+              <h1 className="text-2xl md:text-4xl lg:text-5xl font-bold mb-3 md:mb-4">{album.albumTitle}</h1>
 
-              <div className="flex items-center gap-2 text-sm text-gray-300 mb-6">
+              <div className="flex flex-wrap items-center justify-center md:justify-start gap-2 text-sm text-gray-300 mb-4 md:mb-6">
                 <Link
                   to={`/artist/${album.artistId}`}
                   className="hover:text-white transition-colors font-medium"
@@ -112,16 +112,16 @@ export function AlbumPage() {
               </div>
 
               {/* Action Buttons */}
-              <div className="flex items-center gap-4">
+              <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-4">
                 <Button
                   size="lg"
-                  className="bg-purple-600 hover:bg-purple-700 text-white px-8 py-3 rounded-full font-medium"
+                  className="bg-purple-600 hover:bg-purple-700 text-white px-6 md:px-8 py-2 md:py-3 rounded-full font-medium w-full sm:w-auto"
                   onClick={handlePlayAlbum}
                 >
                   {isAlbumPlaying() ? (
-                    <Pause className="h-5 w-5 mr-2" />
+                    <Pause className="h-4 w-4 md:h-5 md:w-5 mr-2" />
                   ) : (
-                    <Play className="h-5 w-5 mr-2" />
+                    <Play className="h-4 w-4 md:h-5 md:w-5 mr-2" />
                   )}
                   {isAlbumPlaying() ? 'Pause' : 'Play'}
                 </Button>
@@ -129,9 +129,9 @@ export function AlbumPage() {
                 <Button
                   variant="ghost"
                   size="lg"
-                  className="text-gray-400 hover:text-white p-3 rounded-full"
+                  className="text-gray-400 hover:text-white p-2 md:p-3 rounded-full"
                 >
-                  <Heart className="h-6 w-6" />
+                  <Heart className="h-5 w-5 md:h-6 md:w-6" />
                 </Button>
 
                 <Button
@@ -148,7 +148,7 @@ export function AlbumPage() {
       </div>
 
       {/* Track List */}
-      <div className="max-w-7xl mx-auto px-8 py-8">
+      <div className="max-w-7xl mx-auto px-4 md:px-8 py-6 md:py-8">
         <div className="space-y-2">
           {tracks.map((track, index) => (
             <div

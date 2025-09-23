@@ -82,19 +82,19 @@ export function MusicLikedSongs() {
   return (
     <div className="min-h-screen bg-black text-white pb-32">
       {/* Header Section */}
-      <div className="flex items-start gap-6 p-6 pb-8">
+      <div className="flex flex-col md:flex-row items-center md:items-start gap-4 md:gap-6 p-4 md:p-6 pb-6 md:pb-8">
         {/* Liked Music Icon */}
         <div className="flex-shrink-0">
-          <div className="h-64 w-64 rounded-lg bg-gradient-to-br from-purple-600 via-purple-700 to-purple-900 flex items-center justify-center shadow-2xl">
-            <Heart className="h-24 w-24 text-white fill-current" />
+          <div className="h-40 w-40 md:h-64 md:w-64 rounded-lg bg-gradient-to-br from-purple-600 via-purple-700 to-purple-900 flex items-center justify-center shadow-2xl">
+            <Heart className="h-16 w-16 md:h-24 md:w-24 text-white fill-current" />
           </div>
         </div>
 
         {/* Playlist Info */}
-        <div className="flex-1 space-y-6 pt-16">
+        <div className="flex-1 space-y-4 md:space-y-6 text-center md:text-left md:pt-16">
           <div>
-            <h1 className="text-6xl font-bold mb-6 text-white">Liked Music</h1>
-            <div className="flex items-center gap-2 text-gray-300">
+            <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold mb-3 md:mb-6 text-white">Liked Music</h1>
+            <div className="flex flex-wrap items-center justify-center md:justify-start gap-2 text-gray-300">
               <span className="text-white font-medium">Your Library</span>
               <span>•</span>
               <span>Auto playlist</span>
@@ -110,7 +110,7 @@ export function MusicLikedSongs() {
           </div>
 
           {/* Action Buttons */}
-          <div className="flex items-center gap-4">
+          <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-4">
             <Button
               size="icon"
               onClick={handlePlayAll}
@@ -140,7 +140,7 @@ export function MusicLikedSongs() {
       </div>
 
       {/* Track List */}
-      <div className="px-6">
+      <div className="px-4 md:px-6">
         {likedSongsLoading || allLikedTracksLoading ? (
           <div className="space-y-3">
             {[...Array(8)].map((_, i) => (
