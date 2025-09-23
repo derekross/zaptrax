@@ -1,13 +1,20 @@
 import path from "node:path";
+import { readFileSync } from "node:fs";
 
 import react from "@vitejs/plugin-react-swc";
 import { defineConfig } from "vitest/config";
+
+// Read package.json to get version
+const packageJson = JSON.parse(readFileSync('./package.json', 'utf-8'));
 
 // https://vitejs.dev/config/
 export default defineConfig(() => ({
   server: {
     host: "::",
     port: 8080,
+  },
+  define: {
+    __APP_VERSION__: JSON.stringify(packageJson.version),
   },
   plugins: [
     react(),
