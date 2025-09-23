@@ -16,7 +16,6 @@ import {
   ChevronUp,
   ChevronDown,
   Plus,
-  List,
 } from 'lucide-react';
 import { useMusicPlayer } from '@/contexts/MusicPlayerContext';
 import { useLikeTrack, useLikedSongs } from '@/hooks/useNostrMusic';
@@ -215,11 +214,11 @@ export function MusicPlayer() {
             <Button
               size="icon"
               variant="ghost"
-              className="h-10 w-10 rounded-full"
+              className="h-10 w-10 rounded-full text-gray-400 hover:text-purple-400 hover:bg-purple-900/20"
               onClick={() => setIsExpanded(true)}
               aria-label="Expand player"
             >
-              <ChevronUp className="h-4 w-4" />
+              <ChevronUp className="h-5 w-5" />
             </Button>
           </div>
         </div>
@@ -229,13 +228,13 @@ export function MusicPlayer() {
 
   // Fullscreen player (mobile)
   const fullPlayer = (
-    <div className="fixed inset-0 z-50 bg-background flex flex-col sm:hidden">
+    <div className="fixed inset-0 z-50 bg-black flex flex-col sm:hidden">
       {/* Header */}
       <div className="flex items-center justify-between p-4 border-b border-border/50">
         <Button
           size="icon"
           variant="ghost"
-          className="h-10 w-10 rounded-full"
+          className="h-10 w-10 rounded-full text-gray-400 hover:text-purple-400 hover:bg-purple-900/20"
           onClick={() => {
             setIsExpanded(false);
             setShowQueue(false);
@@ -715,7 +714,7 @@ export function MusicPlayer() {
             <Button
               size="icon"
               variant="ghost"
-              className="h-8 w-8 rounded-full hover:bg-muted"
+              className="h-8 w-8 rounded-full text-gray-400 hover:text-purple-400 hover:bg-purple-900/20"
               onClick={() => setIsExpanded(true)}
               aria-label="Expand player"
             >
@@ -735,16 +734,15 @@ export function MusicPlayer() {
 
   // Desktop expanded player
   const desktopExpandedPlayer = (
-    <div className="fixed inset-0 z-50 bg-background backdrop-blur-sm hidden sm:flex flex-col">
+    <div className="fixed inset-0 z-50 bg-black backdrop-blur-sm hidden sm:flex flex-col">
       {/* Header */}
       <div className="flex items-center justify-between p-6 border-b border-border/50">
         <Button
           size="icon"
           variant="ghost"
-          className="h-10 w-10 rounded-full"
+          className="h-10 w-10 rounded-full text-gray-400 hover:text-purple-400 hover:bg-purple-900/20"
           onClick={() => {
             setIsExpanded(false);
-            setShowQueue(false);
           }}
           aria-label="Collapse player"
         >
@@ -752,54 +750,46 @@ export function MusicPlayer() {
         </Button>
         <div className="text-center">
           <p className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
-            {showQueue ? 'Queue' : 'Now Playing'}
+            Now Playing
           </p>
         </div>
-        <Button
-          size="icon"
-          variant="ghost"
-          className="h-10 w-10 rounded-full"
-          onClick={() => setShowQueue(!showQueue)}
-          aria-label={showQueue ? 'Hide queue' : 'Show queue'}
-        >
-          <List className="h-5 w-5" />
-        </Button>
+        <div className="w-10"></div>
       </div>
 
       {/* Main Content */}
       <div className="flex-1 flex p-8 overflow-hidden min-h-0">
-        <div className={`w-full h-full transition-all duration-300 ${showQueue ? 'max-w-7xl mx-auto flex gap-8' : 'max-w-4xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 items-center'}`}>
+        <div className="w-full h-full max-w-7xl mx-auto flex gap-8">
           {/* Left Side - Album Art and Controls */}
-          <div className={`transition-all duration-300 ${showQueue ? 'flex-shrink-0 w-96 space-y-6' : 'contents'}`}>
+          <div className="flex-shrink-0 w-96 space-y-6">
             {/* Album Art */}
-            <div className={`flex justify-center ${showQueue ? '' : ''}`}>
+            <div className="flex justify-center">
               <div className="relative">
-                <Avatar className={`rounded-3xl shadow-2xl transition-all duration-300 ${showQueue ? 'h-48 w-48' : 'h-80 w-80'}`}>
+                <Avatar className="rounded-2xl shadow-2xl h-80 w-80">
                   <AvatarImage src={currentTrack.albumArtUrl} alt={currentTrack.albumTitle} />
-                  <AvatarFallback className={`rounded-3xl bg-gradient-to-br from-primary to-primary/80 text-white font-semibold transition-all duration-300 ${showQueue ? 'text-5xl' : 'text-9xl'}`}>
+                  <AvatarFallback className="rounded-2xl bg-gradient-to-br from-primary to-primary/80 text-white font-semibold text-8xl">
                     {(currentTrack.title || '').charAt(0)}
                   </AvatarFallback>
                 </Avatar>
                 {/* Subtle glow effect */}
-                <div className="absolute inset-0 rounded-3xl bg-gradient-to-t from-primary/20 to-transparent pointer-events-none" />
+                <div className="absolute inset-0 rounded-2xl bg-gradient-to-t from-primary/20 to-transparent pointer-events-none" />
               </div>
             </div>
 
             {/* Controls and Info */}
-            <div className={`space-y-6 transition-all duration-300 ${showQueue ? '' : 'space-y-8'}`}>
+            <div className="space-y-6">
             {/* Track Info */}
             <div className="space-y-3">
-              <h1 className={`font-bold leading-tight transition-all duration-300 ${showQueue ? 'text-2xl' : 'text-4xl'}`}>
+              <h1 className="font-bold leading-tight text-2xl">
                 {currentTrack.title}
               </h1>
               <Link
                 to={`/artist/${currentTrack.artistId}`}
-                className={`text-muted-foreground hover:text-foreground transition-colors block ${showQueue ? 'text-lg' : 'text-xl'}`}
+                className="text-muted-foreground hover:text-foreground transition-colors block text-lg"
               >
                 {currentTrack.artist}
               </Link>
-              {currentTrack.albumTitle && !showQueue && (
-                <p className="text-lg text-muted-foreground">
+              {currentTrack.albumTitle && (
+                <p className="text-base text-muted-foreground">
                   {currentTrack.albumTitle}
                 </p>
               )}
@@ -821,27 +811,27 @@ export function MusicPlayer() {
             </div>
 
             {/* Main Controls */}
-            <div className={`flex items-center justify-center transition-all duration-300 ${showQueue ? 'space-x-6' : 'space-x-8'}`}>
+            <div className="flex items-center justify-center space-x-6">
               <Button
                 size="icon"
                 variant="ghost"
                 onClick={previousTrack}
                 disabled={state.currentIndex <= 0}
-                className={`rounded-full hover:bg-muted transition-all duration-300 ${showQueue ? 'h-12 w-12' : 'h-14 w-14'}`}
+                className="rounded-full hover:bg-muted h-12 w-12"
               >
-                <SkipBack className={`transition-all duration-300 ${showQueue ? 'h-6 w-6' : 'h-7 w-7'}`} />
+                <SkipBack className="h-6 w-6" />
               </Button>
 
               <Button
                 size="icon"
                 onClick={togglePlayPause}
                 disabled={state.isLoading}
-                className={`rounded-full bg-foreground text-background hover:bg-foreground/90 shadow-lg transition-all duration-300 ${showQueue ? 'h-16 w-16' : 'h-20 w-20'}`}
+                className="rounded-full bg-foreground text-background hover:bg-foreground/90 shadow-lg h-16 w-16"
               >
                 {isPlaying ? (
-                  <Pause className={`transition-all duration-300 ${showQueue ? 'h-8 w-8' : 'h-10 w-10'}`} />
+                  <Pause className="h-8 w-8" />
                 ) : (
-                  <Play className={`transition-all duration-300 ${showQueue ? 'h-8 w-8 ml-0.5' : 'h-10 w-10 ml-1'}`} />
+                  <Play className="h-8 w-8 ml-0.5" />
                 )}
               </Button>
 
@@ -850,9 +840,9 @@ export function MusicPlayer() {
                 variant="ghost"
                 onClick={nextTrack}
                 disabled={state.currentIndex >= state.queue.length - 1}
-                className={`rounded-full hover:bg-muted transition-all duration-300 ${showQueue ? 'h-12 w-12' : 'h-14 w-14'}`}
+                className="rounded-full hover:bg-muted h-12 w-12"
               >
-                <SkipForward className={`transition-all duration-300 ${showQueue ? 'h-6 w-6' : 'h-7 w-7'}`} />
+                <SkipForward className="h-6 w-6" />
               </Button>
             </div>
 
@@ -918,8 +908,8 @@ export function MusicPlayer() {
             </div>
           </div>
 
-          {/* Queue List - only shown when showQueue is true */}
-          {showQueue && (
+          {/* Queue List - always shown in expanded view */}
+          {(
             <div className="flex-1 flex flex-col h-full min-h-0 max-h-full">
               <div className="mb-4 flex-shrink-0">
                 <h3 className="text-lg font-semibold mb-2">Up Next</h3>
@@ -929,8 +919,12 @@ export function MusicPlayer() {
               </div>
               <div className="flex-1 min-h-0 max-h-full relative">
                 <div
-                  className="absolute inset-0 overflow-y-auto overscroll-none pr-2 scrollbar-thin scrollbar-thumb-muted scrollbar-track-transparent"
-                  style={{ scrollbarGutter: 'stable' }}
+                  className="absolute inset-0 overflow-y-auto overscroll-none pr-2 custom-scrollbar"
+                  style={{
+                    scrollbarGutter: 'stable',
+                    scrollbarWidth: 'thin',
+                    scrollbarColor: '#9333ea #1f2937'
+                  }}
                 >
                   <div className="space-y-1 pb-4">
                     {state.queue.map((track, index) => (

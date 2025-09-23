@@ -3,14 +3,18 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
-import { Play, ChevronRight } from 'lucide-react';
+import { Play, ChevronRight, Heart } from 'lucide-react';
 import { useWavlakeRankings } from '@/hooks/useWavlake';
 import { useMusicPlayer } from '@/contexts/MusicPlayerContext';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
-import { useLikedSongs } from '@/hooks/useNostrMusic';
+import { useLikedSongs, useUserPlaylists } from '@/hooks/useNostrMusic';
 import { useListeningHistory } from '@/hooks/useListeningHistory';
 import type { WavlakeTrack } from '@/lib/wavlake';
+import { wavlakeAPI } from '@/lib/wavlake';
+import type { NostrEvent } from '@nostrify/nostrify';
 import { cn } from '@/lib/utils';
+import { nip19 } from 'nostr-tools';
+import { useQueries } from '@tanstack/react-query';
 
 const categories = [
   'All', 'Rock', 'Pop', 'Hip Hop', 'Electronic', 'Jazz', 'Classical', 'Folk', 'Blues', 'Country', 'Reggae'
@@ -32,7 +36,34 @@ export function MusicHome() {
   const { playTrack } = useMusicPlayer();
   const { data: likedSongs } = useLikedSongs();
   const { data: listeningHistory, isLoading: historyLoading } = useListeningHistory();
+  const { data: userPlaylists, isLoading: playlistsLoading } = useUserPlaylists();
   const navigate = useNavigate();
+
+  // Get liked songs track URLs
+  const getLikedSongsTracksUrls = () => {
+    if (!likedSongs) return [];
+    const trackTags = likedSongs.tags.filter(tag => tag[0] === 'r');
+    return trackTags.map(tag => tag[1]); // URLs
+  };
+
+  const likedTrackUrls = getLikedSongsTracksUrls();
+
+  // Load all liked tracks data
+  const allLikedTracksData = useQueries({
+    queries: likedTrackUrls.map(url => {
+      const trackId = url.substring(url.lastIndexOf('/') + 1);
+      return {
+        queryKey: ['wavlake-track', trackId],
+        queryFn: () => wavlakeAPI.getTrack(trackId),
+        enabled: !!trackId && likedTrackUrls.length > 0,
+        staleTime: 30 * 60 * 1000,
+      };
+    }),
+  });
+
+  const allLikedTracks: WavlakeTrack[] = allLikedTracksData
+    .filter(query => query.isSuccess && query.data)
+    .map(query => (Array.isArray(query.data) ? query.data[0] : query.data));
 
   // Filter genre for API call - convert 'All' to undefined, others to lowercase
   const genreFilter = selectedCategory === 'All' ? undefined : selectedCategory.toLowerCase();
@@ -55,12 +86,44 @@ export function MusicHome() {
     navigate('/playlists');
   };
 
+  const handleLibraryPlay = () => {
+    if (!user) return;
+
+    if (allLikedTracks.length > 0) {
+      // Play the liked songs playlist
+      playTrack(allLikedTracks[0], allLikedTracks);
+    } else if (listeningHistory && listeningHistory.length > 0) {
+      // Play the most recent song if no liked songs available
+      const mostRecentTrack = listeningHistory[0].track;
+      playTrack(mostRecentTrack, [mostRecentTrack]);
+    } else {
+      // No music available, navigate to discover
+      navigate('/');
+    }
+  };
+
   const handleTopTracksMore = () => {
     setShowAllTopTracks(true);
   };
 
+  const handleArtistClick = (artistId: string) => {
+    navigate(`/artist/${artistId}`);
+  };
+
+  const handlePlaylistClick = (playlist: NostrEvent) => {
+    const dTag = playlist.tags.find(tag => tag[0] === 'd')?.[1];
+    if (dTag) {
+      const naddr = nip19.naddrEncode({
+        identifier: dTag,
+        pubkey: playlist.pubkey,
+        kind: playlist.kind,
+      });
+      navigate(`/playlist/${naddr}`);
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-black text-white pb-20">
       {/* Filters Navigation */}
       <div className="px-6 py-4 space-y-4">
         {/* Genre Filter */}
@@ -133,7 +196,7 @@ export function MusicHome() {
                 <Avatar className="h-12 w-12">
                   <AvatarImage src="" />
                   <AvatarFallback className="bg-purple-700 text-white">
-                    U
+                    <Heart className="h-6 w-6" />
                   </AvatarFallback>
                 </Avatar>
                 <div>
@@ -142,14 +205,19 @@ export function MusicHome() {
                   </p>
                   <p className="text-purple-200 text-sm">{user ? `${likedSongs?.tags.filter(tag => tag[0] === 'r').length || 0} liked songs` : 'Listen again'}</p>
                 </div>
-                <Button size="sm" variant="ghost" className="ml-auto text-white hover:bg-purple-700">
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="ml-auto text-white hover:bg-purple-700"
+                  onClick={handleLibraryPlay}
+                >
                   <Play className="h-4 w-4" />
                 </Button>
               </div>
             </div>
 
-            {/* Recent Tracks */}
-            {historyLoading ? (
+            {/* Recent Track and New Playlists */}
+            {historyLoading || playlistsLoading ? (
               // Loading state
               [...Array(5)].map((_, i) => (
                 <div key={i} className="flex-shrink-0">
@@ -164,66 +232,129 @@ export function MusicHome() {
                   </Card>
                 </div>
               ))
-            ) : listeningHistory && listeningHistory.length > 0 ? (
-              // Show actual listening history
-              listeningHistory.slice(0, 5).map((historyItem) => (
-                <div key={historyItem.track.id} className="flex-shrink-0">
-                  <Card className="bg-gray-900 border-gray-800 hover:bg-gray-800 transition-colors cursor-pointer w-40">
-                    <CardContent className="p-0">
-                      <div className="relative group">
-                        <img
-                          src={historyItem.track.albumArtUrl}
-                          alt={historyItem.track.title}
-                          className="w-full h-40 object-cover rounded-t-lg"
-                        />
-                        <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity rounded-t-lg flex items-center justify-center">
-                          <Button
-                            size="sm"
-                            className="bg-purple-600 hover:bg-purple-700 text-white rounded-full"
-                            onClick={() => handleTrackPlay(historyItem.track)}
-                          >
-                            <Play className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </div>
-                      <div className="p-3">
-                        <p className="text-white font-medium text-sm truncate">{historyItem.track.title}</p>
-                        <p className="text-gray-400 text-xs truncate">{historyItem.track.artist}</p>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </div>
-              ))
             ) : (
-              // Fallback to top tracks if no listening history
-              topTracks?.slice(0, 5).map((track) => (
-                <div key={track.id} className="flex-shrink-0">
-                  <Card className="bg-gray-900 border-gray-800 hover:bg-gray-800 transition-colors cursor-pointer w-40">
-                    <CardContent className="p-0">
-                      <div className="relative group">
-                        <img
-                          src={track.albumArtUrl}
-                          alt={track.title}
-                          className="w-full h-40 object-cover rounded-t-lg"
-                        />
-                        <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity rounded-t-lg flex items-center justify-center">
-                          <Button
-                            size="sm"
-                            className="bg-purple-600 hover:bg-purple-700 text-white rounded-full"
-                            onClick={() => handleTrackPlay(track)}
-                          >
-                            <Play className="h-4 w-4" />
-                          </Button>
+              <>
+                {/* Show most recent track if available */}
+                {listeningHistory && listeningHistory.length > 0 && (
+                  <div key={listeningHistory[0].track.id} className="flex-shrink-0">
+                    <Card className="bg-gray-900 border-gray-800 hover:bg-gray-800 transition-colors cursor-pointer w-40">
+                      <CardContent className="p-0">
+                        <div className="relative group">
+                          <img
+                            src={listeningHistory[0].track.albumArtUrl}
+                            alt={listeningHistory[0].track.title}
+                            className="w-full h-40 object-cover rounded-t-lg"
+                          />
+                          <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity rounded-t-lg flex items-center justify-center">
+                            <Button
+                              size="sm"
+                              className="bg-purple-600 hover:bg-purple-700 text-white rounded-full"
+                              onClick={() => handleTrackPlay(listeningHistory[0].track)}
+                            >
+                              <Play className="h-4 w-4" />
+                            </Button>
+                          </div>
                         </div>
-                      </div>
-                      <div className="p-3">
-                        <p className="text-white font-medium text-sm truncate">{track.title}</p>
-                        <p className="text-gray-400 text-xs truncate">{track.artist}</p>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </div>
-              ))
+                        <div className="p-3">
+                          <p className="text-white font-medium text-sm truncate">{listeningHistory[0].track.title}</p>
+                          <p
+                            className="text-gray-400 text-xs truncate hover:text-purple-400 cursor-pointer"
+                            onClick={(e) => {
+                              e.stopPropagation(); // Prevent card play
+                              handleArtistClick(listeningHistory[0].track.artistId);
+                            }}
+                          >
+                            {listeningHistory[0].track.artist}
+                          </p>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+                )}
+
+                {/* Show new playlists */}
+                {userPlaylists && userPlaylists.length > 0 && (
+                  userPlaylists
+                    .sort((a, b) => b.created_at - a.created_at) // Most recent first
+                    .slice(0, 4) // Show up to 4 recent playlists
+                    .map((playlist) => {
+                      const playlistTitle = playlist.tags.find(tag => tag[0] === 'title')?.[1] || 'Untitled Playlist';
+                      const trackCount = playlist.tags.filter(tag => tag[0] === 'r' && tag[1]?.includes('wavlake.com/track/')).length;
+
+                      return (
+                        <div key={playlist.id} className="flex-shrink-0">
+                          <Card
+                            className="bg-gray-900 border-gray-800 hover:bg-gray-800 transition-colors cursor-pointer w-40"
+                            onClick={() => handlePlaylistClick(playlist)}
+                          >
+                            <CardContent className="p-0">
+                              <div className="relative group">
+                                <div className="w-full h-40 bg-gradient-to-br from-purple-600 to-purple-800 rounded-t-lg flex items-center justify-center">
+                                  <div className="text-white text-center">
+                                    <div className="text-2xl mb-2">🎵</div>
+                                    <div className="text-xs px-2">{trackCount} tracks</div>
+                                  </div>
+                                </div>
+                                <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity rounded-t-lg flex items-center justify-center">
+                                  <Button
+                                    size="sm"
+                                    className="bg-purple-600 hover:bg-purple-700 text-white rounded-full"
+                                  >
+                                    <Play className="h-4 w-4" />
+                                  </Button>
+                                </div>
+                              </div>
+                              <div className="p-3">
+                                <p className="text-white font-medium text-sm truncate">{playlistTitle}</p>
+                                <p className="text-gray-400 text-xs truncate">Playlist</p>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        </div>
+                      );
+                    })
+                )}
+
+                {/* Fallback to top tracks if needed */}
+                {(!listeningHistory || listeningHistory.length === 0) &&
+                 (!userPlaylists || userPlaylists.length === 0) &&
+                 topTracks?.slice(0, 5).map((track) => (
+                  <div key={track.id} className="flex-shrink-0">
+                    <Card className="bg-gray-900 border-gray-800 hover:bg-gray-800 transition-colors cursor-pointer w-40">
+                      <CardContent className="p-0">
+                        <div className="relative group">
+                          <img
+                            src={track.albumArtUrl}
+                            alt={track.title}
+                            className="w-full h-40 object-cover rounded-t-lg"
+                          />
+                          <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity rounded-t-lg flex items-center justify-center">
+                            <Button
+                              size="sm"
+                              className="bg-purple-600 hover:bg-purple-700 text-white rounded-full"
+                              onClick={() => handleTrackPlay(track)}
+                            >
+                              <Play className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </div>
+                        <div className="p-3">
+                          <p className="text-white font-medium text-sm truncate">{track.title}</p>
+                          <p
+                            className="text-gray-400 text-xs truncate hover:text-purple-400 cursor-pointer"
+                            onClick={(e) => {
+                              e.stopPropagation(); // Prevent card play
+                              handleArtistClick(track.artistId);
+                            }}
+                          >
+                            {track.artist}
+                          </p>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+                ))}
+              </>
             )}
           </div>
         </div>
@@ -272,7 +403,15 @@ export function MusicHome() {
                 </div>
                 <div className="p-3">
                   <p className="text-white font-medium text-sm truncate">{track.albumTitle || track.title}</p>
-                  <p className="text-gray-400 text-xs truncate">{track.artist}</p>
+                  <p
+                    className="text-gray-400 text-xs truncate hover:text-purple-400 cursor-pointer"
+                    onClick={(e) => {
+                      e.stopPropagation(); // Prevent card play
+                      handleArtistClick(track.artistId);
+                    }}
+                  >
+                    {track.artist}
+                  </p>
                 </div>
               </CardContent>
             </Card>

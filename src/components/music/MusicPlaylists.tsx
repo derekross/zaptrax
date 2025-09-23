@@ -60,7 +60,7 @@ export function MusicPlaylists() {
   const likedSongsTrackCount = likedSongs?.tags.filter(tag => tag[0] === 'r').length || 0;
 
   return (
-    <div className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-black text-white pb-20">
       {/* Header Section */}
       <div className="flex items-start gap-6 p-6 pb-8">
         {/* Playlists Icon */}

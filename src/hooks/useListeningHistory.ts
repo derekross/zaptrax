@@ -45,10 +45,10 @@ export function useListeningHistory() {
         return hasTrackReference || hasWavlakeInContent;
       });
 
-      // Extract track URLs and fetch track data
-      const trackUrls: string[] = [];
+      // Create history items from each status update event
+      const historyItemPromises = trackEvents.map(async (event) => {
+        const trackUrls: string[] = [];
 
-      trackEvents.forEach(event => {
         // Get URLs from r tags
         event.tags.forEach(tag => {
           if (tag[0] === 'r' && tag[1]?.includes('wavlake.com/track/')) {
@@ -61,45 +61,47 @@ export function useListeningHistory() {
         if (urlMatches) {
           trackUrls.push(...urlMatches);
         }
-      });
 
-      // Remove duplicates and get track IDs
-      const uniqueUrls = [...new Set(trackUrls)];
-      const trackIds = uniqueUrls.map(url => url.split('/track/')[1]?.split(/[?#]/)[0]).filter(Boolean);
+        // Process the first track URL found in this event
+        if (trackUrls.length > 0) {
+          const trackId = trackUrls[0].split('/track/')[1]?.split(/[?#]/)[0];
+          if (trackId) {
+            try {
+              const trackData = await wavlakeAPI.getTrack(trackId);
+              const track = Array.isArray(trackData) ? trackData[0] : trackData;
 
-      // Fetch track data from Wavlake API
-      const trackDataPromises = trackIds.map(async (trackId) => {
-        try {
-          const trackData = await wavlakeAPI.getTrack(trackId);
-          const track = Array.isArray(trackData) ? trackData[0] : trackData;
-
-          // Find the most recent event that referenced this track
-          const relevantEvent = trackEvents.find(event => {
-            const hasInTags = event.tags.some(tag =>
-              tag[0] === 'r' && tag[1]?.includes(`/track/${trackId}`)
-            );
-            const hasInContent = event.content.includes(`/track/${trackId}`);
-            return hasInTags || hasInContent;
-          });
-
-          if (track && relevantEvent) {
-            return {
-              track,
-              event: relevantEvent,
-              timestamp: relevantEvent.created_at,
-            } as ListeningHistoryItem;
+              if (track) {
+                return {
+                  track,
+                  event,
+                  timestamp: event.created_at,
+                } as ListeningHistoryItem;
+              }
+            } catch (error) {
+              console.error('Failed to fetch track:', trackId, error);
+            }
           }
-        } catch (error) {
-          console.error('Failed to fetch track:', trackId, error);
         }
         return null;
       });
 
-      const historyItems = (await Promise.all(trackDataPromises))
+      const allHistoryItems = (await Promise.all(historyItemPromises))
         .filter((item): item is ListeningHistoryItem => item !== null);
 
-      // Sort by timestamp (most recent first) - keep all plays including duplicates
-      return historyItems.sort((a, b) => b.timestamp - a.timestamp);
+      // Sort by timestamp (most recent first)
+      const sortedItems = allHistoryItems.sort((a, b) => b.timestamp - a.timestamp);
+
+      // Keep only the most recent play of each unique track (by track ID)
+      const uniqueTrackMap = new Map<string, ListeningHistoryItem>();
+      for (const item of sortedItems) {
+        if (!uniqueTrackMap.has(item.track.id)) {
+          uniqueTrackMap.set(item.track.id, item);
+        }
+      }
+
+      // Since we only have one music status update at most, return that single track
+      // The UI will fall back to showing top tracks if history is insufficient
+      return Array.from(uniqueTrackMap.values()).slice(0, 6);
     },
     enabled: !!user?.pubkey,
     staleTime: 5 * 60 * 1000, // 5 minutes

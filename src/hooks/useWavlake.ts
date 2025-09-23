@@ -51,3 +51,24 @@ export function useWavlakeAlbum(albumId: string | undefined) {
     staleTime: 30 * 60 * 1000, // 30 minutes
   });
 }
+
+export function useWavlakeRadioTracks(genre: string | undefined, enabled: boolean = true) {
+  return useQuery({
+    queryKey: ['wavlake-radio', genre],
+    queryFn: async () => {
+      if (!genre) return [];
+
+      // Fetch a larger set of tracks from the genre and shuffle them
+      const tracks = await wavlakeAPI.getRankings({
+        sort: 'sats',
+        genre: genre.toLowerCase(),
+        limit: 50, // Reduced limit for better performance
+      });
+
+      // Shuffle the tracks for radio-style random playback
+      return tracks.sort(() => Math.random() - 0.5);
+    },
+    enabled: enabled && !!genre,
+    staleTime: 15 * 60 * 1000, // 15 minutes - shorter stale time for radio content
+  });
+}

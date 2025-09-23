@@ -14,6 +14,7 @@ export interface WavlakeTrack {
   msatTotal: string;
   artistNpub: string;
   order: number;
+  genre?: string; // Genre of the track
   url?: string; // Optional URL property that may be present in search results
 }
 

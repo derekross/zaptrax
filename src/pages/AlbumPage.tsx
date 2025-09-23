@@ -1,45 +1,30 @@
 import { useParams, Link } from 'react-router-dom';
-import { useState } from 'react';
 import { useWavlakeAlbum } from '@/hooks/useWavlake';
-import { TrackCard } from '@/components/music/TrackCard';
-import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Disc, Play, Pause } from 'lucide-react';
+import { Play, Pause, Heart, MoreHorizontal } from 'lucide-react';
 import { useMusicPlayer } from '@/contexts/MusicPlayerContext';
-import { CommentDialog } from '@/components/music/CommentDialog';
-import { AddToPlaylistDialog } from '@/components/music/AddToPlaylistDialog';
-import { ZapDialog } from '@/components/music/ZapDialog';
-import type { WavlakeTrack } from '@/lib/wavlake';
 
 export function AlbumPage() {
   const { albumId } = useParams<{ albumId: string }>();
   const { data: albumData, isLoading, error } = useWavlakeAlbum(albumId);
-  const { state, playTrack, togglePlayPause } = useMusicPlayer();
-  const [commentDialogOpen, setCommentDialogOpen] = useState(false);
-  const [selectedTrackForComment, setSelectedTrackForComment] = useState<WavlakeTrack | null>(null);
-  const [addToPlaylistOpen, setAddToPlaylistOpen] = useState(false);
-  const [selectedTrackForPlaylist, setSelectedTrackForPlaylist] = useState<WavlakeTrack | null>(null);
-  const [zapDialogOpen, setZapDialogOpen] = useState(false);
-  const [selectedTrackForZap, setSelectedTrackForZap] = useState<WavlakeTrack | null>(null);
+  const { state, playTrack } = useMusicPlayer();
 
   // Handle case where API might return an array
   const album = Array.isArray(albumData) ? albumData[0] : albumData;
 
   if (isLoading) {
     return (
-      <div className="container mx-auto px-2 sm:px-4 py-4 sm:py-8">
-        <div className="flex items-center space-x-4 mb-8">
-          <Skeleton className="w-32 h-32 rounded-md" />
-          <div className="space-y-2">
-            <Skeleton className="h-8 w-48" />
-            <Skeleton className="h-4 w-32" />
-          </div>
+      <div className="min-h-screen bg-black text-white">
+        <div className="relative h-[400px] overflow-hidden">
+          <Skeleton className="w-full h-full" />
         </div>
-        <div className="space-y-4">
-          {[...Array(5)].map((_, i) => (
-            <Skeleton key={i} className="h-20 w-full" />
-          ))}
+        <div className="max-w-7xl mx-auto px-8 py-8">
+          <div className="space-y-4">
+            {[...Array(10)].map((_, i) => (
+              <Skeleton key={i} className="h-16 w-full" />
+            ))}
+          </div>
         </div>
       </div>
     );
@@ -47,145 +32,188 @@ export function AlbumPage() {
 
   if (error || !album) {
     return (
-      <div className="container mx-auto px-2 sm:px-4 py-4 sm:py-8">
-        <Card className="border-dashed">
-          <CardContent className="py-12 px-8 text-center">
-            <Disc className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-            <h3 className="font-medium mb-2">Album not found</h3>
-            <p className="text-sm text-muted-foreground">
-              {error?.message || 'The album you are looking for does not exist.'}
-            </p>
-          </CardContent>
-        </Card>
+      <div className="min-h-screen bg-black text-white flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold mb-4">Album not found</h1>
+          <p className="text-gray-400">The album you're looking for doesn't exist.</p>
+        </div>
       </div>
     );
   }
 
-  const isAlbumPlaying = () => {
-    if (!state.currentTrack || !album?.tracks) return false;
-    return album.tracks.some(track => track.id === state.currentTrack?.id) && state.isPlaying;
-  };
+  const tracks = album.tracks || [];
 
-  const handleAlbumPlay = () => {
-    if (album?.tracks && album.tracks.length > 0) {
-      const isCurrentTrackFromAlbum = album.tracks.some(track => track.id === state.currentTrack?.id);
-
-      if (isCurrentTrackFromAlbum) {
-        togglePlayPause();
-      } else {
-        playTrack(album.tracks[0], album.tracks);
-      }
+  const handlePlayAlbum = () => {
+    if (tracks.length > 0) {
+      playTrack(tracks[0], tracks);
     }
   };
 
-  const handleAddToPlaylist = (track: WavlakeTrack) => {
-    setSelectedTrackForPlaylist(track);
-    setAddToPlaylistOpen(true);
+  const isAlbumPlaying = () => {
+    if (!state.currentTrack) return false;
+    return tracks.some(track => track.id === state.currentTrack?.id) && state.isPlaying;
   };
 
-  const handleComment = (track: WavlakeTrack) => {
-    setSelectedTrackForComment(track);
-    setCommentDialogOpen(true);
-  };
 
-  const handleZap = (track: WavlakeTrack) => {
-    setSelectedTrackForZap(track);
-    setZapDialogOpen(true);
+  // Calculate total duration
+  const totalDuration = tracks.reduce((sum, track) => sum + (track.duration || 0), 0);
+  const formatDuration = (seconds: number) => {
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    if (hours > 0) {
+      return `${hours} hr ${minutes} min`;
+    }
+    return `${minutes} min`;
   };
 
   return (
-    <div className="container mx-auto px-2 sm:px-4 py-4 sm:py-8">
-      {/* Album Header */}
-      <div className="flex items-center space-x-4 mb-8">
-        <img
-          src={album.albumArtUrl}
-          alt={album.title}
-          className="w-32 h-32 rounded-md border-2 border-primary"
+    <div className="min-h-screen bg-black text-white pb-20">
+      {/* Hero Section with Album Art */}
+      <div className="relative h-[400px] overflow-hidden">
+        {/* Background Image */}
+        <div
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+          style={{
+            backgroundImage: `url(${album.albumArtUrl})`,
+            filter: 'blur(20px) brightness(0.3)',
+            transform: 'scale(1.1)'
+          }}
         />
-        <div className="flex-1">
-          <h1 className="text-4xl font-bold font-punk tracking-wider text-primary">
-            {album.title.toUpperCase()}
-          </h1>
-          {album.tracks.length > 0 && (
-            <Link
-              to={`/artist/${album.tracks[0].artistId}`}
-              className="text-lg text-accent font-metal hover:text-primary transition-colors hover:underline"
-            >
-              {album.artist}
-            </Link>
-          )}
-          {album.tracks.length === 0 && (
-            <p className="text-lg text-accent font-metal">
-              {album.artist}
-            </p>
-          )}
-          <p className="text-sm text-muted-foreground mb-4">
-            {album.tracks.length} tracks
-          </p>
-          <Button
-            size="lg"
-            onClick={handleAlbumPlay}
-            className="bg-primary hover:bg-primary/90 text-primary-foreground border-2 border-foreground punk-button font-bold uppercase tracking-wide"
-          >
-            {isAlbumPlaying() ? (
-              <>
-                <Pause className="h-5 w-5 mr-2" />
-                PAUSE ALBUM
-              </>
-            ) : (
-              <>
-                <Play className="h-5 w-5 mr-2" />
-                PLAY ALBUM
-              </>
-            )}
-          </Button>
+
+        {/* Gradient Overlay */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/70 to-transparent" />
+
+        {/* Album Info */}
+        <div className="absolute bottom-0 left-0 right-0 p-8">
+          <div className="max-w-7xl mx-auto flex items-end gap-6">
+            {/* Album Cover */}
+            <img
+              src={album.albumArtUrl}
+              alt={album.albumTitle}
+              className="w-60 h-60 rounded-lg shadow-2xl flex-shrink-0"
+            />
+
+            {/* Album Details */}
+            <div className="flex-1 pb-4">
+              <p className="text-sm text-gray-300 mb-2">Album</p>
+              <h1 className="text-5xl font-bold mb-4">{album.albumTitle}</h1>
+
+              <div className="flex items-center gap-2 text-sm text-gray-300 mb-6">
+                <Link
+                  to={`/artist/${album.artistId}`}
+                  className="hover:text-white transition-colors font-medium"
+                >
+                  {album.artist}
+                </Link>
+                <span>•</span>
+                <span>{new Date().getFullYear()}</span>
+                <span>•</span>
+                <span>{tracks.length} songs, {formatDuration(totalDuration)}</span>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex items-center gap-4">
+                <Button
+                  size="lg"
+                  className="bg-purple-600 hover:bg-purple-700 text-white px-8 py-3 rounded-full font-medium"
+                  onClick={handlePlayAlbum}
+                >
+                  {isAlbumPlaying() ? (
+                    <Pause className="h-5 w-5 mr-2" />
+                  ) : (
+                    <Play className="h-5 w-5 mr-2" />
+                  )}
+                  {isAlbumPlaying() ? 'Pause' : 'Play'}
+                </Button>
+
+                <Button
+                  variant="ghost"
+                  size="lg"
+                  className="text-gray-400 hover:text-white p-3 rounded-full"
+                >
+                  <Heart className="h-6 w-6" />
+                </Button>
+
+                <Button
+                  variant="ghost"
+                  size="lg"
+                  className="text-gray-400 hover:text-white p-3 rounded-full"
+                >
+                  <MoreHorizontal className="h-6 w-6" />
+                </Button>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Album Tracks */}
-      <div className="space-y-4">
-        <h2 className="text-2xl font-punk font-black tracking-wider text-primary torn-edge">
-          TRACKS
-        </h2>
-        {album.tracks.map((track, index) => (
-          <div key={track.id} className="relative">
-            {/* Track Number Badge */}
-            <div className="absolute -left-2 top-4 z-10">
-              <div className="bg-accent text-accent-foreground text-xs font-bold rounded-full h-6 w-6 flex items-center justify-center">
-                {index + 1}
+      {/* Track List */}
+      <div className="max-w-7xl mx-auto px-8 py-8">
+        <div className="space-y-2">
+          {tracks.map((track, index) => (
+            <div
+              key={track.id}
+              className="flex items-center p-3 rounded-lg hover:bg-gray-900/50 transition-colors group cursor-pointer"
+              onClick={() => playTrack(track, tracks)}
+            >
+              {/* Track Number / Play Button */}
+              <div className="w-8 flex items-center justify-center mr-4">
+                <span className="text-gray-400 group-hover:hidden text-sm">
+                  {index + 1}
+                </span>
+                <Play className="h-4 w-4 text-white hidden group-hover:block" />
+              </div>
+
+              {/* Track Info */}
+              <div className="flex-1 min-w-0">
+                <div className="text-white font-medium truncate">
+                  {track.title}
+                </div>
+                <div className="text-gray-400 text-sm truncate">
+                  {track.artist}
+                </div>
+              </div>
+
+              {/* Sats Earned */}
+              <div className="text-gray-400 text-sm mr-4 hidden md:block">
+                {track.msatTotal ? `${Math.floor(parseInt(track.msatTotal) / 1000)} sats` : '--'}
+              </div>
+
+              {/* Actions */}
+              <div className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-2 mr-4">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-gray-400 hover:text-white p-2"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    // Like track action
+                  }}
+                >
+                  <Heart className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-gray-400 hover:text-white p-2"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    // More actions menu
+                  }}
+                >
+                  <MoreHorizontal className="h-4 w-4" />
+                </Button>
+              </div>
+
+              {/* Duration */}
+              <div className="text-gray-400 text-sm w-12 text-right">
+                {track.duration ? `${Math.floor(track.duration / 60)}:${(track.duration % 60).toString().padStart(2, '0')}` : '--:--'}
               </div>
             </div>
-
-            <TrackCard
-              track={track}
-              className="ml-4"
-              queue={album.tracks}
-              onAddToPlaylist={handleAddToPlaylist}
-              onComment={handleComment}
-              onZap={handleZap}
-            />
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
 
-      {/* Dialogs */}
-      <CommentDialog
-        open={commentDialogOpen}
-        onOpenChange={setCommentDialogOpen}
-        track={selectedTrackForComment}
-      />
-
-      <AddToPlaylistDialog
-        open={addToPlaylistOpen}
-        onOpenChange={setAddToPlaylistOpen}
-        track={selectedTrackForPlaylist}
-      />
-
-      <ZapDialog
-        open={zapDialogOpen}
-        onOpenChange={setZapDialogOpen}
-        track={selectedTrackForZap}
-      />
     </div>
   );
 }

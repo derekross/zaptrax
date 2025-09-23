@@ -1,34 +1,23 @@
-import { useParams, Link } from 'react-router-dom';
-import { useState } from 'react';
-import { useWavlakeArtist } from '@/hooks/useWavlake';
+import { useParams, useNavigate } from 'react-router-dom';
+import { useWavlakeArtist, useWavlakeRadioTracks } from '@/hooks/useWavlake';
 import { useWavlakeArtistTracks } from '@/hooks/useWavlakeArtistTracks';
 import { useAuthor } from '@/hooks/useAuthor';
-import { TrackCard } from '@/components/music/TrackCard';
-import { Card, CardHeader, CardTitle } from '@/components/ui/card';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Disc, Music, Play, Pause } from 'lucide-react';
-import { CommentDialog } from '@/components/music/CommentDialog';
-import { AddToPlaylistDialog } from '@/components/music/AddToPlaylistDialog';
-import { ZapDialog } from '@/components/music/ZapDialog';
+import { Disc, Play, Pause } from 'lucide-react';
 import { useMusicPlayer } from '@/contexts/MusicPlayerContext';
 import type { WavlakeTrack } from '@/lib/wavlake';
 
 export function ArtistPage() {
   const { artistId } = useParams<{ artistId: string }>();
+  const navigate = useNavigate();
   const { data: artist, isLoading: artistLoading } = useWavlakeArtist(artistId);
   const { data: tracks, isLoading: tracksLoading } = useWavlakeArtistTracks(artistId);
   const { state, playTrack } = useMusicPlayer();
 
-  // State to track which album is expanded
-  const [expandedAlbumId, setExpandedAlbumId] = useState<string | null>(null);
-  const [commentDialogOpen, setCommentDialogOpen] = useState(false);
-  const [selectedTrackForComment, setSelectedTrackForComment] = useState<WavlakeTrack | null>(null);
-  const [addToPlaylistOpen, setAddToPlaylistOpen] = useState(false);
-  const [selectedTrackForPlaylist, setSelectedTrackForPlaylist] = useState<WavlakeTrack | null>(null);
-  const [zapDialogOpen, setZapDialogOpen] = useState(false);
-  const [selectedTrackForZap, setSelectedTrackForZap] = useState<WavlakeTrack | null>(null);
+  // Use a default genre for radio functionality since tracks don't include genre data
+  // We'll use 'rock' as a popular default genre for radio
+  const radioGenre = 'rock';
+  const { data: radioTracks } = useWavlakeRadioTracks(radioGenre);
 
   // Find npub if present
   const npub = artist?.artistNpub;
@@ -69,12 +58,8 @@ export function ArtistPage() {
     };
   });
 
-  const handleAlbumClick = (albumId: string) => {
-    setExpandedAlbumId(expandedAlbumId === albumId ? null : albumId);
-  };
-
   const handleAlbumPlay = (albumTracks: WavlakeTrack[], event: React.MouseEvent) => {
-    event.stopPropagation(); // Prevent album expansion when clicking play button
+    event.stopPropagation();
     if (albumTracks.length > 0) {
       playTrack(albumTracks[0], albumTracks);
     }
@@ -85,171 +70,222 @@ export function ArtistPage() {
     return albumTracks.some(track => track.id === state.currentTrack?.id) && state.isPlaying;
   };
 
-  const handleAddToPlaylist = (track: WavlakeTrack) => {
-    setSelectedTrackForPlaylist(track);
-    setAddToPlaylistOpen(true);
+  const handleAlbumClick = (albumId: string) => {
+    navigate(`/album/${albumId}`);
   };
 
-  const handleComment = (track: WavlakeTrack) => {
-    setSelectedTrackForComment(track);
-    setCommentDialogOpen(true);
-  };
-
-  const handleZap = (track: WavlakeTrack) => {
-    setSelectedTrackForZap(track);
-    setZapDialogOpen(true);
-  };
 
   return (
-    <div className="container mx-auto px-2 sm:px-4 py-4 sm:py-8">
-      <div className="flex items-center space-x-4 mb-8">
-        <img src={artist.artistArtUrl} alt={artist.name} className="w-32 h-32 rounded-full" />
-        <div>
-          {/* Nostr profile info */}
-          {npub && nostrProfile && (
-            <div className="mb-4 p-4 border rounded bg-muted/30">
-              <div className="flex items-center space-x-3">
-                {nostrProfile.picture && (
-                  <img
-                    src={nostrProfile.picture}
-                    alt={nostrProfile.name || 'Nostr Avatar'}
-                    className="w-12 h-12 rounded-full border"
-                  />
-                )}
-                <div>
-                  <div className="font-bold text-lg">{nostrProfile.display_name || nostrProfile.name}</div>
-                  {nostrProfile.about && (
-                    <div className="text-sm text-muted-foreground">{nostrProfile.about}</div>
-                  )}
-                  {nostrProfile.nip05 && (
-                    <div className="text-xs text-accent">{nostrProfile.nip05}</div>
-                  )}
-                </div>
-              </div>
-            </div>
-          )}
-          <h1 className="text-4xl font-bold">{artist.name}</h1>
-          <p className="text-lg text-muted-foreground">{artist.bio}</p>
-        </div>
-      </div>
+    <div className="min-h-screen bg-black text-white pb-20">
+      {/* Hero Section with Background Image */}
+      <div className="relative h-[400px] overflow-hidden">
+        {/* Background Image */}
+        <div
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+          style={{
+            backgroundImage: `url(${artist.artistArtUrl})`,
+            filter: 'blur(20px) brightness(0.4)',
+            transform: 'scale(1.1)'
+          }}
+        />
 
-      {/* Albums Section */}
-      {albums.length > 0 && (
-        <div className="mb-8">
-          <h2 className="text-2xl font-punk font-black tracking-wider text-primary torn-edge mb-4">
-            ALBUMS
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {albums.map((album) => (
-              <div key={album.id}>
-                <Card
-                  className="cursor-pointer hover:neon-glow transition-all punk-card border-2 border-primary group"
-                  onClick={() => handleAlbumClick(album.id)}
+        {/* Gradient Overlay */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent" />
+
+        {/* Artist Info */}
+        <div className="absolute bottom-0 left-0 right-0 p-8">
+          <div className="max-w-7xl mx-auto">
+            <h1 className="text-6xl font-bold mb-4">{artist.name}</h1>
+            <p className="text-lg text-gray-300 mb-6 max-w-2xl">
+              {artist.bio || nostrProfile?.about || 'Artist on ZapTrax'}
+            </p>
+
+            {/* Action Buttons */}
+            <div className="flex items-center gap-4">
+              <Button
+                size="lg"
+                className="bg-purple-600 hover:bg-purple-700 text-white px-8 py-3 rounded-full font-medium"
+                onClick={() => {
+                  if (tracks.length > 0) {
+                    // Create a shuffled copy of the tracks array
+                    const shuffledTracks = [...tracks].sort(() => Math.random() - 0.5);
+                    playTrack(shuffledTracks[0], shuffledTracks);
+                  }
+                }}
+              >
+                <Play className="h-5 w-5 mr-2" />
+                Shuffle
+              </Button>
+
+              <Button
+                variant="outline"
+                size="lg"
+                className="border-gray-600 text-white hover:bg-gray-800 px-6 py-3 rounded-full"
+                onClick={() => {
+                  if (radioTracks && radioTracks.length > 0) {
+                    // If artist has tracks, start with one of their tracks, otherwise start with radio
+                    if (tracks && tracks.length > 0) {
+                      const firstTrack = tracks[0];
+                      const radioPlaylist = [firstTrack, ...radioTracks.slice(0, 49)];
+                      playTrack(firstTrack, radioPlaylist);
+                    } else {
+                      // Just play radio tracks if artist has no tracks
+                      playTrack(radioTracks[0], radioTracks);
+                    }
+                  }
+                }}
+                disabled={!radioTracks || radioTracks.length === 0}
+              >
+                <Disc className="h-5 w-5 mr-2" />
+                Radio
+              </Button>
+
+              {npub && (
+                <Button
+                  variant="outline"
+                  size="lg"
+                  className="border-gray-600 text-white hover:bg-gray-800 px-6 py-3 rounded-full"
                 >
-                  <CardHeader className="pb-3">
-                    <div className="flex items-center space-x-3">
-                      <div className="relative">
-                        <Avatar className="h-16 w-16 rounded-md border-2 border-foreground">
-                          <AvatarImage src={album.albumArtUrl} alt={album.title} />
-                          <AvatarFallback className="rounded-md bg-primary text-primary-foreground font-punk">
-                            <Disc className="h-6 w-6" />
-                          </AvatarFallback>
-                        </Avatar>
-                        <Button
-                          size="icon"
-                          variant="secondary"
-                          className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity bg-primary/80 hover:bg-primary text-primary-foreground border-2 border-foreground punk-button h-16 w-16"
-                          onClick={(e) => handleAlbumPlay(album.tracks, e)}
-                        >
-                          {isAlbumPlaying(album.tracks) ? (
-                            <Pause className="h-6 w-6" />
-                          ) : (
-                            <Play className="h-6 w-6" />
-                          )}
-                        </Button>
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <Link
-                          to={`/album/${album.id}`}
-                          onClick={(e) => e.stopPropagation()}
-                          className="block"
-                        >
-                          <CardTitle className="font-bold text-sm truncate uppercase tracking-wide hover:text-primary transition-colors">
-                            {album.title}
-                          </CardTitle>
-                        </Link>
-                        <Badge variant="outline" className="text-xs border-accent text-accent font-bold mt-1">
-                          {album.trackCount} TRACKS
-                        </Badge>
-                      </div>
-                    </div>
-                  </CardHeader>
-                </Card>
-
-                {/* Expanded Album Tracks */}
-                {expandedAlbumId === album.id && (
-                  <div className="mt-4 space-y-2">
-                    {album.tracks.map((track, index) => (
-                      <div key={track.id} className="relative">
-                        <div className="absolute -left-2 top-4 z-10">
-                          <div className="bg-accent text-accent-foreground text-xs font-bold rounded-full h-6 w-6 flex items-center justify-center">
-                            {index + 1}
-                          </div>
-                        </div>
-                        <TrackCard
-                          track={track}
-                          className="ml-4"
-                          queue={album.tracks}
-                          onAddToPlaylist={handleAddToPlaylist}
-                          onComment={handleComment}
-                          onZap={handleZap}
-                        />
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            ))}
+                  Follow
+                </Button>
+              )}
+            </div>
           </div>
         </div>
-      )}
-
-      {/* All Tracks Section */}
-      <div className="space-y-4">
-        <h2 className="text-2xl font-punk font-black tracking-wider text-primary torn-edge flex items-center space-x-2">
-          <Music className="h-6 w-6" />
-          <span>ALL TRACKS</span>
-        </h2>
-        {tracks.map(track => (
-          <TrackCard
-            key={track.id}
-            track={track}
-            queue={tracks}
-            onAddToPlaylist={handleAddToPlaylist}
-            onComment={handleComment}
-            onZap={handleZap}
-          />
-        ))}
       </div>
 
-      {/* Dialogs */}
-      <CommentDialog
-        open={commentDialogOpen}
-        onOpenChange={setCommentDialogOpen}
-        track={selectedTrackForComment}
-      />
+      {/* Content Section */}
+      <div className="max-w-7xl mx-auto px-8 py-8">
+        {/* Top Songs Section */}
+        {tracks.length > 0 && (
+          <div className="mb-12">
+            <h2 className="text-2xl font-bold text-white mb-6">Top songs</h2>
+            <div className="space-y-2">
+              {tracks
+                .sort((a, b) => {
+                  const aSats = parseInt(a.msatTotal || '0');
+                  const bSats = parseInt(b.msatTotal || '0');
+                  return bSats - aSats; // Sort descending by sats
+                })
+                .slice(0, 5)
+                .map((track, index) => (
+                <div
+                  key={track.id}
+                  className="flex items-center p-3 rounded-lg hover:bg-gray-900/50 transition-colors group cursor-pointer"
+                  onClick={() => playTrack(track, tracks)}
+                >
+                  {/* Track Number / Play Button */}
+                  <div className="w-8 flex items-center justify-center mr-4">
+                    <span className="text-gray-400 group-hover:hidden text-sm">
+                      {index + 1}
+                    </span>
+                    <Play className="h-4 w-4 text-white hidden group-hover:block" />
+                  </div>
 
-      <AddToPlaylistDialog
-        open={addToPlaylistOpen}
-        onOpenChange={setAddToPlaylistOpen}
-        track={selectedTrackForPlaylist}
-      />
+                  {/* Album Art */}
+                  <img
+                    src={track.albumArtUrl}
+                    alt={track.albumTitle}
+                    className="w-12 h-12 rounded mr-4"
+                  />
 
-      <ZapDialog
-        open={zapDialogOpen}
-        onOpenChange={setZapDialogOpen}
-        track={selectedTrackForZap}
-      />
+                  {/* Track Info */}
+                  <div className="flex-1 min-w-0">
+                    <div className="text-white font-medium truncate">
+                      {track.title}
+                    </div>
+                    <div
+                      className="text-gray-400 text-sm truncate hover:text-purple-400 cursor-pointer"
+                      onClick={(e) => {
+                        e.stopPropagation(); // Prevent track play
+                        handleAlbumClick(track.albumId);
+                      }}
+                    >
+                      {track.albumTitle}
+                    </div>
+                  </div>
+
+                  {/* Sats Earned */}
+                  <div className="text-gray-400 text-sm mr-4">
+                    {track.msatTotal ? `${Math.floor(parseInt(track.msatTotal) / 1000)} sats` : '--'}
+                  </div>
+
+                  {/* Duration */}
+                  <div className="text-gray-400 text-sm w-12 text-right">
+                    {track.duration ? `${Math.floor(track.duration / 60)}:${(track.duration % 60).toString().padStart(2, '0')}` : '--:--'}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {tracks.length > 5 && (
+              <Button
+                variant="ghost"
+                className="text-gray-400 hover:text-purple-400 hover:bg-purple-900/20 mt-4"
+              >
+                Show all
+              </Button>
+            )}
+          </div>
+        )}
+
+        {/* Albums Section */}
+        {albums.length > 0 && (
+          <div className="mb-8">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl font-bold text-white">Albums</h2>
+              <Button
+                variant="ghost"
+                className="text-gray-400 hover:text-purple-400 hover:bg-purple-900/20"
+              >
+                Show all
+              </Button>
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+              {albums.slice(0, 6).map((album) => (
+                <div
+                  key={album.id}
+                  className="group cursor-pointer"
+                  onClick={() => handleAlbumClick(album.id)}
+                >
+                  <div className="relative mb-3">
+                    <img
+                      src={album.albumArtUrl}
+                      alt={album.title}
+                      className="w-full aspect-square object-cover rounded-lg"
+                    />
+                    <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center">
+                      <Button
+                        size="sm"
+                        className="bg-purple-600 hover:bg-purple-700 text-white rounded-full"
+                        onClick={(e) => {
+                          e.stopPropagation(); // Prevent album navigation
+                          handleAlbumPlay(album.tracks, e);
+                        }}
+                      >
+                        {isAlbumPlaying(album.tracks) ? (
+                          <Pause className="h-4 w-4" />
+                        ) : (
+                          <Play className="h-4 w-4" />
+                        )}
+                      </Button>
+                    </div>
+                  </div>
+                  <div>
+                    <h3 className="text-white font-medium text-sm truncate">
+                      {album.title}
+                    </h3>
+                    <p className="text-gray-400 text-xs">
+                      {new Date().getFullYear()} • Album
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+
     </div>
   );
 }

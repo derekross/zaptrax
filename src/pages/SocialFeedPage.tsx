@@ -119,13 +119,6 @@ export function SocialFeedPage() {
           <div className="flex-1 space-y-6 pt-16">
             <div>
               <h1 className="text-6xl font-bold mb-6 text-white">Social</h1>
-              <div className="flex items-center gap-2 text-gray-300">
-                <span className="text-white font-medium">Music Community</span>
-                <span>•</span>
-                <span>Social Feed</span>
-                <span>•</span>
-                <span>2025</span>
-              </div>
               <p className="text-sm text-gray-400 mt-4 max-w-lg">
                 Discover what your friends are listening to and sharing. Sign in to see activity from people you follow and join the conversation.
               </p>
@@ -151,13 +144,6 @@ export function SocialFeedPage() {
         <div className="flex-1 space-y-6 pt-16">
           <div>
             <h1 className="text-6xl font-bold mb-6 text-white">Social</h1>
-            <div className="flex items-center gap-2 text-gray-300">
-              <span className="text-white font-medium">Music Community</span>
-              <span>•</span>
-              <span>Social Feed</span>
-              <span>•</span>
-              <span>2025</span>
-            </div>
             <p className="text-sm text-gray-400 mt-4 max-w-lg">
               Discover what your friends are listening to and sharing. Follow users and see their music activity.
             </p>
