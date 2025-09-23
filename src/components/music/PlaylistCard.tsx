@@ -80,7 +80,7 @@ export function PlaylistCard({
   const getPlaylistImage = () => {
     const colors = [
       'bg-gradient-to-br from-purple-500 to-pink-500',
-      'bg-gradient-to-br from-blue-500 to-cyan-500',
+      'bg-gradient-to-br from-purple-500 to-purple-600',
       'bg-gradient-to-br from-green-500 to-emerald-500',
       'bg-gradient-to-br from-orange-500 to-red-500',
       'bg-gradient-to-br from-indigo-500 to-purple-500',

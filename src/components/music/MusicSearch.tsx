@@ -205,7 +205,7 @@ export function MusicSearch({
 
     return (
       <div
-        className="flex items-center space-x-3 p-2 rounded-lg hover:bg-muted/50 cursor-pointer"
+        className="flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-800 cursor-pointer"
         onClick={() => handleUserClick(result)}
       >
         <Avatar className="h-12 w-12">
@@ -258,26 +258,26 @@ export function MusicSearch({
     <div className="space-y-4">
       {/* Search Input */}
       <div className="relative">
-        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
         <Input
           placeholder="Search for tracks, artists, albums, or users (npub/NIP-05)..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="pl-10"
+          className="pl-10 bg-gray-900 border-gray-700 text-white placeholder-gray-400 focus:border-purple-500 focus:ring-purple-500"
         />
       </div>
 
       {/* Loading State */}
       {isLoading && (
-        <Card>
+        <Card className="bg-gray-900 border-gray-800">
           <CardContent className="p-4">
             <div className="space-y-3">
               {[...Array(5)].map((_, i) => (
                 <div key={i} className="flex items-center space-x-3">
-                  <Skeleton className="h-12 w-12 rounded-md" />
+                  <Skeleton className="h-12 w-12 rounded-md bg-gray-800" />
                   <div className="space-y-2 flex-1">
-                    <Skeleton className="h-4 w-3/4" />
-                    <Skeleton className="h-3 w-1/2" />
+                    <Skeleton className="h-4 w-3/4 bg-gray-800" />
+                    <Skeleton className="h-3 w-1/2 bg-gray-800" />
                   </div>
                 </div>
               ))}
@@ -288,7 +288,7 @@ export function MusicSearch({
 
       {/* Error State */}
       {error && (
-        <Card>
+        <Card className="bg-gray-900 border-gray-800">
           <CardContent className="p-4">
             <p className="text-sm text-red-500">
               Failed to search: {error.message}
@@ -299,7 +299,7 @@ export function MusicSearch({
 
       {/* Nostr User Results */}
       {nostrResults && nostrResults.length > 0 && (
-        <Card>
+        <Card className="bg-gray-900 border-gray-800">
           <CardHeader className="pb-3">
             <CardTitle className="text-lg flex items-center space-x-2">
               <User className="h-5 w-5" />
@@ -319,7 +319,7 @@ export function MusicSearch({
         <div className="space-y-4">
           {/* Tracks */}
           {groupedResults.tracks.length > 0 && (
-            <Card>
+            <Card className="bg-gray-900 border-gray-800">
               <CardHeader className="pb-3">
                 <CardTitle className="text-lg flex items-center space-x-2">
                   <Music className="h-5 w-5" />
@@ -342,7 +342,7 @@ export function MusicSearch({
 
           {/* Artists */}
           {groupedResults.artists.length > 0 && (
-            <Card>
+            <Card className="bg-gray-900 border-gray-800">
               <CardHeader className="pb-3">
                 <CardTitle className="text-lg flex items-center space-x-2">
                   <User className="h-5 w-5" />
@@ -353,7 +353,7 @@ export function MusicSearch({
                 {groupedResults.artists.map((result) => (
                   <div
                     key={result.id}
-                    className="flex items-center space-x-3 p-2 rounded-lg hover:bg-muted/50 cursor-pointer"
+                    className="flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-800 cursor-pointer"
                     onClick={() => handleResultClick(result)}
                   >
                     <Avatar className="h-12 w-12">
@@ -383,7 +383,7 @@ export function MusicSearch({
 
           {/* Albums */}
           {groupedResults.albums.length > 0 && (
-            <Card>
+            <Card className="bg-gray-900 border-gray-800">
               <CardHeader className="pb-3">
                 <CardTitle className="text-lg flex items-center space-x-2">
                   <Disc className="h-5 w-5" />
@@ -394,7 +394,7 @@ export function MusicSearch({
                 {groupedResults.albums.map((result) => (
                   <div
                     key={result.id}
-                    className="flex items-center space-x-3 p-2 rounded-lg hover:bg-muted/50 cursor-pointer"
+                    className="flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-800 cursor-pointer"
                     onClick={() => handleResultClick(result)}
                   >
                     <Avatar className="h-12 w-12 rounded-md">
@@ -429,7 +429,7 @@ export function MusicSearch({
        ((searchResults && searchResults.length === 0) ||
         (nostrResults && nostrResults.length === 0)) &&
        !isLoading && (
-        <Card>
+        <Card className="bg-gray-900 border-gray-800">
           <CardContent className="p-8 text-center">
             {isNostrSearch ? (
               <User className="h-12 w-12 mx-auto text-muted-foreground mb-4" />

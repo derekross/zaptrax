@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Card, CardContent } from '@/components/ui/card';
 import { Search } from 'lucide-react';
 import { MusicSearch } from '@/components/music/MusicSearch';
 import { AddToPlaylistDialog } from '@/components/music/AddToPlaylistDialog';
@@ -35,44 +34,43 @@ export function SearchPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="min-h-screen bg-black text-white">
       {/* Header Section */}
-      <Card className="bg-gradient-to-r from-green-500/10 to-teal-500/10 border-green-200 dark:border-green-800">
-        <CardContent className="p-6">
-          <div className="flex items-start gap-6">
-            {/* Search Icon */}
-            <div className="h-32 w-32 rounded-lg bg-gradient-to-br from-green-500 to-teal-500 flex items-center justify-center shadow-lg">
-              <Search className="h-16 w-16 text-white" />
-            </div>
-
-            {/* Search Info */}
-            <div className="flex-1 space-y-4">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
-                  Discovery
-                </p>
-                <h1 className="text-3xl font-bold mt-1">Search</h1>
-                <p className="text-muted-foreground mt-2">
-                  Discover tracks, artists, albums, and users across the platform
-                </p>
-              </div>
-
-              {/* Search Tips */}
-              <div className="text-sm text-muted-foreground">
-                <p>💡 <strong>Pro tip:</strong> Search for npub addresses or NIP-05 identifiers to find users</p>
-              </div>
-            </div>
+      <div className="flex items-start gap-6 p-6 pb-8">
+        {/* Search Icon */}
+        <div className="flex-shrink-0">
+          <div className="h-64 w-64 rounded-lg bg-gradient-to-br from-purple-600 via-purple-700 to-purple-900 flex items-center justify-center shadow-2xl">
+            <Search className="h-24 w-24 text-white" />
           </div>
-        </CardContent>
-      </Card>
+        </div>
+
+        {/* Search Info */}
+        <div className="flex-1 space-y-6 pt-16">
+          <div>
+            <h1 className="text-6xl font-bold mb-6 text-white">Search</h1>
+            <div className="flex items-center gap-2 text-gray-300">
+              <span className="text-white font-medium">Discovery</span>
+              <span>•</span>
+              <span>Music & Users</span>
+              <span>•</span>
+              <span>2025</span>
+            </div>
+            <p className="text-sm text-gray-400 mt-4 max-w-lg">
+              Discover tracks, artists, albums, and users across the platform. Search for npub addresses or NIP-05 identifiers to find users.
+            </p>
+          </div>
+        </div>
+      </div>
 
       {/* Search Component */}
-      <MusicSearch
-        onArtistSelect={handleArtistSelect}
-        onAlbumSelect={handleAlbumSelect}
-        onUserSelect={handleUserSelect}
-        onAddToPlaylist={handleAddToPlaylist}
-      />
+      <div className="px-6">
+        <MusicSearch
+          onArtistSelect={handleArtistSelect}
+          onAlbumSelect={handleAlbumSelect}
+          onUserSelect={handleUserSelect}
+          onAddToPlaylist={handleAddToPlaylist}
+        />
+      </div>
 
       {/* Add to Playlist Dialog */}
       <AddToPlaylistDialog

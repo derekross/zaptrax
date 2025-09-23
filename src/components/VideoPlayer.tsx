@@ -59,7 +59,7 @@ export function VideoPlayer({
           href={src}
           target="_blank"
           rel="noopener noreferrer"
-          className="text-blue-500 hover:underline text-sm mt-2 inline-block"
+          className="text-purple-500 hover:underline text-sm mt-2 inline-block"
         >
           Open in new tab
         </a>

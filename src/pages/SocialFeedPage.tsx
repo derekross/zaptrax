@@ -105,66 +105,75 @@ export function SocialFeedPage() {
 
   if (!user) {
     return (
-      <div className="space-y-6">
-        <Card className="bg-gradient-to-r from-blue-500/10 to-purple-500/10 border-blue-200 dark:border-blue-800">
-          <CardContent className="p-6">
-            <div className="flex items-start gap-6">
-              <div className="h-32 w-32 rounded-lg bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center shadow-lg">
-                <Users className="h-16 w-16 text-white" />
-              </div>
-              <div className="flex-1 space-y-4">
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
-                    Social
-                  </p>
-                  <h1 className="text-3xl font-bold mt-1">Music Feed</h1>
-                  <p className="text-muted-foreground mt-2">
-                    Discover what your friends are listening to and sharing
-                  </p>
-                </div>
-                <p className="text-sm text-muted-foreground">
-                  Sign in to see activity from people you follow and join the conversation.
-                </p>
-              </div>
+      <div className="min-h-screen bg-black text-white">
+        {/* Header Section */}
+        <div className="flex items-start gap-6 p-6 pb-8">
+          {/* Social Icon */}
+          <div className="flex-shrink-0">
+            <div className="h-64 w-64 rounded-lg bg-gradient-to-br from-purple-600 via-purple-700 to-purple-900 flex items-center justify-center shadow-2xl">
+              <Users className="h-24 w-24 text-white" />
             </div>
-          </CardContent>
-        </Card>
+          </div>
+
+          {/* Social Info */}
+          <div className="flex-1 space-y-6 pt-16">
+            <div>
+              <h1 className="text-6xl font-bold mb-6 text-white">Social</h1>
+              <div className="flex items-center gap-2 text-gray-300">
+                <span className="text-white font-medium">Music Community</span>
+                <span>•</span>
+                <span>Social Feed</span>
+                <span>•</span>
+                <span>2025</span>
+              </div>
+              <p className="text-sm text-gray-400 mt-4 max-w-lg">
+                Discover what your friends are listening to and sharing. Sign in to see activity from people you follow and join the conversation.
+              </p>
+            </div>
+          </div>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
+    <div className="min-h-screen bg-black text-white">
       {/* Header Section */}
-      <Card className="bg-gradient-to-r from-blue-500/10 to-purple-500/10 border-blue-200 dark:border-blue-800">
-        <CardContent className="p-6">
-          <div className="flex items-start gap-6">
-            <div className="h-32 w-32 rounded-lg bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center shadow-lg">
-              <Users className="h-16 w-16 text-white" />
-            </div>
-            <div className="flex-1 space-y-4">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
-                  Social
-                </p>
-                <h1 className="text-3xl font-bold mt-1">Music Feed</h1>
-                <p className="text-muted-foreground mt-2">
-                  Discover what your friends are listening to and sharing
-                </p>
-              </div>
-            </div>
+      <div className="flex items-start gap-6 p-6 pb-8">
+        {/* Social Icon */}
+        <div className="flex-shrink-0">
+          <div className="h-64 w-64 rounded-lg bg-gradient-to-br from-purple-600 via-purple-700 to-purple-900 flex items-center justify-center shadow-2xl">
+            <Users className="h-24 w-24 text-white" />
           </div>
-        </CardContent>
-      </Card>
+        </div>
+
+        {/* Social Info */}
+        <div className="flex-1 space-y-6 pt-16">
+          <div>
+            <h1 className="text-6xl font-bold mb-6 text-white">Social</h1>
+            <div className="flex items-center gap-2 text-gray-300">
+              <span className="text-white font-medium">Music Community</span>
+              <span>•</span>
+              <span>Social Feed</span>
+              <span>•</span>
+              <span>2025</span>
+            </div>
+            <p className="text-sm text-gray-400 mt-4 max-w-lg">
+              Discover what your friends are listening to and sharing. Follow users and see their music activity.
+            </p>
+          </div>
+        </div>
+      </div>
 
       {/* Feed Tabs */}
-      <Tabs value={feedType} onValueChange={(value) => setFeedType(value as 'following' | 'global')}>
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="following" className="flex items-center gap-2">
+      <div className="px-6">
+        <Tabs value={feedType} onValueChange={(value) => setFeedType(value as 'following' | 'global')}>
+        <TabsList className="grid w-full grid-cols-2 bg-gray-900 border border-gray-800">
+          <TabsTrigger value="following" className="flex items-center gap-2 data-[state=active]:bg-purple-600 data-[state=active]:text-white text-gray-300">
             <Users className="h-4 w-4" />
             Following
           </TabsTrigger>
-          <TabsTrigger value="global" className="flex items-center gap-2">
+          <TabsTrigger value="global" className="flex items-center gap-2 data-[state=active]:bg-purple-600 data-[state=active]:text-white text-gray-300">
             <Globe className="h-4 w-4" />
             Global
           </TabsTrigger>
@@ -174,7 +183,7 @@ export function SocialFeedPage() {
           {isLoading ? (
             <div className="space-y-4">
               {[...Array(5)].map((_, i) => (
-                <Card key={i}>
+                <Card key={i} className="bg-gray-900 border-gray-800">
                   <CardContent className="p-4">
                     <div className="flex space-x-3">
                       <Skeleton className="h-10 w-10 rounded-full" />
@@ -189,7 +198,7 @@ export function SocialFeedPage() {
               ))}
             </div>
           ) : error ? (
-            <Card className="border-dashed">
+            <Card className="border-dashed bg-gray-900 border-gray-800">
               <CardContent className="py-12 px-8 text-center">
                 <div className="max-w-sm mx-auto space-y-4">
                   <div className="h-16 w-16 rounded-full bg-muted flex items-center justify-center mx-auto">
@@ -230,7 +239,7 @@ export function SocialFeedPage() {
                   <div className="space-y-4 w-full">
                     {/* Loading skeletons */}
                     {[...Array(3)].map((_, i) => (
-                      <Card key={`loading-${i}`}>
+                      <Card key={`loading-${i}`} className="bg-gray-900 border-gray-800">
                         <CardContent className="p-4">
                           <div className="flex space-x-3">
                             <Skeleton className="h-10 w-10 rounded-full" />
@@ -271,7 +280,7 @@ export function SocialFeedPage() {
               </div>
             </div>
           ) : (
-            <Card className="border-dashed">
+            <Card className="border-dashed bg-gray-900 border-gray-800">
               <CardContent className="py-12 px-8 text-center">
                 <div className="max-w-sm mx-auto space-y-4">
                   <div className="h-16 w-16 rounded-full bg-muted flex items-center justify-center mx-auto">
@@ -290,7 +299,8 @@ export function SocialFeedPage() {
             </Card>
           )}
         </TabsContent>
-      </Tabs>
+        </Tabs>
+      </div>
 
       {/* Dialogs */}
       <AddToPlaylistDialog
@@ -550,7 +560,7 @@ function FeedItem({ event, onAddToPlaylist, onComment, onZap, onCommentOnNote, o
       case 'liked-songs-update':
         return <Heart className="h-4 w-4 text-pink-500" />;
       case 'playlist-comment':
-        return <MessageCircle className="h-4 w-4 text-blue-500" />;
+        return <MessageCircle className="h-4 w-4 text-purple-500" />;
 
       case 'music-note':
         return <Music className="h-4 w-4 text-purple-500" />;
@@ -586,7 +596,7 @@ function FeedItem({ event, onAddToPlaylist, onComment, onZap, onCommentOnNote, o
   };
 
   return (
-    <Card>
+    <Card className="bg-gray-900 border-gray-800">
       <CardContent className="p-4">
         <div className="flex space-x-3">
           <Avatar

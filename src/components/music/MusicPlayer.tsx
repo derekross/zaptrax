@@ -135,7 +135,7 @@ export function MusicPlayer() {
 
   // Mini player (default, mobile)
   const miniPlayer = (
-    <Card className="fixed bottom-0 left-0 right-0 z-50 rounded-none border-t bg-card pb-[env(safe-area-inset-bottom)] sm:hidden">
+    <Card className="fixed bottom-0 left-0 right-0 z-50 rounded-none border-t border-gray-800 bg-black pb-[env(safe-area-inset-bottom)] sm:hidden">
       <CardContent className="p-3">
         {/* Progress bar at top */}
         <div className="absolute top-0 left-0 right-0 h-1 bg-muted">
@@ -578,7 +578,7 @@ export function MusicPlayer() {
 
   // Desktop mini player
   const desktopMiniPlayer = (
-    <Card className="fixed bottom-0 left-0 right-0 z-50 rounded-none border-t bg-card pb-[env(safe-area-inset-bottom)] hidden sm:block">
+    <Card className="fixed bottom-0 left-0 right-0 z-50 rounded-none border-t border-gray-800 bg-black pb-[env(safe-area-inset-bottom)] hidden sm:block">
       <CardContent className="p-4">
         <div className="flex items-center space-x-6">
           {/* Track Info */}

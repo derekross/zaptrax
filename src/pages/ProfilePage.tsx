@@ -197,11 +197,11 @@ export function ProfilePage() {
   return (
     <div className="container mx-auto px-4 py-8 space-y-6">
       {/* Profile Header */}
-      <Card className="bg-gradient-to-r from-cyan-500/10 to-blue-500/10 border-cyan-200 dark:border-cyan-800">
+      <Card className="bg-gradient-to-r from-purple-500/10 to-purple-600/10 border-purple-200 dark:border-purple-800">
         <CardContent className="p-6">
           <div className="flex items-start gap-6">
             {/* Profile Avatar */}
-            <div className="h-32 w-32 rounded-full bg-gradient-to-br from-cyan-500 to-blue-500 flex items-center justify-center shadow-lg">
+            <div className="h-32 w-32 rounded-full bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center shadow-lg">
               <Avatar className="h-28 w-28">
                 <AvatarImage src={metadata?.picture} alt={displayName} />
                 <AvatarFallback className="text-2xl font-semibold bg-transparent text-white">

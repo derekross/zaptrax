@@ -19,10 +19,10 @@ import { Header } from "./components/Header";
 export function AppRouter() {
   return (
     <BrowserRouter>
-      <div className="min-h-screen flex flex-col">
+      <div className="min-h-screen flex flex-col bg-black">
         <ScrollToTop />
         <Header />
-        <div className="flex-1" style={{ paddingTop: '4rem' }}>
+        <div className="flex-1 bg-black" style={{ paddingTop: '4rem' }}>
           <Routes>
             <Route path="/" element={<Layout />}>
               <Route index element={<MusicHome />} />
@@ -41,21 +41,6 @@ export function AppRouter() {
         <PlayerPortal>
           <MusicPlayer />
         </PlayerPortal>
-        <footer className="py-6 px-2 sm:px-4 md:px-8 md:py-0">
-          <div className="container flex flex-col items-center justify-between gap-4 md:h-24 md:flex-row">
-            <p className="text-center text-sm leading-loose text-muted-foreground md:text-left">
-              Music from{' '}
-              <a
-                href="https://wavlake.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="font-medium underline underline-offset-4"
-              >
-                Wavlake
-              </a>
-            </p>
-          </div>
-        </footer>
       </div>
     </BrowserRouter>
   );

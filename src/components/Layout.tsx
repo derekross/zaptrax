@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
+import { cn } from '@/lib/utils';
 
 export function Layout() {
   const { user } = useCurrentUser();
@@ -23,17 +24,15 @@ export function Layout() {
     return 'discover'; // Default for /
   };
 
-
-
   const tabBase =
-    "flex flex-row items-center justify-center flex-1 h-12 px-0 py-0 min-w-0 min-h-0 border-none focus:outline-none focus-visible:ring-2 focus-visible:ring-primary transition-all font-bold uppercase tracking-wide text-xs sm:text-base bg-transparent rounded-none";
+    "flex flex-row items-center justify-center flex-1 h-12 px-4 py-0 min-w-0 min-h-0 border-none focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 transition-all font-medium text-sm bg-transparent rounded-none text-gray-400 hover:text-white";
   const tabActive =
-    "data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md data-[state=active]:border-primary data-[state=active]:border-b-4 data-[state=active]:rounded-none";
+    "data-[state=active]:text-white data-[state=active]:border-b-2 data-[state=active]:border-purple-500";
 
   return (
-    <div>
+    <div className="bg-black min-h-screen">
       <div
-        className="w-full bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60"
+        className="w-full bg-black border-b border-gray-800"
         style={{
           position: 'fixed',
           top: '4rem',
@@ -42,59 +41,59 @@ export function Layout() {
         }}
       >
         <Tabs value={getActiveTab()}>
-          <TabsList className="flex w-full h-12 bg-card border-2 border-primary punk-card px-0 overflow-hidden rounded-b-lg">
+          <TabsList className="flex w-full h-12 bg-black border-none px-6 overflow-hidden rounded-none">
           {user && (
             <TabsTrigger
               value="social"
-              className={`${tabBase} ${tabActive}`}
+              className={cn(tabBase, tabActive)}
               asChild
             >
-              <Link to="/social">
-                <Users className="h-6 w-6 sm:h-4 sm:w-4" />
-                <span className="hidden sm:inline ml-2">SOCIAL</span>
+              <Link to="/social" className="flex items-center">
+                <Users className="h-4 w-4" />
+                <span className="hidden sm:inline ml-2">Social</span>
               </Link>
             </TabsTrigger>
           )}
           <TabsTrigger
             value="discover"
-            className={`${tabBase} ${tabActive}`}
+            className={cn(tabBase, tabActive)}
             asChild
           >
-            <Link to="/">
-              <TrendingUp className="h-6 w-6 sm:h-4 sm:w-4" />
-              <span className="hidden sm:inline ml-2">DISCOVER</span>
+            <Link to="/" className="flex items-center">
+              <TrendingUp className="h-4 w-4" />
+              <span className="hidden sm:inline ml-2">Home</span>
             </Link>
           </TabsTrigger>
           <TabsTrigger
             value="search"
-            className={`${tabBase} ${tabActive}`}
+            className={cn(tabBase, tabActive)}
             asChild
           >
-            <Link to="/search">
-              <Search className="h-6 w-6 sm:h-4 sm:w-4" />
-              <span className="hidden sm:inline ml-2">SEARCH</span>
+            <Link to="/search" className="flex items-center">
+              <Search className="h-4 w-4" />
+              <span className="hidden sm:inline ml-2">Search</span>
             </Link>
           </TabsTrigger>
           {user && (
             <>
               <TabsTrigger
                 value="playlists"
-                className={`${tabBase} ${tabActive}`}
+                className={cn(tabBase, tabActive)}
                 asChild
               >
-                <Link to="/playlists">
-                  <PlayCircle className="h-6 w-6 sm:h-4 sm:w-4" />
-                  <span className="hidden sm:inline ml-2">PLAYLISTS</span>
+                <Link to="/playlists" className="flex items-center">
+                  <PlayCircle className="h-4 w-4" />
+                  <span className="hidden sm:inline ml-2">Playlists</span>
                 </Link>
               </TabsTrigger>
               <TabsTrigger
                 value="liked"
-                className={`${tabBase} ${tabActive}`}
+                className={cn(tabBase, tabActive)}
                 asChild
               >
-                <Link to="/liked">
-                  <Heart className="h-6 w-6 sm:h-4 sm:w-4" />
-                  <span className="hidden sm:inline ml-2">LIKED</span>
+                <Link to="/liked" className="flex items-center">
+                  <Heart className="h-4 w-4" />
+                  <span className="hidden sm:inline ml-2">Liked</span>
                 </Link>
               </TabsTrigger>
             </>
@@ -104,7 +103,7 @@ export function Layout() {
       </div>
 
       {/* The content for each tab will be rendered by the Outlet */}
-      <div className="container mx-auto px-2 sm:px-4 py-4 sm:py-8 space-y-4 sm:space-y-8 pb-32" style={{ marginTop: '7rem' }}>
+      <div className="bg-black" style={{ marginTop: '7rem' }}>
         <Outlet />
       </div>
     </div>
