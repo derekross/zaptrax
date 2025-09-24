@@ -81,8 +81,26 @@ export function useWebLN() {
   };
 
   const sendPayment = async (paymentRequest: string) => {
-    if (!state.provider || !state.isEnabled) {
-      throw new Error('WebLN not enabled');
+    if (!state.provider) {
+      throw new Error('WebLN not available');
+    }
+
+    // Try to enable WebLN if not already enabled
+    if (!state.isEnabled) {
+      setState(prev => ({ ...prev, isLoading: true, error: null }));
+      try {
+        await state.provider.enable();
+        setState(prev => ({ ...prev, isEnabled: true, isLoading: false }));
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Failed to enable WebLN';
+        setState(prev => ({
+          ...prev,
+          error: errorMessage,
+          isEnabled: false,
+          isLoading: false
+        }));
+        throw new Error(`WebLN not enabled: ${errorMessage}`);
+      }
     }
 
     try {
@@ -96,8 +114,26 @@ export function useWebLN() {
   };
 
   const getInfo = async () => {
-    if (!state.provider || !state.isEnabled) {
-      throw new Error('WebLN not enabled');
+    if (!state.provider) {
+      throw new Error('WebLN not available');
+    }
+
+    // Try to enable WebLN if not already enabled
+    if (!state.isEnabled) {
+      setState(prev => ({ ...prev, isLoading: true, error: null }));
+      try {
+        await state.provider.enable();
+        setState(prev => ({ ...prev, isEnabled: true, isLoading: false }));
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Failed to enable WebLN';
+        setState(prev => ({
+          ...prev,
+          error: errorMessage,
+          isEnabled: false,
+          isLoading: false
+        }));
+        throw new Error(`WebLN not enabled: ${errorMessage}`);
+      }
     }
 
     try {

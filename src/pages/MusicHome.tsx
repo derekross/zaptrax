@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Play, ChevronRight, Heart } from 'lucide-react';
 import { useWavlakeRankings } from '@/hooks/useWavlake';
 import { useMusicPlayer } from '@/contexts/MusicPlayerContext';
@@ -190,30 +189,33 @@ export function MusicHome() {
           </div>
 
           <div className="flex gap-6 overflow-x-auto pb-4">
-            {/* User Profile Card */}
+            {/* User Library Card */}
             <div className="flex-shrink-0">
-              <div className="flex items-center gap-4 p-4 rounded-lg bg-gradient-to-r from-purple-600 to-purple-800 min-w-[280px]">
-                <Avatar className="h-12 w-12">
-                  <AvatarImage src="" />
-                  <AvatarFallback className="bg-purple-700 text-white">
-                    <Heart className="h-6 w-6" />
-                  </AvatarFallback>
-                </Avatar>
-                <div>
-                  <p className="text-white font-medium">
-                    Your Library
-                  </p>
-                  <p className="text-purple-200 text-sm">{user ? `${likedSongs?.tags.filter(tag => tag[0] === 'r').length || 0} liked songs` : 'Listen again'}</p>
-                </div>
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  className="ml-auto text-white hover:bg-purple-700"
-                  onClick={handleLibraryPlay}
-                >
-                  <Play className="h-4 w-4" />
-                </Button>
-              </div>
+              <Card className="bg-gray-900 border-gray-800 hover:bg-gray-800 transition-colors cursor-pointer w-40" onClick={() => navigate('/liked')}>
+                <CardContent className="p-0">
+                  <div className="relative group">
+                    <div className="w-full h-40 bg-gradient-to-br from-purple-600 to-purple-800 rounded-t-lg flex items-center justify-center">
+                      <Heart className="h-12 w-12 text-white fill-current" />
+                    </div>
+                    <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity rounded-t-lg flex items-center justify-center">
+                      <Button
+                        size="sm"
+                        className="bg-purple-600 hover:bg-purple-700 text-white rounded-full"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleLibraryPlay();
+                        }}
+                      >
+                        <Play className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                  <div className="p-3">
+                    <p className="text-white font-medium text-sm truncate">Liked Music</p>
+                    <p className="text-gray-400 text-xs truncate">{likedSongs?.tags.filter(tag => tag[0] === 'r').length || 0} songs</p>
+                  </div>
+                </CardContent>
+              </Card>
             </div>
 
             {/* Recent Track and New Playlists */}

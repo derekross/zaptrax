@@ -49,11 +49,6 @@ export function ZapDialog({ open, onOpenChange, track }: ZapDialogProps) {
     if (!track) return;
 
     try {
-      // Enable WebLN if not already enabled
-      if (!webln.isEnabled) {
-        await webln.enable();
-      }
-
       // Get LNURL for the track
       const lnurlResponse = await wavlakeAPI.getLnurl(track.id, WAVLAKE_APP_ID);
 
@@ -251,7 +246,7 @@ export function ZapDialog({ open, onOpenChange, track }: ZapDialogProps) {
               </div>
               {paymentMethod === 'webln' && !webln.isEnabled && (
                 <p className="text-xs text-muted-foreground">
-                  WebLN wallet will be enabled when you zap
+                  WebLN wallet will be automatically enabled when you zap
                 </p>
               )}
             </div>

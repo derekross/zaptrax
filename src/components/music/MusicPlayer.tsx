@@ -23,7 +23,6 @@ import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { CommentDialog } from './CommentDialog';
 import { ZapDialog } from './ZapDialog';
 import { AddToPlaylistDialog } from './AddToPlaylistDialog';
-import { useQueryClient } from '@tanstack/react-query';
 
 export function MusicPlayer() {
   const {
@@ -36,7 +35,6 @@ export function MusicPlayer() {
     playTrackByIndex
   } = useMusicPlayer();
   const { user } = useCurrentUser();
-  const queryClient = useQueryClient();
   const { mutate: likeTrack, isPending: likePending } = useLikeTrack();
   const { data: likedSongs } = useLikedSongs();
   const location = useLocation();
