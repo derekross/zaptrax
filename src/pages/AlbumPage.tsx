@@ -1,14 +1,36 @@
+import { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useWavlakeAlbum } from '@/hooks/useWavlake';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Play, Pause, Heart, MoreHorizontal } from 'lucide-react';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { Play, Pause, Heart, MoreHorizontal, Check, Share2, Copy, ExternalLink, ListPlus } from 'lucide-react';
 import { useMusicPlayer } from '@/contexts/MusicPlayerContext';
+import { useCreatePlaylist, useUserPlaylists } from '@/hooks/useNostrMusic';
+import { useCurrentUser } from '@/hooks/useCurrentUser';
+import { useToast } from '@/hooks/useToast';
 
 export function AlbumPage() {
   const { albumId } = useParams<{ albumId: string }>();
   const { data: albumData, isLoading, error } = useWavlakeAlbum(albumId);
-  const { state, playTrack } = useMusicPlayer();
+  const { state, playTrack, addToQueue } = useMusicPlayer();
+  const { user } = useCurrentUser();
+  const { mutate: createPlaylist } = useCreatePlaylist();
+  const { data: userPlaylists } = useUserPlaylists();
+  const { toast } = useToast();
+  const [isCreatingPlaylist, setIsCreatingPlaylist] = useState(false);
 
   // Handle case where API might return an array
   const album = Array.isArray(albumData) ? albumData[0] : albumData;
@@ -54,6 +76,121 @@ export function AlbumPage() {
     return tracks.some(track => track.id === state.currentTrack?.id) && state.isPlaying;
   };
 
+  // Check if album is already saved as a playlist
+  const isAlbumSaved = () => {
+    if (!album || !userPlaylists) return false;
+    // Check for playlist with just the album title
+    return userPlaylists.some(playlist => {
+      const titleTag = playlist.tags.find(tag => tag[0] === 'title');
+      return titleTag && titleTag[1] === album.albumTitle;
+    });
+  };
+
+  const handleLikeAlbum = async () => {
+    if (!user) {
+      toast({
+        title: "Login required",
+        description: "Please login to save albums as playlists",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!album || !tracks.length) {
+      toast({
+        title: "Error",
+        description: "Unable to save album - no tracks found",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (isAlbumSaved()) {
+      toast({
+        title: "Album already saved",
+        description: `"${album.albumTitle}" is already in your playlists`,
+      });
+      return;
+    }
+
+    setIsCreatingPlaylist(true);
+
+    try {
+      // Create track URLs for all tracks in the album
+      const trackUrls = tracks.map(track => `https://wavlake.com/track/${track.id}`);
+
+      // Create playlist with album name only for the title
+      // Use album description if available, otherwise create a descriptive text
+      const playlistName = album.albumTitle;
+      const playlistDescription = album.description || `${album.albumTitle} by ${album.artist}`;
+
+      createPlaylist({
+        name: playlistName,
+        description: playlistDescription,
+        tracks: trackUrls,
+      });
+
+      toast({
+        title: "Album saved!",
+        description: `"${album.albumTitle}" has been added to your playlists`,
+      });
+    } catch (error) {
+      console.error('Failed to create album playlist:', error);
+      toast({
+        title: "Error",
+        description: "Failed to save album as playlist",
+        variant: "destructive",
+      });
+    } finally {
+      setIsCreatingPlaylist(false);
+    }
+  };
+
+  // Handle menu actions
+  const handleCopyLink = () => {
+    const url = window.location.href;
+    navigator.clipboard.writeText(url);
+    toast({
+      title: "Link copied",
+      description: "Album link copied to clipboard",
+    });
+  };
+
+  const handleShare = async () => {
+    const url = window.location.href;
+    const shareData = {
+      title: `${album?.artist} - ${album?.albumTitle}`,
+      text: `Check out this album on ZapTrax`,
+      url: url,
+    };
+
+    try {
+      if (navigator.share) {
+        await navigator.share(shareData);
+      } else {
+        // Fallback to copying link
+        handleCopyLink();
+      }
+    } catch (error) {
+      console.error('Error sharing:', error);
+    }
+  };
+
+  const handleAddToQueue = () => {
+    if (tracks.length > 0) {
+      tracks.forEach(track => addToQueue(track));
+      toast({
+        title: "Added to queue",
+        description: `Added ${tracks.length} tracks to queue`,
+      });
+    }
+  };
+
+  const handleViewOnWavlake = () => {
+    if (albumId) {
+      window.open(`https://wavlake.com/album/${albumId}`, '_blank');
+    }
+  };
 
   // Calculate total duration
   const totalDuration = tracks.reduce((sum, track) => sum + (track.duration || 0), 0);
@@ -126,21 +263,65 @@ export function AlbumPage() {
                   {isAlbumPlaying() ? 'Pause' : 'Play'}
                 </Button>
 
-                <Button
-                  variant="ghost"
-                  size="lg"
-                  className="text-gray-400 hover:text-white p-2 md:p-3 rounded-full"
-                >
-                  <Heart className="h-5 w-5 md:h-6 md:w-6" />
-                </Button>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="lg"
+                        className={`p-2 md:p-3 rounded-full transition-colors hover:bg-purple-900/20 ${
+                          isAlbumSaved()
+                            ? 'text-purple-500 hover:text-purple-400'
+                            : 'text-gray-400 hover:text-purple-400'
+                        }`}
+                        onClick={handleLikeAlbum}
+                        disabled={isCreatingPlaylist}
+                      >
+                        {isCreatingPlaylist ? (
+                          <div className="h-5 w-5 md:h-6 md:w-6 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                        ) : isAlbumSaved() ? (
+                          <Check className="h-5 w-5 md:h-6 md:w-6" />
+                        ) : (
+                          <Heart className="h-5 w-5 md:h-6 md:w-6" />
+                        )}
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>{isAlbumSaved() ? 'Album saved to playlists' : 'Save album as playlist'}</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
 
-                <Button
-                  variant="ghost"
-                  size="lg"
-                  className="text-gray-400 hover:text-white p-3 rounded-full"
-                >
-                  <MoreHorizontal className="h-6 w-6" />
-                </Button>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="lg"
+                      className="text-gray-400 hover:text-purple-400 hover:bg-purple-900/20 p-3 rounded-full"
+                    >
+                      <MoreHorizontal className="h-6 w-6" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="bg-gray-900 border-gray-800">
+                    <DropdownMenuItem onClick={handleAddToQueue} className="hover:bg-purple-900/20 hover:text-purple-400">
+                      <ListPlus className="h-4 w-4 mr-2" />
+                      Add to Queue
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={handleShare} className="hover:bg-purple-900/20 hover:text-purple-400">
+                      <Share2 className="h-4 w-4 mr-2" />
+                      Share
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={handleCopyLink} className="hover:bg-purple-900/20 hover:text-purple-400">
+                      <Copy className="h-4 w-4 mr-2" />
+                      Copy Link
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator className="bg-gray-800" />
+                    <DropdownMenuItem onClick={handleViewOnWavlake} className="hover:bg-purple-900/20 hover:text-purple-400">
+                      <ExternalLink className="h-4 w-4 mr-2" />
+                      View on Wavlake
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
             </div>
           </div>
@@ -184,7 +365,7 @@ export function AlbumPage() {
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="text-gray-400 hover:text-white p-2"
+                  className="text-gray-400 hover:text-purple-400 p-2"
                   onClick={(e) => {
                     e.stopPropagation();
                     // Like track action

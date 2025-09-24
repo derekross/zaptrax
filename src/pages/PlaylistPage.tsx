@@ -1,26 +1,35 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import {
   Play,
+  Pause,
   Music,
   MoreHorizontal,
   Edit,
   Share2,
   Trash2,
   Copy,
-  Calendar,
+  Heart,
   MessageCircle,
+  ListPlus,
+  ExternalLink,
+  Clock,
 } from 'lucide-react';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 import { useNostr } from '@nostrify/react';
 import { useQuery, useQueries } from '@tanstack/react-query';
 import { useAuthor } from '@/hooks/useAuthor';
@@ -30,14 +39,11 @@ import { genUserName } from '@/lib/genUserName';
 import { nip19 } from 'nostr-tools';
 import { wavlakeAPI } from '@/lib/wavlake';
 import type { WavlakeTrack } from '@/lib/wavlake';
-import { PlaylistTrackItem } from '@/components/music/PlaylistTrackList';
 import { EditPlaylistDialog } from '@/components/music/EditPlaylistDialog';
 import { DeletePlaylistDialog } from '@/components/music/DeletePlaylistDialog';
 import { SharePlaylistDialog } from '@/components/music/SharePlaylistDialog';
 import { CreatePlaylistDialog } from '@/components/music/CreatePlaylistDialog';
 import { PlaylistCommentDialog } from '@/components/music/PlaylistCommentDialog';
-import { RelaySelector } from '@/components/RelaySelector';
-import { useState } from 'react';
 import { useToast } from '@/hooks/useToast';
 
 export function PlaylistPage() {
@@ -45,14 +51,14 @@ export function PlaylistPage() {
   const navigate = useNavigate();
   const { nostr } = useNostr();
   const { user } = useCurrentUser();
-  const { playTrack } = useMusicPlayer();
+  const { state, playTrack, addToQueue, togglePlayPause } = useMusicPlayer();
+  const { toast } = useToast();
 
   const [editPlaylistOpen, setEditPlaylistOpen] = useState(false);
   const [deletePlaylistOpen, setDeletePlaylistOpen] = useState(false);
   const [sharePlaylistOpen, setSharePlaylistOpen] = useState(false);
   const [clonePlaylistOpen, setClonePlaylistOpen] = useState(false);
   const [commentDialogOpen, setCommentDialogOpen] = useState(false);
-  const { toast } = useToast();
 
   // Decode the NIP-19 identifier
   const decodedData = React.useMemo(() => {
@@ -141,31 +147,68 @@ export function PlaylistPage() {
 
   const handlePlayPlaylist = () => {
     if (allPlaylistTracks.length > 0) {
-      // Play the first track in the playlist with the full playlist as context
-      playTrack(allPlaylistTracks[0], allPlaylistTracks);
+      if (isPlaylistPlaying()) {
+        togglePlayPause();
+      } else {
+        playTrack(allPlaylistTracks[0], allPlaylistTracks);
+      }
     }
   };
 
-  const handlePlayTrack = (trackUrl: string) => {
-    // Find the track in our loaded tracks
-    const trackId = trackUrl.substring(trackUrl.lastIndexOf('/') + 1);
-    const track = allPlaylistTracks.find(t => t.id === trackId);
+  const isPlaylistPlaying = () => {
+    if (!state.currentTrack || allPlaylistTracks.length === 0) return false;
+    return allPlaylistTracks.some(track => track.id === state.currentTrack?.id) && state.isPlaying;
+  };
 
-    if (track && allPlaylistTracks.length > 0) {
+  const handlePlayTrack = (track: WavlakeTrack) => {
+    if (allPlaylistTracks.length > 0) {
       playTrack(track, allPlaylistTracks);
     }
   };
 
-  const handleEditPlaylist = () => {
-    setEditPlaylistOpen(true);
+  const handleAuthorClick = () => {
+    if (playlist?.pubkey) {
+      const npub = nip19.npubEncode(playlist.pubkey);
+      navigate(`/profile/${npub}`);
+    }
   };
 
-  const handleDeletePlaylist = () => {
-    setDeletePlaylistOpen(true);
+  const handleCopyLink = () => {
+    const url = window.location.href;
+    navigator.clipboard.writeText(url);
+    toast({
+      title: "Link copied",
+      description: "Playlist link copied to clipboard",
+    });
   };
 
-  const handleSharePlaylist = () => {
-    setSharePlaylistOpen(true);
+  const handleShare = async () => {
+    const url = window.location.href;
+    const shareData = {
+      title: getPlaylistInfo().title,
+      text: `Check out this playlist on ZapTrax`,
+      url: url,
+    };
+
+    try {
+      if (navigator.share) {
+        await navigator.share(shareData);
+      } else {
+        handleCopyLink();
+      }
+    } catch (error) {
+      console.error('Error sharing:', error);
+    }
+  };
+
+  const handleAddToQueue = () => {
+    if (allPlaylistTracks.length > 0) {
+      allPlaylistTracks.forEach(track => addToQueue(track));
+      toast({
+        title: "Added to queue",
+        description: `Added ${allPlaylistTracks.length} tracks to queue`,
+      });
+    }
   };
 
   const handleClonePlaylist = () => {
@@ -180,97 +223,54 @@ export function PlaylistPage() {
     setClonePlaylistOpen(true);
   };
 
-  const handleCommentOnPlaylist = () => {
-    setCommentDialogOpen(true);
-  };
-
-  const handleAuthorClick = () => {
-    if (playlist?.pubkey) {
-      const npub = nip19.npubEncode(playlist.pubkey);
-      navigate(`/profile/${npub}`);
+  // Calculate total duration
+  const totalDuration = allPlaylistTracks.reduce((sum, track) => sum + (track.duration || 0), 0);
+  const formatDuration = (seconds: number) => {
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    const secs = seconds % 60;
+    if (hours > 0) {
+      return `${hours} hr ${minutes} min`;
     }
+    return `${minutes} min ${secs} sec`;
   };
 
   if (!nip19Id || !decodedData) {
     return (
-      <Card className="border-dashed">
-        <CardContent className="py-12 px-8 text-center">
-          <h3 className="font-medium mb-2">Invalid playlist link</h3>
-          <p className="text-sm text-muted-foreground">
-            The playlist link you're trying to access is invalid or malformed.
-          </p>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  if (error) {
-    return (
-      <Card className="border-dashed">
-        <CardContent className="py-12 px-8 text-center">
-          <div className="max-w-sm mx-auto space-y-6">
-            <div>
-              <h3 className="font-medium mb-2">Failed to load playlist</h3>
-              <p className="text-sm text-muted-foreground">
-                Could not load the playlist. Try switching to a different relay?
-              </p>
-            </div>
-            <RelaySelector className="w-full" />
-          </div>
-        </CardContent>
-      </Card>
+      <div className="min-h-screen bg-black text-white flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold mb-4">Invalid playlist link</h1>
+          <p className="text-gray-400">The playlist link you're trying to access is invalid or malformed.</p>
+        </div>
+      </div>
     );
   }
 
   if (isLoading) {
     return (
-      <Card>
-          <CardHeader>
-            <div className="flex items-start justify-between">
-              <div className="flex items-center space-x-4 flex-1">
-                <Skeleton className="h-24 w-24 rounded-md" />
-                <div className="space-y-2 flex-1">
-                  <Skeleton className="h-6 w-48" />
-                  <Skeleton className="h-4 w-32" />
-                  <Skeleton className="h-4 w-64" />
-                  <div className="flex items-center space-x-2 mt-2">
-                    <Skeleton className="h-5 w-16" />
-                    <Skeleton className="h-4 w-20" />
-                  </div>
-                </div>
-              </div>
-              <div className="flex items-center space-x-2">
-                <Skeleton className="h-9 w-20" />
-                <Skeleton className="h-9 w-9" />
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-2">
-              {[...Array(3)].map((_, i) => (
-                <Skeleton key={i} className="h-12 w-full" />
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+      <div className="min-h-screen bg-black text-white">
+        <div className="relative h-[400px] overflow-hidden">
+          <Skeleton className="w-full h-full bg-gray-800" />
+        </div>
+        <div className="max-w-7xl mx-auto px-8 py-8">
+          <div className="space-y-4">
+            {[...Array(10)].map((_, i) => (
+              <Skeleton key={i} className="h-16 w-full bg-gray-800" />
+            ))}
+          </div>
+        </div>
+      </div>
     );
   }
 
-  if (!playlist) {
+  if (error || !playlist) {
     return (
-      <Card className="border-dashed">
-        <CardContent className="py-12 px-8 text-center">
-          <div className="max-w-sm mx-auto space-y-6">
-            <div>
-              <h3 className="font-medium mb-2">Playlist not found</h3>
-              <p className="text-sm text-muted-foreground">
-                This playlist doesn't exist or hasn't been published yet. Try switching relays?
-              </p>
-            </div>
-            <RelaySelector className="w-full" />
-          </div>
-        </CardContent>
-      </Card>
+      <div className="min-h-screen bg-black text-white flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold mb-4">Playlist not found</h1>
+          <p className="text-gray-400">This playlist doesn't exist or hasn't been published yet.</p>
+        </div>
+      </div>
     );
   }
 
@@ -279,186 +279,340 @@ export function PlaylistPage() {
   const profileImage = metadata?.picture;
   const isOwner = user?.pubkey === playlist.pubkey;
 
-
-
-
+  // Get first track's album art for playlist cover
+  const playlistCoverUrl = allPlaylistTracks[0]?.albumArtUrl;
 
   return (
-    <div className="space-y-6">
-      {/* Header Section */}
-      <Card className="bg-gradient-to-r from-purple-500/10 to-indigo-500/10 border-purple-200 dark:border-purple-800">
-        <CardContent className="p-6 relative">
-          {/* Creation Date - Top Right */}
-          <div className="absolute top-4 right-4 flex items-center gap-1 text-xs text-muted-foreground">
-            <Calendar className="h-3 w-3" />
-            <span>{formatDate(playlist.created_at)}</span>
-          </div>
+    <div className="min-h-screen bg-black text-white pb-20">
+      {/* Hero Section */}
+      <div className="relative h-[400px] overflow-hidden">
+        {/* Background Image */}
+        {playlistCoverUrl && (
+          <div
+            className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+            style={{
+              backgroundImage: `url(${playlistCoverUrl})`,
+              filter: 'blur(20px) brightness(0.3)',
+              transform: 'scale(1.1)'
+            }}
+          />
+        )}
 
-          <div className="flex items-start gap-6">
+        {/* Gradient Overlay */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/70 to-transparent" />
+
+        {/* Playlist Info */}
+        <div className="absolute bottom-0 left-0 right-0 p-4 md:p-8">
+          <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center md:items-end gap-4 md:gap-6">
             {/* Playlist Cover */}
-            <div className="h-32 w-32 rounded-lg bg-gradient-to-br from-purple-500 to-indigo-500 flex items-center justify-center shadow-lg">
-              <Music className="h-16 w-16 text-white" />
+            <div className="w-40 h-40 md:w-60 md:h-60 rounded-lg shadow-2xl flex-shrink-0 bg-gradient-to-br from-purple-600 to-purple-800 flex items-center justify-center">
+              {playlistCoverUrl ? (
+                <img
+                  src={playlistCoverUrl}
+                  alt={title}
+                  className="w-full h-full object-cover rounded-lg"
+                />
+              ) : (
+                <Music className="h-16 w-16 md:h-24 md:w-24 text-white" />
+              )}
             </div>
 
-            {/* Playlist Info */}
-            <div className="flex-1 space-y-4 pr-20">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
-                  Playlist
-                </p>
-                <h1 className="text-3xl font-bold mt-1">{title}</h1>
-                {description && (
-                  <p className="text-muted-foreground mt-2">
-                    {description}
-                  </p>
-                )}
-              </div>
+            {/* Playlist Details */}
+            <div className="flex-1 text-center md:text-left md:pb-4">
+              <p className="text-sm text-gray-300 mb-2">Playlist</p>
+              <h1 className="text-2xl md:text-4xl lg:text-5xl font-bold mb-3 md:mb-4">{title}</h1>
 
-              {/* Stats */}
-              <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                <div className="flex items-center gap-1">
-                  <Music className="h-4 w-4" />
-                  <span>{trackCount} track{trackCount !== 1 ? 's' : ''}</span>
-                </div>
+              {description && (
+                <p className="text-gray-300 mb-4 max-w-2xl">{description}</p>
+              )}
+
+              <div className="flex flex-wrap items-center justify-center md:justify-start gap-2 text-sm text-gray-300 mb-4 md:mb-6">
                 <button
                   onClick={handleAuthorClick}
-                  className="flex items-center gap-1 hover:text-foreground transition-colors cursor-pointer"
+                  className="hover:text-white transition-colors font-medium"
                 >
-                  <Avatar className="h-4 w-4">
-                    <AvatarImage src={profileImage} alt={displayName} />
-                    <AvatarFallback className="text-xs">
-                      {displayName.charAt(0)}
-                    </AvatarFallback>
-                  </Avatar>
-                  <span>by {displayName}</span>
+                  {displayName}
                 </button>
+                <span>•</span>
+                <span>{formatDate(playlist.created_at)}</span>
+                <span>•</span>
+                <span>{trackCount} songs, {formatDuration(totalDuration)}</span>
               </div>
 
               {/* Action Buttons */}
-              <div className="flex items-center gap-3 pt-2 flex-wrap">
+              <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-4">
                 <Button
+                  size="lg"
+                  className="bg-purple-600 hover:bg-purple-700 text-white px-6 md:px-8 py-2 md:py-3 rounded-full font-medium w-full sm:w-auto"
                   onClick={handlePlayPlaylist}
                   disabled={allPlaylistTracksLoading || allPlaylistTracks.length === 0}
-                  size="lg"
-                  className="rounded-full px-8"
                 >
-                  <Play className="h-5 w-5 mr-2" />
-                  {allPlaylistTracksLoading ? 'Loading...' : 'Play'}
+                  {isPlaylistPlaying() ? (
+                    <Pause className="h-4 w-4 md:h-5 md:w-5 mr-2" />
+                  ) : (
+                    <Play className="h-4 w-4 md:h-5 md:w-5 mr-2" />
+                  )}
+                  {isPlaylistPlaying() ? 'Pause' : 'Play'}
                 </Button>
 
                 {user && (
                   <Button
-                    onClick={handleCommentOnPlaylist}
+                    variant="ghost"
                     size="lg"
-                    variant="outline"
-                    className="rounded-full"
+                    className="text-gray-400 hover:text-purple-400 hover:bg-purple-900/20 p-2 md:p-3 rounded-full"
+                    onClick={() => setCommentDialogOpen(true)}
                   >
-                    <MessageCircle className="h-5 w-5 mr-2" />
-                    Comment
+                    <MessageCircle className="h-5 w-5 md:h-6 md:w-6" />
                   </Button>
                 )}
 
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button size="lg" variant="outline" className="rounded-full">
-                      <MoreHorizontal className="h-5 w-5 mr-2" />
-                      More
+                    <Button
+                      variant="ghost"
+                      size="lg"
+                      className="text-gray-400 hover:text-purple-400 hover:bg-purple-900/20 p-3 rounded-full"
+                    >
+                      <MoreHorizontal className="h-6 w-6" />
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
+                  <DropdownMenuContent align="end" className="bg-gray-900 border-gray-800">
                     {isOwner && (
-                      <DropdownMenuItem onClick={handleEditPlaylist}>
-                        <Edit className="h-4 w-4 mr-2" />
-                        Edit Playlist
-                      </DropdownMenuItem>
+                      <>
+                        <DropdownMenuItem
+                          onClick={() => setEditPlaylistOpen(true)}
+                          className="hover:bg-purple-900/20 hover:text-purple-400"
+                        >
+                          <Edit className="h-4 w-4 mr-2" />
+                          Edit Playlist
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator className="bg-gray-800" />
+                      </>
                     )}
-                    <DropdownMenuItem onClick={handleSharePlaylist}>
-                      <Share2 className="h-4 w-4 mr-2" />
-                      Share Playlist
+                    <DropdownMenuItem
+                      onClick={handleAddToQueue}
+                      className="hover:bg-purple-900/20 hover:text-purple-400"
+                    >
+                      <ListPlus className="h-4 w-4 mr-2" />
+                      Add to Queue
                     </DropdownMenuItem>
                     {!isOwner && user && (
-                      <DropdownMenuItem onClick={handleClonePlaylist}>
+                      <DropdownMenuItem
+                        onClick={handleClonePlaylist}
+                        className="hover:bg-purple-900/20 hover:text-purple-400"
+                      >
                         <Copy className="h-4 w-4 mr-2" />
                         Clone Playlist
                       </DropdownMenuItem>
                     )}
+                    <DropdownMenuItem
+                      onClick={handleShare}
+                      className="hover:bg-purple-900/20 hover:text-purple-400"
+                    >
+                      <Share2 className="h-4 w-4 mr-2" />
+                      Share
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={handleCopyLink}
+                      className="hover:bg-purple-900/20 hover:text-purple-400"
+                    >
+                      <Copy className="h-4 w-4 mr-2" />
+                      Copy Link
+                    </DropdownMenuItem>
                     {isOwner && (
-                      <DropdownMenuItem
-                        onClick={handleDeletePlaylist}
-                        className="text-red-600"
-                      >
-                        <Trash2 className="h-4 w-4 mr-2" />
-                        Delete Playlist
-                      </DropdownMenuItem>
+                      <>
+                        <DropdownMenuSeparator className="bg-gray-800" />
+                        <DropdownMenuItem
+                          onClick={() => setDeletePlaylistOpen(true)}
+                          className="text-red-500 hover:bg-red-900/20 hover:text-red-400"
+                        >
+                          <Trash2 className="h-4 w-4 mr-2" />
+                          Delete Playlist
+                        </DropdownMenuItem>
+                      </>
                     )}
                   </DropdownMenuContent>
                 </DropdownMenu>
               </div>
             </div>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       {/* Track List */}
-      {isLoading || allPlaylistTracksLoading ? (
-        <Card>
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <Skeleton className="h-6 w-32" />
-              <Skeleton className="h-4 w-16" />
+      <div className="max-w-7xl mx-auto px-4 md:px-8 py-6 md:py-8">
+        {/* Track List Header */}
+        {allPlaylistTracks.length > 0 && (
+          <div className="grid grid-cols-12 gap-4 px-4 py-2 text-sm text-gray-400 border-b border-gray-800 mb-4">
+            <div className="col-span-1 text-center">#</div>
+            <div className="col-span-5">Title</div>
+            <div className="col-span-3">Album</div>
+            <div className="col-span-2">Date added</div>
+            <div className="col-span-1 text-center">
+              <Clock className="h-4 w-4 mx-auto" />
             </div>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            {[...Array(3)].map((_, i) => (
-              <div key={i} className="flex items-center space-x-3 p-2 rounded-md">
-                <Skeleton className="h-4 w-6" />
-                <Skeleton className="h-10 w-10 rounded" />
-                <div className="flex-1 space-y-1">
-                  <Skeleton className="h-4 w-48" />
-                  <Skeleton className="h-3 w-32" />
+          </div>
+        )}
+
+        {/* Tracks */}
+        <div className="space-y-2">
+          {allPlaylistTracksLoading ? (
+            // Loading state
+            [...Array(5)].map((_, i) => (
+              <div key={i} className="flex items-center p-3 rounded-lg">
+                <Skeleton className="h-4 w-8 mr-4 bg-gray-800" />
+                <Skeleton className="h-12 w-12 rounded mr-4 bg-gray-800" />
+                <div className="flex-1 space-y-2">
+                  <Skeleton className="h-4 w-48 bg-gray-800" />
+                  <Skeleton className="h-3 w-32 bg-gray-800" />
                 </div>
-                <Skeleton className="h-8 w-8" />
+                <Skeleton className="h-4 w-12 bg-gray-800" />
               </div>
-            ))}
-          </CardContent>
-        </Card>
-      ) : playlistTrackUrls.length > 0 ? (
-        <Card>
-          <CardHeader className="pb-3">
-            <div className="flex items-center justify-between">
-              <h2 className="text-lg font-semibold">Tracks</h2>
-              <p className="text-sm text-muted-foreground">{trackCount} tracks</p>
+            ))
+          ) : allPlaylistTracks.length > 0 ? (
+            allPlaylistTracks.map((track, index) => (
+              <div
+                key={`${track.id}-${index}`}
+                className="grid grid-cols-12 gap-4 p-3 rounded-lg hover:bg-gray-900/50 transition-colors group cursor-pointer items-center"
+                onClick={() => handlePlayTrack(track)}
+              >
+                {/* Track Number / Play Button */}
+                <div className="col-span-1 text-center">
+                  <span className="text-gray-400 group-hover:hidden text-sm">
+                    {index + 1}
+                  </span>
+                  <Play className="h-4 w-4 text-white hidden group-hover:block mx-auto" />
+                </div>
+
+                {/* Track Info */}
+                <div className="col-span-5 flex items-center gap-3">
+                  <img
+                    src={track.albumArtUrl}
+                    alt={track.title}
+                    className="h-10 w-10 rounded"
+                  />
+                  <div className="min-w-0">
+                    <div className="text-white font-medium truncate">{track.title}</div>
+                    <div
+                      className="text-gray-400 text-sm truncate hover:text-purple-400 cursor-pointer"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        navigate(`/artist/${track.artistId}`);
+                      }}
+                    >
+                      {track.artist}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Album */}
+                <div className="col-span-3 flex items-center">
+                  <span
+                    className="text-gray-400 text-sm truncate hover:text-purple-400 cursor-pointer"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (track.albumId) {
+                        navigate(`/album/${track.albumId}`);
+                      }
+                    }}
+                  >
+                    {track.albumTitle}
+                  </span>
+                </div>
+
+                {/* Date Added */}
+                <div className="col-span-2 flex items-center">
+                  <span className="text-gray-400 text-sm">
+                    {formatDate(playlist.created_at)}
+                  </span>
+                </div>
+
+                {/* Duration */}
+                <div className="col-span-1 text-center text-gray-400 text-sm">
+                  {track.duration ? `${Math.floor(track.duration / 60)}:${(track.duration % 60).toString().padStart(2, '0')}` : '--:--'}
+                </div>
+
+                {/* Actions */}
+                <div className="absolute right-8 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-2">
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="text-gray-400 hover:text-purple-400 p-2"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            // Like track action
+                          }}
+                        >
+                          <Heart className="h-4 w-4" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Like track</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-gray-400 hover:text-purple-400 p-2"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <MoreHorizontal className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="bg-gray-900 border-gray-800">
+                      <DropdownMenuItem
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          addToQueue(track);
+                          toast({
+                            title: "Added to queue",
+                            description: `"${track.title}" added to queue`,
+                          });
+                        }}
+                        className="hover:bg-purple-900/20 hover:text-purple-400"
+                      >
+                        <ListPlus className="h-4 w-4 mr-2" />
+                        Add to Queue
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          window.open(`https://wavlake.com/track/${track.id}`, '_blank');
+                        }}
+                        className="hover:bg-purple-900/20 hover:text-purple-400"
+                      >
+                        <ExternalLink className="h-4 w-4 mr-2" />
+                        View on Wavlake
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
+              </div>
+            ))
+          ) : (
+            <div className="text-center py-20">
+              <div className="max-w-sm mx-auto space-y-4">
+                <div className="h-16 w-16 rounded-full bg-gray-800 flex items-center justify-center mx-auto">
+                  <Music className="h-8 w-8 text-gray-600" />
+                </div>
+                <div>
+                  <h3 className="font-semibold mb-2 text-white">No tracks in this playlist</h3>
+                  <p className="text-sm text-gray-400">
+                    This playlist is empty. Add some tracks to get started.
+                  </p>
+                </div>
+              </div>
             </div>
-          </CardHeader>
-          <CardContent className="space-y-1">
-            {playlistTrackUrls.map((trackUrl, index) => (
-              <PlaylistTrackItem
-                key={`${trackUrl}-${index}`}
-                trackUrl={trackUrl}
-                index={index}
-                onPlay={handlePlayTrack}
-                showDetails={true}
-              />
-            ))}
-          </CardContent>
-        </Card>
-      ) : (
-        <Card className="border-dashed">
-          <CardContent className="py-16 px-8 text-center">
-            <div className="max-w-sm mx-auto space-y-4">
-              <div className="h-16 w-16 rounded-full bg-muted flex items-center justify-center mx-auto">
-                <Music className="h-8 w-8 text-muted-foreground" />
-              </div>
-              <div>
-                <h3 className="font-semibold mb-2">No tracks in this playlist</h3>
-                <p className="text-sm text-muted-foreground">
-                  This playlist is empty. Add some tracks to get started.
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
+          )}
+        </div>
+      </div>
 
       {/* Dialogs */}
       <EditPlaylistDialog
