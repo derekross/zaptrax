@@ -150,11 +150,10 @@ export function MusicLikedSongs() {
         ) : likedTrackUrls.length > 0 ? (
           <div className="space-y-1">
             {/* Header Row */}
-            <div className="grid grid-cols-12 gap-4 px-4 py-2 text-sm text-gray-400 border-b border-gray-800 mb-4">
+            <div className="grid grid-cols-10 gap-4 px-4 py-2 text-sm text-gray-400 border-b border-gray-800 mb-4">
               <div className="col-span-1 text-center">#</div>
-              <div className="col-span-5">Title</div>
-              <div className="col-span-3">Album</div>
-              <div className="col-span-2">Date added</div>
+              <div className="col-span-6">Title</div>
+              <div className="col-span-2">Album</div>
               <div className="col-span-1 text-center">
                 <Clock className="h-4 w-4 mx-auto" />
               </div>

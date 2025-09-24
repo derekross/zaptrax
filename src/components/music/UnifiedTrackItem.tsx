@@ -95,16 +95,17 @@ export function UnifiedTrackItem({
   return (
     <div
       className={cn(
-        "group flex items-center gap-4 p-2 rounded-md cursor-pointer transition-all",
+        "group grid gap-4 px-4 py-2 rounded-md cursor-pointer transition-all",
         "hover:bg-muted/50",
-        isCurrentTrack && "bg-muted/30"
+        isCurrentTrack && "bg-muted/30",
+        isLikedSongs ? "grid-cols-10" : "grid-cols-12"
       )}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       onClick={() => onClick?.(track)}
     >
       {/* Track Number / Play Button */}
-      <div className="w-6 flex items-center justify-center">
+      <div className="col-span-1 flex items-center justify-center">
         {isHovered || isCurrentTrack ? (
           <Button
             size="sm"
@@ -128,108 +129,126 @@ export function UnifiedTrackItem({
         )}
       </div>
 
-      {/* Album Art */}
-      <Avatar className="h-12 w-12 rounded-md">
-        <AvatarImage src={track.albumArtUrl} alt={track.albumTitle} />
-        <AvatarFallback className="rounded-md">
-          {track.title.charAt(0)}
-        </AvatarFallback>
-      </Avatar>
-
-      {/* Track Info */}
-      <div className="flex-1 min-w-0">
-        <p className={cn(
-          "font-medium truncate",
-          isCurrentTrack ? "text-primary" : "text-foreground"
-        )}>
-          {track.title}
-        </p>
-        <p className="text-sm text-muted-foreground truncate">
-          {track.artist}
-        </p>
+      {/* Track Info (includes album art, title, artist) */}
+      <div className={cn("flex items-center gap-3", isLikedSongs ? "col-span-6" : "col-span-5")}>
+        <Avatar className="h-12 w-12 rounded-md">
+          <AvatarImage src={track.albumArtUrl} alt={track.albumTitle} />
+          <AvatarFallback className="rounded-md">
+            {track.title.charAt(0)}
+          </AvatarFallback>
+        </Avatar>
+        <div className="flex-1 min-w-0">
+          <p className={cn(
+            "font-medium truncate",
+            isCurrentTrack ? "text-primary" : "text-foreground"
+          )}>
+            {track.title}
+          </p>
+          <p className="text-sm text-muted-foreground truncate">
+            {track.artist}
+          </p>
+        </div>
       </div>
 
       {/* Album */}
       {showAlbum && (
-        <div className="hidden md:block flex-1 min-w-0">
+        <div className={cn("flex items-center", isLikedSongs ? "col-span-2" : "col-span-3")}>
           <p className="text-sm text-muted-foreground truncate">
             {track.albumTitle}
           </p>
         </div>
       )}
 
+      {/* Date Added (only for non-liked songs) */}
+      {!isLikedSongs && (
+        <div className="col-span-2 flex items-center">
+          <span className="text-sm text-muted-foreground">
+            {/* This could be populated with actual date if available */}
+            --
+          </span>
+        </div>
+      )}
+
       {/* Duration */}
-      <div className="flex items-center gap-2">
-        {track.duration && (
-          <div className="flex items-center gap-1 text-sm text-muted-foreground">
-            <Clock className="h-3 w-3" />
-            <span>{formatDuration(track.duration)}</span>
-          </div>
+      <div className="col-span-1 flex items-center justify-center gap-2">
+        {track.duration ? (
+          <span className="text-sm text-muted-foreground">
+            {formatDuration(track.duration)}
+          </span>
+        ) : (
+          <span className="text-sm text-muted-foreground">--:--</span>
         )}
 
-        {/* More Options */}
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
+        {/* Actions */}
+        <div className="flex items-center">
+          {isLikedSongs && onRemoveFromLiked ? (
             <Button
               size="sm"
               variant="ghost"
               className={cn(
-                "h-8 w-8 p-0 transition-opacity",
+                "h-8 w-8 p-0 text-gray-400 hover:text-purple-400 hover:bg-purple-900/20 transition-opacity",
                 isHovered ? "opacity-100" : "opacity-0 group-hover:opacity-100"
               )}
-              onClick={(e) => e.stopPropagation()}
+              onClick={(e) => {
+                e.stopPropagation();
+                onRemoveFromLiked(track);
+              }}
             >
-              <MoreHorizontal className="h-4 w-4" />
+              <Heart className="h-4 w-4" />
             </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            {isLikedSongs && onRemoveFromLiked && (
-              <DropdownMenuItem
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onRemoveFromLiked(track);
-                }}
-                className="text-red-600 focus:text-red-600"
-              >
-                <Heart className="h-4 w-4 mr-2 fill-current" />
-                Remove from Liked Songs
-              </DropdownMenuItem>
-            )}
-            {!isLikedSongs && onAddToPlaylist && (
-              <DropdownMenuItem
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onAddToPlaylist(track);
-                }}
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                Add to Playlist
-              </DropdownMenuItem>
-            )}
-            {onComment && (
-              <DropdownMenuItem
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onComment(track);
-                }}
-              >
-                <MessageCircle className="h-4 w-4 mr-2" />
-                Comment
-              </DropdownMenuItem>
-            )}
-            {onZap && (
-              <DropdownMenuItem
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onZap(track);
-                }}
-              >
-                <Zap className="h-4 w-4 mr-2" />
-                Zap
-              </DropdownMenuItem>
-            )}
-          </DropdownMenuContent>
-        </DropdownMenu>
+          ) : (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className={cn(
+                    "h-8 w-8 p-0 transition-opacity",
+                    isHovered ? "opacity-100" : "opacity-0 group-hover:opacity-100"
+                  )}
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <MoreHorizontal className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                {onAddToPlaylist && (
+                  <DropdownMenuItem
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onAddToPlaylist(track);
+                    }}
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add to Playlist
+                  </DropdownMenuItem>
+                )}
+                {onComment && (
+                  <DropdownMenuItem
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onComment(track);
+                    }}
+                  >
+                    <MessageCircle className="h-4 w-4 mr-2" />
+                    Comment
+                  </DropdownMenuItem>
+                )}
+                {onZap && (
+                  <DropdownMenuItem
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onZap(track);
+                    }}
+                  >
+                    <Zap className="h-4 w-4 mr-2" />
+                    Zap
+                  </DropdownMenuItem>
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
+        </div>
       </div>
     </div>
   );
