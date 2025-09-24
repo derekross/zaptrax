@@ -1,7 +1,7 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Heart, Play, Clock } from 'lucide-react';
+import { Heart, Play, Pause, Clock } from 'lucide-react';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { useLikedSongs } from '@/hooks/useNostrMusic';
 import { LikedTrackItem } from './LikedTrackItem';
@@ -13,7 +13,7 @@ import { useQueries } from '@tanstack/react-query';
 export function MusicLikedSongs() {
   const { user } = useCurrentUser();
   const { data: likedSongs, isLoading: likedSongsLoading } = useLikedSongs();
-  const { playTrack } = useMusicPlayer();
+  const { state, playTrack, togglePlayPause } = useMusicPlayer();
 
   const getLikedSongsTracksUrls = () => {
     if (!likedSongs) return [];
@@ -47,9 +47,18 @@ export function MusicLikedSongs() {
     }
   };
 
+  const isLikedSongsPlaying = () => {
+    if (!state.currentTrack || allLikedTracks.length === 0) return false;
+    return allLikedTracks.some(track => track.id === state.currentTrack?.id) && state.isPlaying;
+  };
+
   const handlePlayAll = () => {
     if (allLikedTracks.length > 0) {
-      playTrack(allLikedTracks[0], allLikedTracks);
+      if (isLikedSongsPlaying()) {
+        togglePlayPause();
+      } else {
+        playTrack(allLikedTracks[0], allLikedTracks);
+      }
     }
   };
 
@@ -110,7 +119,11 @@ export function MusicLikedSongs() {
               disabled={allLikedTracksLoading || allLikedTracks.length === 0}
               className="h-14 w-14 rounded-full bg-white text-black hover:bg-gray-200 hover:scale-105 transition-all"
             >
-              <Play className="h-6 w-6 fill-black" />
+              {isLikedSongsPlaying() ? (
+                <Pause className="h-6 w-6 fill-black" />
+              ) : (
+                <Play className="h-6 w-6 fill-black" />
+              )}
             </Button>
 
           </div>
