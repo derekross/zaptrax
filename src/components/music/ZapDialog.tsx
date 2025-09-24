@@ -30,7 +30,7 @@ const WAVLAKE_APP_ID = 'DR25'; // Wavlake app ID
 
 export function ZapDialog({ open, onOpenChange, track }: ZapDialogProps) {
   const [amount, setAmount] = useState('1000');
-  const [comment, setComment] = useState('');
+  const [comment, setComment] = useState('Zapped from ZapTrax!');
   const [isLoading, setIsLoading] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<'webln' | 'external'>('webln');
   const { toast } = useToast();
@@ -163,7 +163,7 @@ export function ZapDialog({ open, onOpenChange, track }: ZapDialogProps) {
 
   const handleClose = () => {
     setAmount('1000');
-    setComment('');
+    setComment('Zapped from ZapTrax!');
     onOpenChange(false);
   };
 

@@ -35,7 +35,7 @@ export function CommentDialog({ open, onOpenChange, track }: CommentDialogProps)
   const { toast } = useToast();
   const navigate = useNavigate();
 
-  const trackUrl = track ? `https://wavlake.com/track/${track.id}` : '';
+  const trackUrl = track ? `${window.location.origin}/album/${track.albumId}` : '';
   const { data: comments, isLoading: commentsLoading } = useTrackComments(trackUrl);
 
   const handleSubmit = (e: React.FormEvent) => {

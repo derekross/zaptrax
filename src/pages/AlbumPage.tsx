@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
+import { useSeoMeta } from '@unhead/react';
 import { useWavlakeAlbum } from '@/hooks/useWavlake';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -34,6 +35,21 @@ export function AlbumPage() {
 
   // Handle case where API might return an array
   const album = Array.isArray(albumData) ? albumData[0] : albumData;
+
+  // Dynamic meta tags for social media
+  useSeoMeta({
+    title: album ? `${album.albumTitle} - ${album.artist} | ZapTrax` : 'ZapTrax - Music Streaming',
+    description: album ? `Listen to "${album.albumTitle}" by ${album.artist} on ZapTrax. Stream this album and discover more music on the Lightning Network.` : 'Stream music on ZapTrax',
+    ogTitle: album ? `${album.albumTitle} - ${album.artist}` : 'ZapTrax',
+    ogDescription: album ? `Listen to "${album.albumTitle}" by ${album.artist} on ZapTrax` : 'Stream music on ZapTrax',
+    ogImage: album?.albumArtUrl || `${window.location.origin}/zaptrax.png`,
+    ogUrl: window.location.href,
+    ogType: 'music.album',
+    twitterCard: 'summary_large_image',
+    twitterTitle: album ? `${album.albumTitle} - ${album.artist}` : 'ZapTrax',
+    twitterDescription: album ? `Listen to "${album.albumTitle}" by ${album.artist} on ZapTrax` : 'Stream music on ZapTrax',
+    twitterImage: album?.albumArtUrl || `${window.location.origin}/zaptrax.png`,
+  });
 
   if (isLoading) {
     return (
