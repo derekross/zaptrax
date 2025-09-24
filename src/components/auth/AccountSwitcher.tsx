@@ -1,7 +1,7 @@
 // NOTE: This file is stable and usually should not be modified.
 // It is important that all functionality in this file is preserved, and should only be modified if explicitly requested.
 
-import { ChevronDown, LogOut, UserIcon, UserPlus, User, Sun, Moon, Monitor } from 'lucide-react';
+import { ChevronDown, LogOut, UserIcon, UserPlus, User } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,7 +14,6 @@ import { useLoggedInAccounts, type Account } from '@/hooks/useLoggedInAccounts';
 import { genUserName } from '@/lib/genUserName';
 import { nip19 } from 'nostr-tools';
 import { useNavigate } from 'react-router-dom';
-import { useTheme } from '@/hooks/useTheme';
 
 interface AccountSwitcherProps {
   onAddAccountClick: () => void;
@@ -23,7 +22,6 @@ interface AccountSwitcherProps {
 export function AccountSwitcher({ onAddAccountClick }: AccountSwitcherProps) {
   const { currentUser, otherUsers, setLogin, removeLogin } = useLoggedInAccounts();
   const navigate = useNavigate();
-  const { theme, setTheme } = useTheme();
 
   if (!currentUser) return null;
 
@@ -91,32 +89,6 @@ export function AccountSwitcher({ onAddAccountClick }: AccountSwitcherProps) {
         >
           <LogOut className='w-4 h-4' />
           <span>Log out</span>
-        </DropdownMenuItem>
-        <DropdownMenuSeparator />
-        <div className='font-medium text-sm px-2 py-1.5'>Theme</div>
-        <DropdownMenuItem
-          onClick={() => setTheme('light')}
-          className='flex items-center gap-2 cursor-pointer p-2 rounded-md hover:bg-purple-900/20 hover:text-purple-400'
-        >
-          <Sun className='w-4 h-4' />
-          <span>Light</span>
-          {theme === 'light' && <div className='w-2 h-2 rounded-full bg-purple-500 ml-auto'></div>}
-        </DropdownMenuItem>
-        <DropdownMenuItem
-          onClick={() => setTheme('dark')}
-          className='flex items-center gap-2 cursor-pointer p-2 rounded-md hover:bg-purple-900/20 hover:text-purple-400'
-        >
-          <Moon className='w-4 h-4' />
-          <span>Dark</span>
-          {theme === 'dark' && <div className='w-2 h-2 rounded-full bg-purple-500 ml-auto'></div>}
-        </DropdownMenuItem>
-        <DropdownMenuItem
-          onClick={() => setTheme('system')}
-          className='flex items-center gap-2 cursor-pointer p-2 rounded-md hover:bg-purple-900/20 hover:text-purple-400'
-        >
-          <Monitor className='w-4 h-4' />
-          <span>System</span>
-          {theme === 'system' && <div className='w-2 h-2 rounded-full bg-purple-500 ml-auto'></div>}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

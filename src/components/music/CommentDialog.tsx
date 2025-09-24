@@ -154,6 +154,7 @@ ${trackUrl}`;
               onChange={(e) => setComment(e.target.value)}
               maxLength={280}
               rows={3}
+              className="bg-muted border-gray-700"
             />
             <DialogFooter>
               <Button

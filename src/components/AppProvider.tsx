@@ -51,8 +51,8 @@ export function AppProvider(props: AppProviderProps) {
     presetRelays,
   };
 
-  // Apply theme effects to document
-  useApplyTheme(config.theme);
+  // Always apply dark theme
+  useApplyTheme('dark');
 
   return (
     <AppContext.Provider value={appContextValue}>
@@ -62,42 +62,12 @@ export function AppProvider(props: AppProviderProps) {
 }
 
 /**
- * Hook to apply theme changes to the document root
+ * Hook to apply dark theme to the document root
  */
 function useApplyTheme(theme: Theme) {
   useEffect(() => {
     const root = window.document.documentElement;
-
-    root.classList.remove('light', 'dark');
-
-    if (theme === 'system') {
-      const systemTheme = window.matchMedia('(prefers-color-scheme: dark)')
-        .matches
-        ? 'dark'
-        : 'light';
-
-      root.classList.add(systemTheme);
-      return;
-    }
-
-    root.classList.add(theme);
-  }, [theme]);
-
-  // Handle system theme changes when theme is set to "system"
-  useEffect(() => {
-    if (theme !== 'system') return;
-
-    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-    
-    const handleChange = () => {
-      const root = window.document.documentElement;
-      root.classList.remove('light', 'dark');
-      
-      const systemTheme = mediaQuery.matches ? 'dark' : 'light';
-      root.classList.add(systemTheme);
-    };
-
-    mediaQuery.addEventListener('change', handleChange);
-    return () => mediaQuery.removeEventListener('change', handleChange);
+    root.classList.remove('light');
+    root.classList.add('dark');
   }, [theme]);
 }

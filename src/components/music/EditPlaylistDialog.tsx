@@ -51,7 +51,7 @@ function EditableTrackItem({ trackUrl, onRemove, isRemoving }: EditableTrackItem
   const { title, artist, artwork, duration } = getTrackDisplay();
 
   return (
-    <div className={`flex items-center justify-between p-2 sm:p-3 bg-muted/50 rounded-md group hover:bg-muted/70 transition-colors ${isError ? 'border border-red-200' : ''}`}>
+    <div className={`flex items-center justify-between p-2 sm:p-3 bg-muted/50 rounded-md group hover:bg-muted/70 transition-colors ${isError ? 'border border-destructive' : ''}`}>
       <div className="flex items-center space-x-2 sm:space-x-3 flex-1 min-w-0">
         {/* Track Artwork */}
         <div className="relative flex-shrink-0">
@@ -105,7 +105,7 @@ function EditableTrackItem({ trackUrl, onRemove, isRemoving }: EditableTrackItem
         variant="ghost"
         onClick={() => onRemove(trackUrl)}
         disabled={isRemoving}
-        className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity flex-shrink-0"
+        className="h-8 w-8 p-0 text-destructive hover:text-destructive/90 hover:bg-destructive/10 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity flex-shrink-0"
         title="Remove track"
       >
         <Trash2 className="h-3 w-3" />
@@ -257,7 +257,7 @@ export function EditPlaylistDialog({
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 maxLength={100}
-                className="text-base sm:text-sm"
+                className="text-base sm:text-sm bg-muted border-gray-700"
               />
             </div>
 
@@ -270,7 +270,7 @@ export function EditPlaylistDialog({
                 onChange={(e) => setDescription(e.target.value)}
                 maxLength={500}
                 rows={2}
-                className="text-base sm:text-sm resize-none"
+                className="text-base sm:text-sm resize-none bg-muted border-gray-700"
               />
             </div>
           </div>
@@ -278,7 +278,7 @@ export function EditPlaylistDialog({
           {tracks.length > 0 && (
             <div className="space-y-2 flex-1 min-h-0 flex flex-col">
               <Label>Tracks ({tracks.length})</Label>
-              <ScrollArea className="flex-1 border rounded-md p-2">
+              <ScrollArea className="flex-1 border border-gray-700 rounded-md p-2 bg-muted">
                 <div className="space-y-2">
                   {tracks.map((trackUrl) => (
                     <EditableTrackItem

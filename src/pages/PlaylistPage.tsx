@@ -375,7 +375,7 @@ export function PlaylistPage() {
                       <MoreHorizontal className="h-6 w-6" />
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="bg-gray-900 border-gray-800">
+                  <DropdownMenuContent align="end" className="bg-black border-gray-800">
                     {isOwner && (
                       <>
                         <DropdownMenuItem
@@ -565,7 +565,7 @@ export function PlaylistPage() {
                         <MoreHorizontal className="h-4 w-4" />
                       </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="bg-gray-900 border-gray-800">
+                    <DropdownMenuContent align="end" className="bg-black border-gray-800">
                       <DropdownMenuItem
                         onClick={(e) => {
                           e.stopPropagation();
