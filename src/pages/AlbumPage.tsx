@@ -25,7 +25,7 @@ import { useToast } from '@/hooks/useToast';
 export function AlbumPage() {
   const { albumId } = useParams<{ albumId: string }>();
   const { data: albumData, isLoading, error } = useWavlakeAlbum(albumId);
-  const { state, playTrack, addToQueue } = useMusicPlayer();
+  const { state, playTrack, addToQueue, togglePlayPause } = useMusicPlayer();
   const { user } = useCurrentUser();
   const { mutate: createPlaylist } = useCreatePlaylist();
   const { data: userPlaylists } = useUserPlaylists();
@@ -67,7 +67,11 @@ export function AlbumPage() {
 
   const handlePlayAlbum = () => {
     if (tracks.length > 0) {
-      playTrack(tracks[0], tracks);
+      if (isAlbumPlaying()) {
+        togglePlayPause();
+      } else {
+        playTrack(tracks[0], tracks);
+      }
     }
   };
 
@@ -251,16 +255,15 @@ export function AlbumPage() {
               {/* Action Buttons */}
               <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-4">
                 <Button
-                  size="lg"
-                  className="bg-purple-600 hover:bg-purple-700 text-white px-6 md:px-8 py-2 md:py-3 rounded-full font-medium w-full sm:w-auto"
+                  size="icon"
                   onClick={handlePlayAlbum}
+                  className="h-14 w-14 rounded-full bg-white text-black hover:bg-gray-200 hover:scale-105 transition-all"
                 >
                   {isAlbumPlaying() ? (
-                    <Pause className="h-4 w-4 md:h-5 md:w-5 mr-2" />
+                    <Pause className="h-6 w-6 fill-black" />
                   ) : (
-                    <Play className="h-4 w-4 md:h-5 md:w-5 mr-2" />
+                    <Play className="h-6 w-6 fill-black" />
                   )}
-                  {isAlbumPlaying() ? 'Pause' : 'Play'}
                 </Button>
 
                 <TooltipProvider>
@@ -365,24 +368,13 @@ export function AlbumPage() {
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="text-gray-400 hover:text-purple-400 p-2"
+                  className="text-gray-400 hover:text-purple-400 hover:bg-purple-900/20 p-2"
                   onClick={(e) => {
                     e.stopPropagation();
                     // Like track action
                   }}
                 >
                   <Heart className="h-4 w-4" />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="text-gray-400 hover:text-white p-2"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    // More actions menu
-                  }}
-                >
-                  <MoreHorizontal className="h-4 w-4" />
                 </Button>
               </div>
 
