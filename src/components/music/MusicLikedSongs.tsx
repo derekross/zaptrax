@@ -1,7 +1,7 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Heart, Play, MoreHorizontal, Download, Clock } from 'lucide-react';
+import { Heart, Play, Clock } from 'lucide-react';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { useLikedSongs } from '@/hooks/useNostrMusic';
 import { LikedTrackItem } from './LikedTrackItem';
@@ -94,13 +94,6 @@ export function MusicLikedSongs() {
         <div className="flex-1 space-y-4 md:space-y-6 text-center md:text-left md:pt-16">
           <div>
             <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold mb-3 md:mb-6 text-white">Liked Music</h1>
-            <div className="flex flex-wrap items-center justify-center md:justify-start gap-2 text-gray-300">
-              <span className="text-white font-medium">Your Library</span>
-              <span>•</span>
-              <span>Auto playlist</span>
-              <span>•</span>
-              <span>2025</span>
-            </div>
             <div className="mt-2 text-gray-300">
               <span>{trackCount} songs • {allLikedTracks.length > 0 ? formatDuration(allLikedTracks) : '0m'}</span>
             </div>
@@ -120,21 +113,6 @@ export function MusicLikedSongs() {
               <Play className="h-6 w-6 fill-black" />
             </Button>
 
-            <Button
-              size="icon"
-              variant="ghost"
-              className="h-10 w-10 text-gray-400 hover:text-white"
-            >
-              <Download className="h-5 w-5" />
-            </Button>
-
-            <Button
-              size="icon"
-              variant="ghost"
-              className="h-10 w-10 text-gray-400 hover:text-white"
-            >
-              <MoreHorizontal className="h-5 w-5" />
-            </Button>
           </div>
         </div>
       </div>

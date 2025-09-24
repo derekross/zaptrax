@@ -103,7 +103,7 @@ export function Layout() {
       </div>
 
       {/* The content for each tab will be rendered by the Outlet */}
-      <div className="bg-black" style={{ marginTop: '7rem' }}>
+      <div className="bg-black" style={{ marginTop: '5rem' }}>
         <Outlet />
       </div>
     </div>

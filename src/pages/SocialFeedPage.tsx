@@ -107,7 +107,7 @@ export function SocialFeedPage() {
     return (
       <div className="min-h-screen bg-black text-white">
         {/* Header Section */}
-        <div className="flex flex-col md:flex-row items-center md:items-start gap-4 md:gap-6 p-4 md:p-6 pb-6 md:pb-8">
+        <div className="flex flex-col md:flex-row items-center md:items-start gap-4 md:gap-6 p-4 md:p-6 pb-4 md:pb-6">
           {/* Social Icon */}
           <div className="flex-shrink-0">
             <div className="h-40 w-40 md:h-64 md:w-64 rounded-lg bg-gradient-to-br from-purple-600 via-purple-700 to-purple-900 flex items-center justify-center shadow-2xl">
@@ -132,7 +132,7 @@ export function SocialFeedPage() {
   return (
     <div className="min-h-screen bg-black text-white pb-32">
       {/* Header Section */}
-      <div className="flex flex-col md:flex-row items-center md:items-start gap-4 md:gap-6 p-4 md:p-6 pb-6 md:pb-8">
+      <div className="flex flex-col md:flex-row items-center md:items-start gap-4 md:gap-6 p-4 md:p-6 pb-4 md:pb-6">
         {/* Social Icon */}
         <div className="flex-shrink-0">
           <div className="h-40 w-40 md:h-64 md:w-64 rounded-lg bg-gradient-to-br from-purple-600 via-purple-700 to-purple-900 flex items-center justify-center shadow-2xl">

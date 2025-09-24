@@ -11,7 +11,6 @@ import { EditPlaylistDialog } from '@/components/music/EditPlaylistDialog';
 import { DeletePlaylistDialog } from '@/components/music/DeletePlaylistDialog';
 import { SharePlaylistDialog } from '@/components/music/SharePlaylistDialog';
 
-const categories = ['Playlists', 'Podcasts', 'Songs', 'Albums', 'Artists'];
 
 export function MusicPlaylists() {
   const { user } = useCurrentUser();
@@ -19,7 +18,6 @@ export function MusicPlaylists() {
   const { data: likedSongs, isLoading: likedSongsLoading } = useLikedSongs();
   const navigate = useNavigate();
 
-  const [selectedCategory, setSelectedCategory] = useState('Playlists');
   const [createPlaylistOpen, setCreatePlaylistOpen] = useState(false);
   const [editPlaylistOpen, setEditPlaylistOpen] = useState(false);
   const [deletePlaylistOpen, setDeletePlaylistOpen] = useState(false);
@@ -74,13 +72,6 @@ export function MusicPlaylists() {
         <div className="flex-1 space-y-4 md:space-y-6 text-center md:text-left md:pt-16">
           <div>
             <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold mb-3 md:mb-6 text-white">Playlists</h1>
-            <div className="flex flex-wrap items-center justify-center md:justify-start gap-2 text-gray-300">
-              <span className="text-white font-medium">Your Library</span>
-              <span>•</span>
-              <span>Music Collection</span>
-              <span>•</span>
-              <span>2025</span>
-            </div>
             <div className="mt-2 text-gray-300">
               <span>{userPlaylists?.length || 0} playlists</span>
             </div>
@@ -89,31 +80,12 @@ export function MusicPlaylists() {
             </p>
           </div>
 
-          {/* Category Pills */}
-          <div className="flex flex-wrap justify-center md:justify-start gap-2">
-            {categories.map((category) => (
-              <Button
-                key={category}
-                variant={selectedCategory === category ? "default" : "ghost"}
-                size="sm"
-                onClick={() => setSelectedCategory(category)}
-                className={
-                  selectedCategory === category
-                    ? "bg-purple-600 text-white hover:bg-purple-700 rounded-full px-4"
-                    : "bg-gray-800 text-gray-300 hover:bg-gray-700 hover:text-white rounded-full px-4"
-                }
-              >
-                {category}
-              </Button>
-            ))}
-          </div>
         </div>
       </div>
 
       {/* Content Grid */}
       <div className="p-4 md:p-6">
-        {selectedCategory === 'Playlists' && (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
             {/* Liked Music Card */}
             <div
               onClick={handleLikedSongsClick}
@@ -196,25 +168,7 @@ export function MusicPlaylists() {
                 ))}
               </>
             )}
-          </div>
-        )}
-
-        {/* Other Categories - Placeholder */}
-        {selectedCategory !== 'Playlists' && (
-          <div className="text-center py-20">
-            <div className="max-w-sm mx-auto space-y-4">
-              <div className="h-16 w-16 rounded-full bg-gray-800 flex items-center justify-center mx-auto">
-                <Music className="h-8 w-8 text-gray-600" />
-              </div>
-              <div>
-                <h3 className="font-semibold mb-2 text-white">{selectedCategory} coming soon</h3>
-                <p className="text-sm text-gray-400">
-                  This section is not yet implemented.
-                </p>
-              </div>
-            </div>
-          </div>
-        )}
+        </div>
       </div>
 
       {/* Dialogs */}

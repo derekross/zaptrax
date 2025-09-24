@@ -36,7 +36,7 @@ export function SearchPage() {
   return (
     <div className="min-h-screen bg-black text-white pb-20">
       {/* Header Section */}
-      <div className="flex flex-col md:flex-row items-center md:items-start gap-4 md:gap-6 p-4 md:p-6 pb-6 md:pb-8">
+      <div className="flex flex-col md:flex-row items-center md:items-start gap-4 md:gap-6 p-4 md:p-6 pb-4 md:pb-6">
         {/* Search Icon */}
         <div className="flex-shrink-0">
           <div className="h-40 w-40 md:h-64 md:w-64 rounded-lg bg-gradient-to-br from-purple-600 via-purple-700 to-purple-900 flex items-center justify-center shadow-2xl">
@@ -48,13 +48,6 @@ export function SearchPage() {
         <div className="flex-1 space-y-4 md:space-y-6 text-center md:text-left md:pt-16">
           <div>
             <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold mb-3 md:mb-6 text-white">Search</h1>
-            <div className="flex items-center gap-2 text-gray-300">
-              <span className="text-white font-medium">Discovery</span>
-              <span>•</span>
-              <span>Music & Users</span>
-              <span>•</span>
-              <span>2025</span>
-            </div>
             <p className="text-sm text-gray-400 mt-4 max-w-lg">
               Discover tracks, artists, albums, and users across the platform. Search for npub addresses or NIP-05 identifiers to find users.
             </p>

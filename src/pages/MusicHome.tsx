@@ -124,7 +124,7 @@ export function MusicHome() {
   return (
     <div className="min-h-screen bg-black text-white pb-20">
       {/* Filters Navigation */}
-      <div className="px-6 py-4 space-y-4">
+      <div className="px-6 py-2 space-y-4">
         {/* Genre Filter */}
         <div>
           <h3 className="text-sm font-medium text-gray-400 mb-2">Genres</h3>
