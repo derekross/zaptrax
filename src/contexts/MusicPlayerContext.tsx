@@ -1,28 +1,30 @@
 import React, { createContext, useContext, useReducer, useRef, useEffect } from 'react';
 import type { WavlakeTrack } from '@/lib/wavlake';
+import type { UnifiedTrack } from '@/lib/unifiedTrack';
+import { wavlakeToUnified } from '@/lib/unifiedTrack';
 import { useUpdateNowPlaying } from '@/hooks/useNostrMusic';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
 
 interface MusicPlayerState {
-  currentTrack: WavlakeTrack | null;
+  currentTrack: UnifiedTrack | null;
   isPlaying: boolean;
   currentTime: number;
   duration: number;
   volume: number;
-  queue: WavlakeTrack[];
+  queue: UnifiedTrack[];
   currentIndex: number;
   isLoading: boolean;
   error: string | null;
 }
 
 type MusicPlayerAction =
-  | { type: 'SET_TRACK'; payload: WavlakeTrack }
+  | { type: 'SET_TRACK'; payload: UnifiedTrack }
   | { type: 'PLAY' }
   | { type: 'PAUSE' }
   | { type: 'SET_CURRENT_TIME'; payload: number }
   | { type: 'SET_DURATION'; payload: number }
   | { type: 'SET_VOLUME'; payload: number }
-  | { type: 'SET_QUEUE'; payload: WavlakeTrack[] }
+  | { type: 'SET_QUEUE'; payload: UnifiedTrack[] }
   | { type: 'SET_CURRENT_INDEX'; payload: number }
   | { type: 'PLAY_TRACK_BY_INDEX'; payload: number }
   | { type: 'NEXT_TRACK' }
@@ -113,7 +115,7 @@ interface MusicPlayerContextType {
   state: MusicPlayerState;
   dispatch: React.Dispatch<MusicPlayerAction>;
   audioRef: React.RefObject<HTMLAudioElement>;
-  playTrack: (track: WavlakeTrack, queue?: WavlakeTrack[]) => void;
+  playTrack: (track: UnifiedTrack | WavlakeTrack, queue?: (UnifiedTrack | WavlakeTrack)[]) => void;
   playTrackByIndex: (index: number) => void;
   togglePlayPause: () => void;
   seekTo: (time: number) => void;
@@ -130,26 +132,26 @@ export function MusicPlayerProvider({ children }: { children: React.ReactNode })
   const { mutate: updateNowPlaying } = useUpdateNowPlaying();
   const { user } = useCurrentUser();
 
-  const playTrack = (track: WavlakeTrack, queue?: WavlakeTrack[]) => {
-    console.log('MusicPlayer - playTrack called with:', track);
+  const playTrack = (track: UnifiedTrack | WavlakeTrack, queue?: (UnifiedTrack | WavlakeTrack)[]) => {
+    // Convert WavlakeTrack to UnifiedTrack if needed
+    const unifiedTrack = 'source' in track ? track : wavlakeToUnified(track);
+    const unifiedQueue = queue?.map(t => 'source' in t ? t : wavlakeToUnified(t)) || [unifiedTrack];
+
+    console.log('MusicPlayer - playTrack called with:', unifiedTrack);
     console.log('MusicPlayer - track properties:', {
-      id: track.id,
-      title: track.title,
-      albumArtUrl: track.albumArtUrl,
-      mediaUrl: track.mediaUrl,
-      artist: track.artist
+      id: unifiedTrack.id,
+      title: unifiedTrack.title,
+      albumArtUrl: unifiedTrack.albumArtUrl,
+      mediaUrl: unifiedTrack.mediaUrl,
+      artist: unifiedTrack.artist,
+      source: unifiedTrack.source
     });
 
-    dispatch({ type: 'SET_TRACK', payload: track });
+    dispatch({ type: 'SET_TRACK', payload: unifiedTrack });
 
-    if (queue) {
-      dispatch({ type: 'SET_QUEUE', payload: queue });
-      const index = queue.findIndex(t => t.id === track.id);
-      dispatch({ type: 'SET_CURRENT_INDEX', payload: index });
-    } else {
-      dispatch({ type: 'SET_QUEUE', payload: [track] });
-      dispatch({ type: 'SET_CURRENT_INDEX', payload: 0 });
-    }
+    dispatch({ type: 'SET_QUEUE', payload: unifiedQueue });
+    const index = unifiedQueue.findIndex(t => t.id === unifiedTrack.id);
+    dispatch({ type: 'SET_CURRENT_INDEX', payload: index });
 
     dispatch({ type: 'PLAY' }); // Ensure isPlaying state is updated
   };
@@ -306,8 +308,35 @@ export function MusicPlayerProvider({ children }: { children: React.ReactNode })
   // New useEffect to trigger NIP-38 update (keep this useEffect)
   useEffect(() => {
     if (user && state.currentTrack && state.isPlaying) {
-      const trackUrl = `https://wavlake.com/track/${state.currentTrack.id}`;
-      updateNowPlaying({ track: state.currentTrack, trackUrl });
+      let trackUrl = '';
+
+      // Determine track URL based on source
+      if (state.currentTrack.source === 'wavlake') {
+        trackUrl = state.currentTrack.url || `https://wavlake.com/track/${state.currentTrack.sourceId}`;
+      } else if (state.currentTrack.source === 'podcastindex') {
+        // Use the episode URL or media URL for PodcastIndex tracks
+        trackUrl = state.currentTrack.url || state.currentTrack.mediaUrl;
+      }
+
+      // Create a WavlakeTrack-like object for the hook (works for both sources)
+      const trackData = {
+        id: state.currentTrack.sourceId,
+        title: state.currentTrack.title,
+        artist: state.currentTrack.artist,
+        albumTitle: state.currentTrack.albumTitle,
+        albumArtUrl: state.currentTrack.albumArtUrl,
+        artistArtUrl: state.currentTrack.artistArtUrl,
+        mediaUrl: state.currentTrack.mediaUrl,
+        duration: state.currentTrack.duration,
+        releaseDate: state.currentTrack.releaseDate,
+        artistId: state.currentTrack.artistId || '',
+        albumId: state.currentTrack.albumId || '',
+        msatTotal: state.currentTrack.msatTotal || '',
+        artistNpub: state.currentTrack.artistNpub || '',
+        order: state.currentTrack.order || 0,
+      };
+
+      updateNowPlaying({ track: trackData, trackUrl });
     }
   }, [user, state.currentTrack, state.isPlaying, updateNowPlaying]);
 

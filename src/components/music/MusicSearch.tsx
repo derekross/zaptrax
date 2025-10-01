@@ -5,18 +5,22 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Search, Music, User, Disc, CheckCircle, XCircle, AtSign } from 'lucide-react';
+import { Search, Music, User, Disc, CheckCircle, XCircle, AtSign, Radio } from 'lucide-react';
 import { SearchTrackItem } from './SearchTrackItem';
 import { useWavlakeSearch } from '@/hooks/useWavlake';
+import { usePodcastIndexSearch } from '@/hooks/usePodcastIndex';
 import { useNostrSearch } from '@/hooks/useNostrSearch';
 import { useAuthor } from '@/hooks/useAuthor';
 import { useMusicPlayer } from '@/contexts/MusicPlayerContext';
 import { wavlakeAPI } from '@/lib/wavlake';
+import { podcastIndexAPI } from '@/lib/podcastindex';
+import { wavlakeToUnified, podcastIndexEpisodeToUnified } from '@/lib/unifiedTrack';
 import { useDebounce } from '@/hooks/useDebounce';
 import { createNpub, isNpub, isNip05 } from '@/lib/nostrSearch';
 import { genUserName } from '@/lib/genUserName';
 import type { WavlakeSearchResult, WavlakeTrack } from '@/lib/wavlake';
 import type { NostrSearchResult } from '@/lib/nostrSearch';
+import type { PodcastIndexFeed } from '@/lib/podcastindex';
 
 // Extended interfaces for API responses that might have additional properties
 interface ExtendedWavlakeTrack extends WavlakeTrack {
@@ -56,13 +60,18 @@ export function MusicSearch({
     debouncedSearchTerm.length > 2 && !isNostrSearch
   );
 
+  const { data: podcastIndexResults, isLoading: podcastIndexLoading, error: podcastIndexError } = usePodcastIndexSearch(
+    debouncedSearchTerm,
+    debouncedSearchTerm.length > 2 && !isNostrSearch
+  );
+
   const { data: nostrResults, isLoading: nostrLoading, error: nostrError } = useNostrSearch(
     debouncedSearchTerm,
     debouncedSearchTerm.length > 2 && isNostrSearch
   );
 
-  const isLoading = musicLoading || nostrLoading;
-  const error = musicError || nostrError;
+  const isLoading = musicLoading || nostrLoading || podcastIndexLoading;
+  const error = musicError || nostrError || podcastIndexError;
 
   const groupedResults = useMemo(() => {
     if (!searchResults) return { tracks: [], artists: [], albums: [] };
@@ -314,6 +323,54 @@ export function MusicSearch({
         </Card>
       )}
 
+      {/* PodcastIndex Music Results */}
+      {podcastIndexResults && podcastIndexResults.feeds.length > 0 && (
+        <Card className="bg-gray-900 border-gray-800">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-lg flex items-center space-x-2">
+              <Radio className="h-5 w-5 text-purple-500" />
+              <span>Podcasting 2.0 Music</span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            {podcastIndexResults.feeds.map((feed: PodcastIndexFeed) => (
+              <div
+                key={feed.id}
+                className="flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-800 cursor-pointer"
+                onClick={() => {
+                  // Navigate to feed page
+                  navigate(`/feed/${feed.id}`);
+                }}
+              >
+                <Avatar className="h-12 w-12 rounded-md">
+                  <AvatarImage src={feed.image || feed.artwork} alt={feed.title} />
+                  <AvatarFallback className="rounded-md">
+                    {feed.title.charAt(0)}
+                  </AvatarFallback>
+                </Avatar>
+
+                <div className="flex-1 min-w-0">
+                  <h4 className="font-medium text-sm truncate">
+                    {feed.title}
+                  </h4>
+                  <p className="text-sm text-muted-foreground truncate">
+                    {feed.author}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {feed.episodeCount} episodes
+                  </p>
+                </div>
+
+                <Badge variant="outline">
+                  <Radio className="h-3 w-3 mr-1" />
+                  Music
+                </Badge>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      )}
+
       {/* Search Results */}
       {searchResults && searchResults.length > 0 && (
         <div className="space-y-4">
@@ -323,7 +380,7 @@ export function MusicSearch({
               <CardHeader className="pb-3">
                 <CardTitle className="text-lg flex items-center space-x-2">
                   <Music className="h-5 w-5" />
-                  <span>Tracks</span>
+                  <span>Wavlake Tracks</span>
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-1">

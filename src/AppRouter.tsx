@@ -4,6 +4,7 @@ import { ScrollToTop } from "./components/ScrollToTop";
 import { MusicHome } from "./pages/MusicHome";
 import { ArtistPage } from "./pages/ArtistPage";
 import { AlbumPage } from "./pages/AlbumPage";
+import { PodcastIndexFeedPage } from "./pages/PodcastIndexFeedPage";
 import { SearchPage } from "./pages/SearchPage";
 import { SocialFeedPage } from "./pages/SocialFeedPage";
 import { PlaylistPage } from "./pages/PlaylistPage";
@@ -34,6 +35,7 @@ export function AppRouter() {
               <Route path="profile/:npub" element={<ProfilePage />} />
               <Route path="artist/:artistId" element={<ArtistPage />} />
               <Route path="album/:albumId" element={<AlbumPage />} />
+              <Route path="feed/:feedId" element={<PodcastIndexFeedPage />} />
               <Route path="*" element={<NotFound />} />
             </Route>
           </Routes>

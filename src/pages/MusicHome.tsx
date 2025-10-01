@@ -2,14 +2,17 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Play, ChevronRight, Heart } from 'lucide-react';
+import { Play, ChevronRight, Heart, Radio, Music } from 'lucide-react';
 import { useWavlakeRankings } from '@/hooks/useWavlake';
+import { usePodcastIndexTop100 } from '@/hooks/usePodcastIndex';
 import { useMusicPlayer } from '@/contexts/MusicPlayerContext';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { useLikedSongs, useUserPlaylists } from '@/hooks/useNostrMusic';
 import { useListeningHistory } from '@/hooks/useListeningHistory';
 import type { WavlakeTrack } from '@/lib/wavlake';
 import { wavlakeAPI } from '@/lib/wavlake';
+import { podcastIndexAPI } from '@/lib/podcastindex';
+import { wavlakeToUnified, podcastIndexTop100ToUnified, podcastIndexEpisodeToUnified } from '@/lib/unifiedTrack';
 import type { NostrEvent } from '@nostrify/nostrify';
 import { cn } from '@/lib/utils';
 import { nip19 } from 'nostr-tools';
@@ -30,6 +33,7 @@ export function MusicHome() {
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [selectedTimePeriod, setSelectedTimePeriod] = useState(7); // Default to last week
   const [showAllTopTracks, setShowAllTopTracks] = useState(false);
+  const [showAllPodcastMusic, setShowAllPodcastMusic] = useState(false);
 
   const { user } = useCurrentUser();
   const { playTrack } = useMusicPlayer();
@@ -73,6 +77,19 @@ export function MusicHome() {
     genre: genreFilter,
     limit: 50, // Get all 50 tracks
   });
+
+  // Fetch PodcastIndex top 100 music
+  const { data: podcastIndexTop100, isLoading: isPodcastIndexLoading, error: podcastIndexError } = usePodcastIndexTop100();
+
+  // Debug: Log PodcastIndex state
+  React.useEffect(() => {
+    console.log('PodcastIndex Top 100 State:', {
+      isLoading: isPodcastIndexLoading,
+      hasData: !!podcastIndexTop100,
+      dataLength: podcastIndexTop100?.length,
+      error: podcastIndexError,
+    });
+  }, [podcastIndexTop100, isPodcastIndexLoading, podcastIndexError]);
 
 
   const handleTrackPlay = (track: WavlakeTrack) => {
@@ -118,6 +135,29 @@ export function MusicHome() {
         kind: playlist.kind,
       });
       navigate(`/playlist/${naddr}`);
+    }
+  };
+
+  const handlePodcastIndexTrackPlay = async (feedId: number, itemGuid: string) => {
+    try {
+      // Fetch the feed's episodes
+      const feedData = await podcastIndexAPI.getFeedEpisodes(feedId);
+      if (feedData.items.length === 0) {
+        console.error('No episodes found for feed');
+        return;
+      }
+
+      // Find the specific episode by guid, or just play the first one
+      const episode = feedData.items.find(ep => ep.guid === itemGuid) || feedData.items[0];
+
+      // Convert all episodes to unified tracks
+      const allTracks = feedData.items.map(ep => podcastIndexEpisodeToUnified(ep));
+      const trackToPlay = podcastIndexEpisodeToUnified(episode);
+
+      // Play the track
+      playTrack(trackToPlay, allTracks);
+    } catch (error) {
+      console.error('Failed to play PodcastIndex track:', error);
     }
   };
 
@@ -362,10 +402,136 @@ export function MusicHome() {
         </div>
       )}
 
+      {/* PodcastIndex Top Music Section */}
+      {podcastIndexTop100 && podcastIndexTop100.length > 0 && (
+        <div className="px-6 py-4 mt-8">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-2xl font-bold text-white flex items-center gap-2">
+              <Radio className="h-6 w-6 text-purple-500" />
+              Podcasting 2.0 Music
+              <span className="text-lg font-normal text-gray-400 ml-2">
+                • Top 100
+              </span>
+            </h2>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-gray-400 hover:text-purple-400 hover:bg-purple-900/20 transition-colors"
+              onClick={() => setShowAllPodcastMusic(true)}
+            >
+              More
+              <ChevronRight className="h-4 w-4 ml-1" />
+            </Button>
+          </div>
+
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+            {(showAllPodcastMusic ? podcastIndexTop100 : podcastIndexTop100.slice(0, 12)).map((item) => {
+              return (
+                <Card
+                  key={`pi-${item.feedId}-${item.itemGuid}`}
+                  className="bg-gray-900 border-gray-800 hover:bg-gray-800 transition-colors cursor-pointer"
+                >
+                  <CardContent className="p-0">
+                    <div className="relative group">
+                      <img
+                        src={item.image}
+                        alt={item.title}
+                        className="w-full aspect-square object-cover rounded-t-lg"
+                      />
+                      <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity rounded-t-lg flex items-center justify-center">
+                        <Button
+                          size="sm"
+                          className="bg-purple-600 hover:bg-purple-700 text-white rounded-full"
+                          onClick={() => {
+                            handlePodcastIndexTrackPlay(item.feedId, item.itemGuid);
+                          }}
+                        >
+                          <Play className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                    <div className="p-3">
+                      <p className="text-white font-medium text-sm truncate">{item.title}</p>
+                      <p
+                        className="text-gray-400 text-xs truncate hover:text-purple-400 cursor-pointer"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          navigate(`/feed/${item.feedId}`);
+                        }}
+                      >
+                        {item.author}
+                      </p>
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
+
+          {/* Show Less Button */}
+          {showAllPodcastMusic && (
+            <div className="flex justify-center mt-6">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-gray-400 hover:text-purple-400 hover:bg-purple-900/20 transition-colors"
+                onClick={() => setShowAllPodcastMusic(false)}
+              >
+                Show Less
+                <ChevronRight className="h-4 w-4 ml-1 rotate-90" />
+              </Button>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* PodcastIndex Loading State */}
+      {isPodcastIndexLoading && (
+        <div className="px-6 py-8">
+          <div className="flex items-center mb-6">
+            <Radio className="h-6 w-6 text-purple-500 mr-2" />
+            <h2 className="text-2xl font-bold text-white">Podcasting 2.0 Music</h2>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+            {[...Array(6)].map((_, i) => (
+              <Card key={i} className="bg-gray-900 border-gray-800">
+                <CardContent className="p-0">
+                  <div className="w-full aspect-square bg-gray-800 animate-pulse rounded-t-lg" />
+                  <div className="p-3 space-y-2">
+                    <div className="h-4 bg-gray-800 animate-pulse rounded" />
+                    <div className="h-3 bg-gray-800 animate-pulse rounded w-3/4" />
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* PodcastIndex Error State */}
+      {podcastIndexError && (
+        <div className="px-6 py-8">
+          <Card className="bg-gray-900 border-red-800">
+            <CardContent className="p-6">
+              <div className="flex items-center gap-3">
+                <Radio className="h-6 w-6 text-red-500" />
+                <div>
+                  <h3 className="font-semibold text-white">Failed to load Podcasting 2.0 Music</h3>
+                  <p className="text-sm text-gray-400 mt-1">
+                    {podcastIndexError.message || 'Unknown error occurred'}
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
       {/* Top Tracks Section */}
       <div className="px-6 py-4">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold text-white">
+          <h2 className="text-2xl font-bold text-white flex items-center gap-2">
+            <Music className="h-6 w-6 text-purple-500" />
             Top Tracks
             <span className="text-lg font-normal text-gray-400 ml-2">
               • {timePeriods.find(p => p.days === selectedTimePeriod)?.label}
@@ -454,7 +620,6 @@ export function MusicHome() {
           </div>
         </div>
       )}
-
 
     </div>
   );
