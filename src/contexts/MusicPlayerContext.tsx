@@ -310,12 +310,14 @@ export function MusicPlayerProvider({ children }: { children: React.ReactNode })
     if (user && state.currentTrack && state.isPlaying) {
       let trackUrl = '';
 
-      // Determine track URL based on source
+      // For PodcastIndex, use the direct RSS media URL so it's playable anywhere
+      // For Wavlake, use app URL since it requires the app to play
       if (state.currentTrack.source === 'wavlake') {
-        trackUrl = state.currentTrack.url || `https://wavlake.com/track/${state.currentTrack.sourceId}`;
+        const baseUrl = import.meta.env.VITE_APP_URL || window.location.origin;
+        trackUrl = `${baseUrl}/album/${state.currentTrack.albumId}`;
       } else if (state.currentTrack.source === 'podcastindex') {
-        // Use the episode URL or media URL for PodcastIndex tracks
-        trackUrl = state.currentTrack.url || state.currentTrack.mediaUrl;
+        // Use direct media URL from RSS - universally playable
+        trackUrl = state.currentTrack.mediaUrl;
       }
 
       // Create a WavlakeTrack-like object for the hook (works for both sources)

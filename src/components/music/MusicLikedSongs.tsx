@@ -6,63 +6,106 @@ import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { useLikedSongs } from '@/hooks/useNostrMusic';
 import { LikedTrackItem } from './LikedTrackItem';
 import { useMusicPlayer } from '@/contexts/MusicPlayerContext';
-import { wavlakeAPI } from '@/lib/wavlake';
-import { WavlakeTrack } from '@/lib/wavlake';
+import type { UnifiedTrack } from '@/lib/unifiedTrack';
 import { useQueries } from '@tanstack/react-query';
+import { wavlakeAPI } from '@/lib/wavlake';
+import { wavlakeToUnified } from '@/lib/unifiedTrack';
 
 export function MusicLikedSongs() {
   const { user } = useCurrentUser();
   const { data: likedSongs, isLoading: likedSongsLoading } = useLikedSongs();
   const { state, playTrack, togglePlayPause } = useMusicPlayer();
 
-  const getLikedSongsTracksUrls = () => {
+  const getLikedSongsUrls = () => {
     if (!likedSongs) return [];
-    const trackTags = likedSongs.tags.filter(tag => tag[0] === 'r');
-    return trackTags.map(tag => tag[1]); // URLs
+    return likedSongs.tags.filter(tag => tag[0] === 'r').map(tag => tag[1]);
   };
 
-  const likedTrackUrls = getLikedSongsTracksUrls();
+  const trackUrls = getLikedSongsUrls();
 
-  const allLikedTracksData = useQueries({
-    queries: likedTrackUrls.map(url => {
-      const trackId = url.substring(url.lastIndexOf('/') + 1);
+  // Fetch tracks - use metadata tags if available, otherwise fetch from API
+  const trackQueries = useQueries({
+    queries: trackUrls.map(url => {
+      const titleTag = likedSongs?.tags.find(tag => tag[0] === 'track-title' && tag[1] === url);
+      const hasMetadata = !!titleTag;
+
       return {
-        queryKey: ['wavlake-track', trackId],
-        queryFn: () => wavlakeAPI.getTrack(trackId),
-        enabled: !!trackId,
+        queryKey: ['liked-track', url],
+        queryFn: async (): Promise<UnifiedTrack> => {
+          // If we have metadata tags, use them
+          if (hasMetadata) {
+            const artistTag = likedSongs?.tags.find(tag => tag[0] === 'track-artist' && tag[1] === url);
+            const imageTag = likedSongs?.tags.find(tag => tag[0] === 'track-image' && tag[1] === url);
+            const sourceTag = likedSongs?.tags.find(tag => tag[0] === 'track-source' && tag[1] === url);
+            const feedIdTag = likedSongs?.tags.find(tag => tag[0] === 'track-feed-id' && tag[1] === url);
+
+            const source = (sourceTag?.[2] || 'wavlake') as 'wavlake' | 'podcastindex';
+            const feedId = feedIdTag?.[2] ? parseInt(feedIdTag[2]) : undefined;
+
+            return {
+              id: url,
+              sourceId: url,
+              source,
+              title: titleTag?.[2] || 'Unknown Title',
+              artist: artistTag?.[2] || 'Unknown Artist',
+              albumTitle: '',
+              albumArtUrl: imageTag?.[2] || '',
+              artistArtUrl: '',
+              mediaUrl: url,
+              duration: 0,
+              releaseDate: new Date().toISOString(),
+              feedId,
+            };
+          }
+
+          // No metadata - must be an old Wavlake track, fetch from API
+          const isWavlake = url.includes('/album/') || url.includes('wavlake.com/track/');
+          if (isWavlake) {
+            // Extract track ID from URL (works for both /album/ and /track/ formats)
+            const trackId = url.substring(url.lastIndexOf('/') + 1);
+            const trackData = await wavlakeAPI.getTrack(trackId);
+            const wavlakeTrack = Array.isArray(trackData) ? trackData[0] : trackData;
+            return wavlakeToUnified(wavlakeTrack);
+          }
+
+          // Unknown format
+          throw new Error(`Cannot load track: ${url}`);
+        },
+        enabled: !!url,
         staleTime: 30 * 60 * 1000,
+        retry: 1,
       };
     }),
   });
 
-  const allLikedTracks: WavlakeTrack[] = allLikedTracksData
+  const likedTracks: UnifiedTrack[] = trackQueries
     .filter(query => query.isSuccess && query.data)
-    .map(query => (Array.isArray(query.data) ? query.data[0] : query.data));
+    .map(query => query.data as UnifiedTrack);
 
-  const allLikedTracksLoading = allLikedTracksData.some(query => query.isLoading);
+  const isLoadingTracks = trackQueries.some(query => query.isLoading);
 
-  const handleTrackClick = (track: WavlakeTrack) => {
-    if (allLikedTracks) {
-      playTrack(track, allLikedTracks);
+  const handleTrackClick = (track: UnifiedTrack) => {
+    if (likedTracks) {
+      playTrack(track, likedTracks);
     }
   };
 
   const isLikedSongsPlaying = () => {
-    if (!state.currentTrack || allLikedTracks.length === 0) return false;
-    return allLikedTracks.some(track => track.id === state.currentTrack?.id) && state.isPlaying;
+    if (!state.currentTrack || likedTracks.length === 0) return false;
+    return likedTracks.some(track => track.id === state.currentTrack?.id) && state.isPlaying;
   };
 
   const handlePlayAll = () => {
-    if (allLikedTracks.length > 0) {
+    if (likedTracks.length > 0) {
       if (isLikedSongsPlaying()) {
         togglePlayPause();
       } else {
-        playTrack(allLikedTracks[0], allLikedTracks);
+        playTrack(likedTracks[0], likedTracks);
       }
     }
   };
 
-  const formatDuration = (tracks: WavlakeTrack[]) => {
+  const formatDuration = (tracks: UnifiedTrack[]) => {
     const totalSeconds = tracks.reduce((acc, track) => acc + (track.duration || 0), 0);
     const hours = Math.floor(totalSeconds / 3600);
     const minutes = Math.floor((totalSeconds % 3600) / 60);
@@ -86,7 +129,7 @@ export function MusicLikedSongs() {
     );
   }
 
-  const trackCount = likedTrackUrls.length;
+  const trackCount = likedTracks.length;
 
   return (
     <div className="min-h-screen bg-black text-white pb-32">
@@ -104,7 +147,7 @@ export function MusicLikedSongs() {
           <div>
             <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold mb-3 md:mb-6 text-white">Liked Music</h1>
             <div className="mt-2 text-gray-300">
-              <span>{trackCount} songs • {allLikedTracks.length > 0 ? formatDuration(allLikedTracks) : '0m'}</span>
+              <span>{trackCount} songs • {likedTracks.length > 0 ? formatDuration(likedTracks) : '0m'}</span>
             </div>
             <p className="text-sm text-gray-400 mt-4 max-w-lg">
               Only the music you like in ZapTrax will show here. If you want liked music from other sources, you can import it.
@@ -116,7 +159,7 @@ export function MusicLikedSongs() {
             <Button
               size="icon"
               onClick={handlePlayAll}
-              disabled={allLikedTracksLoading || allLikedTracks.length === 0}
+              disabled={likedSongsLoading || isLoadingTracks || likedTracks.length === 0}
               className="h-14 w-14 rounded-full bg-white text-black hover:bg-gray-200 hover:scale-105 transition-all"
             >
               {isLikedSongsPlaying() ? (
@@ -132,7 +175,7 @@ export function MusicLikedSongs() {
 
       {/* Track List */}
       <div className="px-4 md:px-6">
-        {likedSongsLoading || allLikedTracksLoading ? (
+        {likedSongsLoading || isLoadingTracks ? (
           <div className="space-y-3">
             {[...Array(8)].map((_, i) => (
               <div key={i} className="flex items-center gap-4 p-2">
@@ -147,7 +190,7 @@ export function MusicLikedSongs() {
               </div>
             ))}
           </div>
-        ) : likedTrackUrls.length > 0 ? (
+        ) : likedTracks.length > 0 ? (
           <div className="space-y-1">
             {/* Header Row */}
             <div className="grid grid-cols-10 gap-4 px-4 py-2 text-sm text-gray-400 border-b border-gray-800 mb-4">
@@ -160,10 +203,10 @@ export function MusicLikedSongs() {
             </div>
 
             {/* Track List */}
-            {likedTrackUrls.map((trackUrl, index) => (
+            {likedTracks.map((track, index) => (
               <LikedTrackItem
-                key={trackUrl}
-                trackUrl={trackUrl}
+                key={track.id}
+                track={track}
                 index={index + 1}
                 onClick={handleTrackClick}
               />

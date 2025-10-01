@@ -140,19 +140,23 @@ export function MusicHome() {
 
   const handlePodcastIndexTrackPlay = async (feedId: number, itemGuid: string) => {
     try {
-      // Fetch the feed's episodes
-      const feedData = await podcastIndexAPI.getFeedEpisodes(feedId);
-      if (feedData.items.length === 0) {
+      // Fetch both the feed details and episodes
+      const [feedResponse, episodesData] = await Promise.all([
+        podcastIndexAPI.getFeedById(feedId),
+        podcastIndexAPI.getFeedEpisodes(feedId),
+      ]);
+
+      if (episodesData.items.length === 0) {
         console.error('No episodes found for feed');
         return;
       }
 
       // Find the specific episode by guid, or just play the first one
-      const episode = feedData.items.find(ep => ep.guid === itemGuid) || feedData.items[0];
+      const episode = episodesData.items.find(ep => ep.guid === itemGuid) || episodesData.items[0];
 
-      // Convert all episodes to unified tracks
-      const allTracks = feedData.items.map(ep => podcastIndexEpisodeToUnified(ep));
-      const trackToPlay = podcastIndexEpisodeToUnified(episode);
+      // Convert all episodes to unified tracks, passing feed info for author
+      const allTracks = episodesData.items.map(ep => podcastIndexEpisodeToUnified(ep, feedResponse.feed));
+      const trackToPlay = podcastIndexEpisodeToUnified(episode, feedResponse.feed);
 
       // Play the track
       playTrack(trackToPlay, allTracks);

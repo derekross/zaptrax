@@ -1,27 +1,23 @@
 import React from 'react';
-import { useWavlakeTrack } from '@/hooks/useWavlake';
 import { UnifiedTrackItem } from './UnifiedTrackItem';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { useRemoveFromLikedSongs } from '@/hooks/useNostrMusic';
-import type { WavlakeTrack } from '@/lib/wavlake';
+import type { UnifiedTrack } from '@/lib/unifiedTrack';
 
 interface LikedTrackItemProps {
-  trackUrl: string;
+  track: UnifiedTrack;
   index: number;
-  onClick?: (track: WavlakeTrack) => void;
+  onClick?: (track: UnifiedTrack) => void;
 }
 
-export function LikedTrackItem({ trackUrl, index, onClick }: LikedTrackItemProps) {
-  const trackId = trackUrl.substring(trackUrl.lastIndexOf('/') + 1);
-  const { data: trackData, isLoading, isError } = useWavlakeTrack(trackId);
-  const track = Array.isArray(trackData) ? trackData[0] : trackData;
-
+export function LikedTrackItem({ track, index, onClick }: LikedTrackItemProps) {
   const { user } = useCurrentUser();
   const { mutate: removeFromLikedSongs } = useRemoveFromLikedSongs();
 
-  const handleRemoveFromLiked = (_track: WavlakeTrack) => {
+  const handleRemoveFromLiked = (_track: UnifiedTrack) => {
     if (user) {
-      removeFromLikedSongs({ trackUrl });
+      // Use mediaUrl as the trackUrl for removal
+      removeFromLikedSongs({ trackUrl: track.mediaUrl });
     }
   };
 
@@ -29,8 +25,8 @@ export function LikedTrackItem({ trackUrl, index, onClick }: LikedTrackItemProps
     <UnifiedTrackItem
       track={track}
       index={index}
-      isLoading={isLoading}
-      isError={isError}
+      isLoading={false}
+      isError={false}
       onClick={onClick}
       onRemoveFromLiked={handleRemoveFromLiked}
       isLikedSongs={true}

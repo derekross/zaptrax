@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Play, Radio, ArrowLeft } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
-import { usePodcastIndexFeedEpisodes } from '@/hooks/usePodcastIndex';
+import { usePodcastIndexFeedEpisodes, usePodcastIndexFeed } from '@/hooks/usePodcastIndex';
 import { useMusicPlayer } from '@/contexts/MusicPlayerContext';
 import { podcastIndexEpisodeToUnified } from '@/lib/unifiedTrack';
 import { cn } from '@/lib/utils';
@@ -14,9 +14,12 @@ export function PodcastIndexFeedPage() {
   const navigate = useNavigate();
   const { playTrack } = useMusicPlayer();
 
-  const { data: feedData, isLoading, error } = usePodcastIndexFeedEpisodes(
-    feedId ? parseInt(feedId) : undefined
-  );
+  const parsedFeedId = feedId ? parseInt(feedId) : undefined;
+  const { data: feedData, isLoading: episodesLoading, error: episodesError } = usePodcastIndexFeedEpisodes(parsedFeedId);
+  const { data: feedInfo, isLoading: feedLoading } = usePodcastIndexFeed(parsedFeedId);
+
+  const isLoading = episodesLoading || feedLoading;
+  const error = episodesError;
 
   if (isLoading) {
     return (
@@ -72,7 +75,7 @@ export function PodcastIndexFeedPage() {
 
   const feed = feedData.items[0]; // Get feed info from first episode
   const episodes = feedData.items;
-  const unifiedTracks = episodes.map(ep => podcastIndexEpisodeToUnified(ep));
+  const unifiedTracks = episodes.map(ep => podcastIndexEpisodeToUnified(ep, feedInfo?.feed));
 
   const handlePlayAll = () => {
     if (unifiedTracks.length > 0) {
@@ -120,14 +123,14 @@ export function PodcastIndexFeedPage() {
                 <span>Podcasting 2.0 Music</span>
               </div>
               <h1 className="text-4xl md:text-6xl font-bold">{feed.feedTitle}</h1>
-              {feed.feedTitle !== episodes[0]?.feedTitle && (
-                <p className="text-xl text-gray-300">{episodes[0]?.feedTitle}</p>
+              {feedInfo?.feed?.author && (
+                <p className="text-xl text-gray-300">{feedInfo.feed.author}</p>
               )}
               <div className="flex items-center gap-4 text-sm text-gray-400">
                 <span>{episodes.length} episodes</span>
               </div>
-              {feed.description && (
-                <p className="text-gray-400 line-clamp-3">{feed.description}</p>
+              {feedInfo?.feed?.description && (
+                <p className="text-gray-400 line-clamp-3">{feedInfo.feed.description}</p>
               )}
               <div className="flex gap-4 pt-4">
                 <Button

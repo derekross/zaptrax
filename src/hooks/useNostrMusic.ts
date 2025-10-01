@@ -4,6 +4,8 @@ import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { useNostrPublish } from '@/hooks/useNostrPublish';
 import type { NostrEvent } from '@nostrify/nostrify';
 import type { WavlakeTrack } from '@/lib/wavlake';
+import type { UnifiedTrack } from '@/lib/unifiedTrack';
+import { wavlakeToUnified } from '@/lib/unifiedTrack';
 
 // Hook to get user's playlists (NIP-51 lists)
 export function useUserPlaylists(pubkey?: string) {
@@ -365,37 +367,59 @@ export function useAddToPlaylist() {
 
 // Hook to like/unlike a track (add to/remove from Liked Songs and create reaction)
 export function useLikeTrack() {
+  const { nostr } = useNostr();
   const { mutate: createEvent } = useNostrPublish();
   const queryClient = useQueryClient();
   const { user } = useCurrentUser();
 
   return useMutation({
-    mutationFn: async ({ trackUrl }: {
-      track: WavlakeTrack;
+    mutationFn: async ({ track, trackUrl }: {
+      track: UnifiedTrack | WavlakeTrack;
       trackUrl: string;
     }) => {
-      // Get existing liked songs to check if track is already liked
-      const likedSongsEvents = await queryClient.fetchQuery({
-        queryKey: ['liked-songs', user?.pubkey],
-      });
+      if (!user?.pubkey) throw new Error('User not logged in');
 
-      const existingLikedSongs = likedSongsEvents as NostrEvent | null;
+      // Try to get existing liked songs from cache first
+      let existingLikedSongs = queryClient.getQueryData<NostrEvent | null>(['liked-songs', user.pubkey]);
+
+      // If not in cache, fetch from relays
+      if (!existingLikedSongs) {
+        const signal = AbortSignal.timeout(3000);
+        const events = await nostr.query([
+          {
+            kinds: [30003],
+            authors: [user.pubkey],
+            '#d': ['liked-songs'],
+          }
+        ], { signal });
+        existingLikedSongs = events.sort((a, b) => b.created_at - a.created_at)[0] || null;
+      }
+
       const existingTracks = existingLikedSongs?.tags
         .filter(tag => tag[0] === 'r')
         .map(tag => tag[1]) || [];
 
       const isCurrentlyLiked = existingTracks.includes(trackUrl);
 
+      // Convert track to UnifiedTrack format
+      const unifiedTrack: UnifiedTrack = 'source' in track ? track : wavlakeToUnified(track);
+
       if (isCurrentlyLiked) {
-        // Unlike: Remove from liked songs
-        const updatedTracks = existingTracks.filter(url => url !== trackUrl);
+        // Unlike: Remove from liked songs - filter out all tags related to this URL
+        const updatedTags = existingLikedSongs?.tags.filter(tag =>
+          // Keep structural tags
+          ['d', 'title', 'description', 't'].includes(tag[0]) ||
+          // Keep track tags that don't match this URL
+          (tag[0] === 'r' && tag[1] !== trackUrl) ||
+          (['track-title', 'track-artist', 'track-image', 'track-source', 'track-feed-id'].includes(tag[0]) && tag[1] !== trackUrl)
+        ) || [];
 
         const tags = [
-          ['d', 'liked-songs'], // Unique identifier for liked songs
+          ['d', 'liked-songs'],
           ['title', 'Liked Songs'],
           ['description', 'My favorite tracks'],
           ['t', 'music'],
-          ...updatedTracks.map(url => ['r', url]),
+          ...updatedTags.filter(tag => !['d', 'title', 'description', 't'].includes(tag[0])),
         ];
 
         createEvent({
@@ -405,11 +429,9 @@ export function useLikeTrack() {
         });
 
         // Find and delete the existing like reaction (NIP-09)
-        const trackReactions = await queryClient.fetchQuery({
-          queryKey: ['track-reactions', trackUrl],
-        });
+        const trackReactions = queryClient.getQueryData<{ likes: NostrEvent[] }>(['track-reactions', trackUrl]);
 
-        const userLikeReaction = (trackReactions as { likes: NostrEvent[] })?.likes.find(like => like.pubkey === user?.pubkey);
+        const userLikeReaction = trackReactions?.likes.find(like => like.pubkey === user?.pubkey);
 
         if (userLikeReaction) {
           createEvent({
@@ -422,14 +444,31 @@ export function useLikeTrack() {
           });
         }
       } else {
-        // Like: Add to liked songs
+        // Like: Add to liked songs with track metadata
+        const existingTags = existingLikedSongs?.tags.filter(tag =>
+          !['d', 'title', 'description', 't'].includes(tag[0])
+        ) || [];
+
+        const newTrackTags: string[][] = [
+          ['r', trackUrl],
+          ['track-title', trackUrl, unifiedTrack.title || ''],
+          ['track-artist', trackUrl, unifiedTrack.artist || ''],
+          ['track-image', trackUrl, unifiedTrack.albumArtUrl || ''],
+          ['track-source', trackUrl, unifiedTrack.source || 'wavlake'],
+        ];
+
+        // Add feed ID for PodcastIndex tracks
+        if (unifiedTrack.source === 'podcastindex' && unifiedTrack.feedId) {
+          newTrackTags.push(['track-feed-id', trackUrl, String(unifiedTrack.feedId)]);
+        }
+
         const tags = [
-          ['d', 'liked-songs'], // Unique identifier for liked songs
+          ['d', 'liked-songs'],
           ['title', 'Liked Songs'],
           ['description', 'My favorite tracks'],
           ['t', 'music'],
-          ...existingTracks.map(url => ['r', url]),
-          ['r', trackUrl],
+          ...existingTags,
+          ...newTrackTags,
         ];
 
         createEvent({
@@ -488,7 +527,7 @@ export function useUpdateNowPlaying() {
 
   return useMutation({
     mutationFn: async ({ track, trackUrl }: {
-      track: WavlakeTrack;
+      track: UnifiedTrack | WavlakeTrack | { id: string; title: string; artist: string; duration: number };
       trackUrl: string;
     }) => {
       const content = `${track.title} - ${track.artist}`;

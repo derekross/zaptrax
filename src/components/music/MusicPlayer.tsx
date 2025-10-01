@@ -119,7 +119,15 @@ export function MusicPlayer() {
   }
 
   const { currentTrack, isPlaying, currentTime, duration, volume } = state;
-  const trackUrl = `https://wavlake.com/track/${currentTrack.id}`;
+
+  // Generate track URL based on source
+  // Wavlake: use app URL, PodcastIndex: use direct media URL
+  let trackUrl = '';
+  if (currentTrack.source === 'wavlake') {
+    trackUrl = `/album/${currentTrack.albumId}`;
+  } else if (currentTrack.source === 'podcastindex') {
+    trackUrl = currentTrack.mediaUrl;
+  }
 
   // Check if current track is liked (including optimistic updates)
   const actuallyLiked = likedSongs?.tags.some(tag => tag[0] === 'r' && tag[1] === trackUrl) || false;
@@ -141,13 +149,23 @@ export function MusicPlayer() {
     setVolume(value[0]);
   };
 
+  // Get the correct artist link based on track source
+  const getArtistLink = () => {
+    if (!currentTrack) return '#';
+    if (currentTrack.source === 'podcastindex') {
+      return `/feed/${currentTrack.feedId}`;
+    }
+    return `/artist/${currentTrack.artistId}`;
+  };
+
   const handleLike = () => {
     if (user && currentTrack) {
       // Add to optimistic likes to show immediate feedback
       setOptimisticLikes(prev => new Set(prev).add(trackUrl));
 
       likeTrack({ track: currentTrack, trackUrl }, {
-        onError: () => {
+        onError: (error) => {
+          console.error('MusicPlayer - Error liking track:', error);
           // Only clear optimistic state on error - let successful likes stay optimistic
           setOptimisticLikes(prev => {
             const newSet = new Set(prev);
@@ -197,7 +215,7 @@ export function MusicPlayer() {
                 {currentTrack.title}
               </h4>
               <Link
-                to={`/artist/${currentTrack.artistId}`}
+                to={getArtistLink()}
                 className="text-sm text-muted-foreground truncate hover:text-foreground transition-colors"
               >
                 {currentTrack.artist}
@@ -634,7 +652,7 @@ export function MusicPlayer() {
                 {currentTrack.title}
               </h4>
               <Link
-                to={`/artist/${currentTrack.artistId}`}
+                to={getArtistLink()}
                 className="text-sm text-muted-foreground truncate hover:text-foreground transition-colors"
               >
                 {currentTrack.artist}
@@ -825,7 +843,7 @@ export function MusicPlayer() {
                 {currentTrack.title}
               </h1>
               <Link
-                to={`/artist/${currentTrack.artistId}`}
+                to={getArtistLink()}
                 className="text-muted-foreground hover:text-foreground transition-colors block text-lg"
               >
                 {currentTrack.artist}

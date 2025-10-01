@@ -186,6 +186,18 @@ export class PodcastIndexAPI {
     }
     return response.json();
   }
+
+  async getFeedById(feedId: number): Promise<{ feed: PodcastIndexFeed }> {
+    const headers = await this.getAuthHeaders();
+    const response = await fetch(
+      `${this.baseUrl}/podcasts/byfeedid?id=${feedId}&pretty`,
+      { headers }
+    );
+    if (!response.ok) {
+      throw new Error(`Failed to fetch feed: ${response.statusText}`);
+    }
+    return response.json();
+  }
 }
 
 export const podcastIndexAPI = new PodcastIndexAPI();

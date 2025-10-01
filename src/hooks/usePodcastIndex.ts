@@ -26,3 +26,12 @@ export function usePodcastIndexFeedEpisodes(feedId: number | undefined) {
     staleTime: 15 * 60 * 1000, // 15 minutes
   });
 }
+
+export function usePodcastIndexFeed(feedId: number | undefined) {
+  return useQuery({
+    queryKey: ['podcastindex-feed', feedId],
+    queryFn: () => podcastIndexAPI.getFeedById(feedId!),
+    enabled: !!feedId,
+    staleTime: 30 * 60 * 1000, // 30 minutes
+  });
+}

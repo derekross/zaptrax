@@ -20,12 +20,13 @@ import { NoteContent } from '@/components/NoteContent';
 import { useNavigate } from 'react-router-dom';
 import { nip19 } from 'nostr-tools';
 import type { WavlakeTrack } from '@/lib/wavlake';
+import type { UnifiedTrack } from '@/lib/unifiedTrack';
 import type { NostrEvent } from '@nostrify/nostrify';
 
 interface CommentDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  track: WavlakeTrack | null;
+  track: UnifiedTrack | WavlakeTrack | null;
 }
 
 export function CommentDialog({ open, onOpenChange, track }: CommentDialogProps) {
@@ -35,7 +36,26 @@ export function CommentDialog({ open, onOpenChange, track }: CommentDialogProps)
   const { toast } = useToast();
   const navigate = useNavigate();
 
-  const trackUrl = track ? `${window.location.origin}/album/${track.albumId}` : '';
+  // Generate correct URL based on track source
+  const trackUrl = track ? (() => {
+    if ('source' in track) {
+      // UnifiedTrack
+      if (track.source === 'wavlake') {
+        // Wavlake: use app URL
+        const baseUrl = import.meta.env.VITE_APP_URL || window.location.origin;
+        return `${baseUrl}/album/${track.albumId}`;
+      } else if (track.source === 'podcastindex') {
+        // PodcastIndex: use direct media URL for universal playback
+        return track.mediaUrl;
+      }
+    } else {
+      // WavlakeTrack (backward compatibility)
+      const baseUrl = import.meta.env.VITE_APP_URL || window.location.origin;
+      return `${baseUrl}/album/${track.albumId}`;
+    }
+    return '';
+  })() : '';
+
   const { data: comments, isLoading: commentsLoading } = useTrackComments(trackUrl);
 
   const handleSubmit = (e: React.FormEvent) => {
