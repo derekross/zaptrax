@@ -271,7 +271,7 @@ const nowPlaying = await nostr.query([{
 
 - Music listening history is public through status updates
 - Playlists and liked songs are public by default
-- Consider implementing private playlists using NIP-04 encryption in the content field
+- Consider implementing private playlists using NIP-44 encryption in the content field
 
 ## Compatibility
 
