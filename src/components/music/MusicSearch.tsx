@@ -336,13 +336,12 @@ export function MusicSearch({
             {podcastIndexResults.feeds.map((feed: PodcastIndexFeed) => (
               <div
                 key={feed.id}
-                className="flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-800 cursor-pointer"
-                onClick={() => {
-                  // Navigate to feed page
-                  navigate(`/feed/${feed.id}`);
-                }}
+                className="flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-800"
               >
-                <Avatar className="h-12 w-12 rounded-md">
+                <Avatar
+                  className="h-12 w-12 rounded-md cursor-pointer"
+                  onClick={() => navigate(`/feed/${feed.id}`)}
+                >
                   <AvatarImage src={feed.image || feed.artwork} alt={feed.title} />
                   <AvatarFallback className="rounded-md">
                     {feed.title.charAt(0)}
@@ -350,10 +349,16 @@ export function MusicSearch({
                 </Avatar>
 
                 <div className="flex-1 min-w-0">
-                  <h4 className="font-medium text-sm truncate">
+                  <h4
+                    className="font-medium text-sm truncate cursor-pointer hover:underline"
+                    onClick={() => navigate(`/feed/${feed.id}`)}
+                  >
                     {feed.title}
                   </h4>
-                  <p className="text-sm text-muted-foreground truncate">
+                  <p
+                    className="text-sm text-muted-foreground truncate cursor-pointer hover:text-purple-400 transition-colors"
+                    onClick={() => navigate(`/feed/${feed.id}`)}
+                  >
                     {feed.author}
                   </p>
                   <p className="text-xs text-muted-foreground">

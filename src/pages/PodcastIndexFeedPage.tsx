@@ -89,59 +89,52 @@ export function PodcastIndexFeedPage() {
 
   return (
     <div className="min-h-screen bg-black text-white pb-20">
-      {/* Hero Section with Feed Info */}
-      <div className="relative">
-        {/* Background gradient */}
-        <div className="absolute inset-0 bg-gradient-to-b from-purple-900/50 to-black" />
+      {/* Hero Section with Background Image - matching ArtistPage style */}
+      <div className="relative h-[300px] md:h-[400px] overflow-hidden">
+        {/* Background Image */}
+        <div
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+          style={{
+            backgroundImage: `url(${feed.feedImage})`,
+            filter: 'blur(20px) brightness(0.4)',
+            transform: 'scale(1.1)'
+          }}
+        />
 
-        {/* Content */}
-        <div className="relative px-6 pt-20 pb-8">
-          <Button
-            variant="ghost"
-            size="sm"
-            className="mb-4 text-gray-400 hover:text-white hover:bg-gray-800"
-            onClick={() => navigate(-1)}
-          >
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back
-          </Button>
+        {/* Gradient Overlay */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent" />
 
-          <div className="flex flex-col md:flex-row gap-6 items-start">
-            {/* Feed Image */}
-            <div className="flex-shrink-0">
-              <img
-                src={feed.feedImage}
-                alt={feed.feedTitle}
-                className="w-64 h-64 rounded-lg shadow-2xl object-cover"
-              />
+        {/* Artist Info */}
+        <div className="absolute bottom-0 left-0 right-0 p-4 md:p-8">
+          <div className="max-w-7xl mx-auto">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="mb-4 text-gray-400 hover:text-white hover:bg-gray-800/50"
+              onClick={() => navigate(-1)}
+            >
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back
+            </Button>
+            <div className="flex items-center gap-2 text-sm text-purple-400 mb-2">
+              <Radio className="h-4 w-4" />
+              <span>Podcasting 2.0 Music</span>
             </div>
-
-            {/* Feed Info */}
-            <div className="flex-1 space-y-4">
-              <div className="flex items-center gap-2 text-sm text-purple-400">
-                <Radio className="h-4 w-4" />
-                <span>Podcasting 2.0 Music</span>
-              </div>
-              <h1 className="text-4xl md:text-6xl font-bold">{feed.feedTitle}</h1>
-              {feedInfo?.feed?.author && (
-                <p className="text-xl text-gray-300">{feedInfo.feed.author}</p>
-              )}
-              <div className="flex items-center gap-4 text-sm text-gray-400">
-                <span>{episodes.length} episodes</span>
-              </div>
-              {feedInfo?.feed?.description && (
-                <p className="text-gray-400 line-clamp-3">{feedInfo.feed.description}</p>
-              )}
-              <div className="flex gap-4 pt-4">
-                <Button
-                  size="lg"
-                  className="bg-purple-600 hover:bg-purple-700 text-white rounded-full px-8"
-                  onClick={handlePlayAll}
-                >
-                  <Play className="h-5 w-5 mr-2 fill-current" />
-                  Play All
-                </Button>
-              </div>
+            <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold mb-2 md:mb-4">
+              {feedInfo?.feed?.author || feed.feedTitle}
+            </h1>
+            <p className="text-sm md:text-lg text-gray-300 mb-4 md:mb-6 max-w-2xl line-clamp-2 md:line-clamp-none">
+              {feedInfo?.feed?.description || ''}
+            </p>
+            <div className="flex gap-4">
+              <Button
+                size="lg"
+                className="bg-purple-600 hover:bg-purple-700 text-white rounded-full px-8"
+                onClick={handlePlayAll}
+              >
+                <Play className="h-5 w-5 mr-2 fill-current" />
+                Play All
+              </Button>
             </div>
           </div>
         </div>

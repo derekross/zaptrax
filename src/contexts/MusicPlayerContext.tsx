@@ -86,6 +86,7 @@ function musicPlayerReducer(state: MusicPlayerState, action: MusicPlayerAction):
           currentIndex: nextIndex,
           currentTrack: state.queue[nextIndex],
           currentTime: 0,
+          isPlaying: true, // Keep playing when moving to next track
         };
       }
       return state;
