@@ -1,4 +1,5 @@
 import { bech32 } from 'bech32';
+import type { ValueRecipient } from './podcastindex';
 
 // LNURL-pay utilities
 export interface LNURLPayResponse {
@@ -127,4 +128,72 @@ export async function requestLNURLPayInvoice(
   }
 
   return data as LNURLPayCallbackResponse;
+}
+
+/**
+ * Parse a lightning address (user@domain.com) to get LNURL-pay endpoint
+ */
+export async function parseLightningAddress(address: string): Promise<string> {
+  // Lightning address format: user@domain.com
+  const [username, domain] = address.split('@');
+
+  if (!username || !domain) {
+    throw new Error('Invalid lightning address format');
+  }
+
+  // Well-known LNURL endpoint
+  const url = `https://${domain}/.well-known/lnurlp/${username}`;
+  return url;
+}
+
+/**
+ * Get payment info from a lightning address
+ */
+export async function fetchLightningAddressInfo(address: string): Promise<LNURLPayResponse> {
+  const lnurlEndpoint = await parseLightningAddress(address);
+  return fetchLNURLPayInfo(lnurlEndpoint);
+}
+
+/**
+ * Check if a recipient supports lightning address payments
+ */
+export function isLightningAddress(recipient: ValueRecipient): boolean {
+  // Accept both 'address' and 'lnaddress' as valid lightning address types
+  return (recipient.type === 'address' || recipient.type === 'lnaddress') && recipient.address.includes('@');
+}
+
+/**
+ * Check if a recipient supports keysend payments
+ */
+export function isKeysendRecipient(recipient: ValueRecipient): boolean {
+  return recipient.type === 'node' && !recipient.address.includes('@');
+}
+
+/**
+ * Calculate the amount to send to each recipient based on splits
+ */
+export function calculateSplits(
+  totalAmount: number,
+  recipients: ValueRecipient[]
+): Map<ValueRecipient, number> {
+  const splits = new Map<ValueRecipient, number>();
+
+  // Calculate total split percentage
+  const totalSplit = recipients.reduce((sum, r) => sum + r.split, 0);
+
+  // If splits don't add up to 100, normalize them
+  const normalizedRecipients = recipients.map(r => ({
+    ...r,
+    split: (r.split / totalSplit) * 100
+  }));
+
+  // Calculate amounts for each recipient
+  for (const recipient of normalizedRecipients) {
+    const amount = Math.floor((totalAmount * recipient.split) / 100);
+    if (amount > 0) {
+      splits.set(recipient, amount);
+    }
+  }
+
+  return splits;
 }

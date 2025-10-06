@@ -33,6 +33,7 @@ export interface PodcastIndexFeed {
   newestItemPubdate: number;
   inPollingQueue?: number;
   priority?: number;
+  value?: ValueBlock; // Podcasting 2.0 value block at feed level
 }
 
 export interface PodcastIndexSearchResponse {
@@ -53,6 +54,25 @@ export interface PodcastIndexTop100Item {
   feedUrl: string;
   feedGuid: string;
   itemGuid: string;
+}
+
+// Value4Value recipient information
+export interface ValueRecipient {
+  name?: string;
+  type: 'node' | 'address' | 'lnaddress'; // Accept 'lnaddress' as well as 'address'
+  address: string; // Lightning node pubkey for keysend, or lightning address for lnaddress
+  customKey?: string;
+  customValue?: string;
+  split: number; // Percentage split (0-100)
+  fee?: boolean;
+}
+
+// Value4Value block information from RSS
+export interface ValueBlock {
+  type: 'lightning';
+  method: 'keysend' | 'amp';
+  suggested?: number; // Suggested amount in satoshis
+  recipients?: ValueRecipient[];
 }
 
 export interface PodcastIndexEpisode {
@@ -78,6 +98,7 @@ export interface PodcastIndexEpisode {
   feedId: number;
   feedTitle: string;
   feedLanguage: string;
+  value?: ValueBlock; // Podcasting 2.0 value block
 }
 
 export interface PodcastIndexEpisodesResponse {

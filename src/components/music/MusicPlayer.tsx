@@ -23,6 +23,8 @@ import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { CommentDialog } from './CommentDialog';
 import { ZapDialog } from './ZapDialog';
 import { AddToPlaylistDialog } from './AddToPlaylistDialog';
+import { parseRSSEpisodeValueBlock } from '@/lib/rssParser';
+import type { ValueBlock } from '@/lib/podcastindex';
 
 export function MusicPlayer() {
   const {
@@ -45,6 +47,8 @@ export function MusicPlayer() {
   const [zapDialogOpen, setZapDialogOpen] = useState(false);
   const [addToPlaylistOpen, setAddToPlaylistOpen] = useState(false);
   const [optimisticLikes, setOptimisticLikes] = useState<Set<string>>(new Set());
+  const [rssValueBlock, setRssValueBlock] = useState<ValueBlock | null>(null);
+  const [checkingRssValue, setCheckingRssValue] = useState(false);
 
   // Close expanded player and restore scrolling when route changes
   useEffect(() => {
@@ -113,6 +117,43 @@ export function MusicPlayer() {
       }
     }
   }, [likedSongs, optimisticLikes]);
+
+  // Fetch RSS value block for PodcastIndex tracks
+  useEffect(() => {
+    async function fetchValueBlock() {
+      const currentTrack = state.currentTrack;
+
+      if (!currentTrack || currentTrack.source !== 'podcastindex') {
+        setRssValueBlock(null);
+        return;
+      }
+
+      // Skip if we already have value block data
+      if (currentTrack.value?.recipients && currentTrack.value.recipients.length > 0) {
+        setRssValueBlock(currentTrack.value);
+        return;
+      }
+
+      // Try to fetch from RSS feed
+      if (!currentTrack.feedUrl || !currentTrack.episodeGuid) {
+        setRssValueBlock(null);
+        return;
+      }
+
+      setCheckingRssValue(true);
+      try {
+        const valueBlock = await parseRSSEpisodeValueBlock(currentTrack.feedUrl, currentTrack.episodeGuid);
+        setRssValueBlock(valueBlock);
+      } catch (error) {
+        console.error('Failed to parse RSS value block:', error);
+        setRssValueBlock(null);
+      } finally {
+        setCheckingRssValue(false);
+      }
+    }
+
+    fetchValueBlock();
+  }, [state.currentTrack]);
 
   if (!state.currentTrack) {
     return null;
@@ -185,6 +226,35 @@ export function MusicPlayer() {
     setZapDialogOpen(true);
   };
 
+  // Check if track supports zapping
+  const supportsZap = () => {
+    if (!currentTrack) return false;
+
+    // Wavlake tracks always support zapping
+    if (currentTrack.source === 'wavlake') return true;
+
+    // PodcastIndex tracks need value block with recipients (from track data or RSS)
+    if (currentTrack.source === 'podcastindex') {
+      // Check track's built-in value block first
+      if (currentTrack.value?.recipients && currentTrack.value.recipients.length > 0) {
+        return true;
+      }
+      // Check RSS-fetched value block
+      if (rssValueBlock?.recipients && rssValueBlock.recipients.length > 0) {
+        return true;
+      }
+      // If still checking RSS, don't show button yet
+      if (checkingRssValue) {
+        return false;
+      }
+      return false;
+    }
+
+    return false;
+  };
+
+  const canZap = supportsZap();
+
   const handleAddToPlaylist = () => {
     setAddToPlaylistOpen(true);
   };
@@ -248,15 +318,17 @@ export function MusicPlayer() {
                   <Plus className="h-4 w-4" />
                 </Button>
 
-                <Button
-                  size="icon"
-                  variant="ghost"
-                  className="h-10 w-10 rounded-full text-yellow-500 hover:text-yellow-600"
-                  onClick={handleZap}
-                  aria-label="Zap song"
-                >
-                  <Zap className="h-4 w-4" />
-                </Button>
+                {canZap && (
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    className="h-10 w-10 rounded-full text-yellow-500 hover:text-yellow-600"
+                    onClick={handleZap}
+                    aria-label="Zap song"
+                  >
+                    <Zap className="h-4 w-4" />
+                  </Button>
+                )}
               </>
             )}
 
@@ -552,23 +624,25 @@ export function MusicPlayer() {
               />
             </Button>
 
-            <Button
-              size="icon"
-              variant="ghost"
-              onClick={handleZap}
-              className="rounded-full hover:bg-muted text-yellow-500 hover:text-yellow-600 transition-all duration-300"
-              style={{
-                width: showQueue ? 'min(8vw, 2.5rem)' : 'min(10vw, 2.75rem)',
-                height: showQueue ? 'min(8vw, 2.5rem)' : 'min(10vw, 2.75rem)',
-              }}
-            >
-              <Zap
+            {canZap && (
+              <Button
+                size="icon"
+                variant="ghost"
+                onClick={handleZap}
+                className="rounded-full hover:bg-muted text-yellow-500 hover:text-yellow-600 transition-all duration-300"
                 style={{
-                  width: showQueue ? 'min(4vw, 1rem)' : 'min(5vw, 1.25rem)',
-                  height: showQueue ? 'min(4vw, 1rem)' : 'min(5vw, 1.25rem)',
+                  width: showQueue ? 'min(8vw, 2.5rem)' : 'min(10vw, 2.75rem)',
+                  height: showQueue ? 'min(8vw, 2.5rem)' : 'min(10vw, 2.75rem)',
                 }}
-              />
-            </Button>
+              >
+                <Zap
+                  style={{
+                    width: showQueue ? 'min(4vw, 1rem)' : 'min(5vw, 1.25rem)',
+                    height: showQueue ? 'min(4vw, 1rem)' : 'min(5vw, 1.25rem)',
+                  }}
+                />
+              </Button>
+            )}
 
             <Button
               size="icon"
@@ -747,14 +821,16 @@ export function MusicPlayer() {
                   <MessageCircle className="h-4 w-4" />
                 </Button>
 
-                <Button
-                  size="icon"
-                  variant="ghost"
-                  onClick={handleZap}
-                  className="h-8 w-8 rounded-full hover:bg-muted text-yellow-500 hover:text-yellow-600"
-                >
-                  <Zap className="h-4 w-4" />
-                </Button>
+                {canZap && (
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    onClick={handleZap}
+                    className="h-8 w-8 rounded-full hover:bg-muted text-yellow-500 hover:text-yellow-600"
+                  >
+                    <Zap className="h-4 w-4" />
+                  </Button>
+                )}
               </>
             )}
 
@@ -929,14 +1005,16 @@ export function MusicPlayer() {
                     <Plus className="h-6 w-6" />
                   </Button>
 
-                  <Button
-                    size="icon"
-                    variant="ghost"
-                    onClick={handleZap}
-                    className="h-12 w-12 rounded-full hover:bg-muted text-yellow-500 hover:text-yellow-600"
-                  >
-                    <Zap className="h-6 w-6" />
-                  </Button>
+                  {canZap && (
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      onClick={handleZap}
+                      className="h-12 w-12 rounded-full hover:bg-muted text-yellow-500 hover:text-yellow-600"
+                    >
+                      <Zap className="h-6 w-6" />
+                    </Button>
+                  )}
 
                   <Button
                     size="icon"
@@ -1056,6 +1134,7 @@ export function MusicPlayer() {
         open={zapDialogOpen}
         onOpenChange={setZapDialogOpen}
         track={currentTrack}
+        rssValueBlock={rssValueBlock}
       />
       <AddToPlaylistDialog
         open={addToPlaylistOpen}

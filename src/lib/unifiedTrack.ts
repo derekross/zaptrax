@@ -1,6 +1,6 @@
 // Unified track interface that supports both Wavlake and PodcastIndex tracks
 import type { WavlakeTrack } from './wavlake';
-import type { PodcastIndexEpisode, PodcastIndexFeed, PodcastIndexTop100Item } from './podcastindex';
+import type { PodcastIndexEpisode, PodcastIndexFeed, PodcastIndexTop100Item, ValueBlock } from './podcastindex';
 
 export type TrackSource = 'wavlake' | 'podcastindex';
 
@@ -34,6 +34,9 @@ export interface UnifiedTrack {
   feedUrl?: string;
   episodeGuid?: string;
   description?: string;
+
+  // Podcasting 2.0 value block for lightning payments
+  value?: ValueBlock;
 }
 
 // Convert WavlakeTrack to UnifiedTrack
@@ -65,6 +68,9 @@ export function podcastIndexEpisodeToUnified(
   episode: PodcastIndexEpisode,
   feed?: PodcastIndexFeed
 ): UnifiedTrack {
+  // Episode-level value block takes precedence over feed-level
+  const valueBlock = episode.value || feed?.value;
+
   return {
     id: `podcastindex-${episode.id}`,
     sourceId: episode.id.toString(),
@@ -82,6 +88,7 @@ export function podcastIndexEpisodeToUnified(
     episodeGuid: episode.guid,
     description: episode.description,
     url: episode.link,
+    value: valueBlock,
   };
 }
 

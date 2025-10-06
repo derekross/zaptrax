@@ -17,24 +17,40 @@ import { Zap, ExternalLink, Wallet, Globe } from 'lucide-react';
 import { useToast } from '@/hooks/useToast';
 import { useWebLN } from '@/hooks/useWebLN';
 import { wavlakeAPI } from '@/lib/wavlake';
-import { fetchLNURLPayInfo, requestLNURLPayInvoice } from '@/lib/lnurl';
+import {
+  fetchLNURLPayInfo,
+  requestLNURLPayInvoice,
+  fetchLightningAddressInfo,
+  isLightningAddress,
+  isKeysendRecipient,
+  calculateSplits
+} from '@/lib/lnurl';
+import { parseRSSEpisodeValueBlock } from '@/lib/rssParser';
 import type { WavlakeTrack } from '@/lib/wavlake';
+import type { UnifiedTrack } from '@/lib/unifiedTrack';
+import type { ValueRecipient, ValueBlock } from '@/lib/podcastindex';
 
 interface ZapDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  track: WavlakeTrack | null;
+  track: WavlakeTrack | UnifiedTrack | null;
+  rssValueBlock?: ValueBlock | null;
 }
 
 const WAVLAKE_APP_ID = 'DR25'; // Wavlake app ID
 
-export function ZapDialog({ open, onOpenChange, track }: ZapDialogProps) {
+export function ZapDialog({ open, onOpenChange, track, rssValueBlock: passedRssValueBlock }: ZapDialogProps) {
   const [amount, setAmount] = useState('1000');
   const [comment, setComment] = useState('Zapped from ZapTrax!');
   const [isLoading, setIsLoading] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<'webln' | 'external'>('webln');
+  const [fetchedRssValueBlock, setFetchedRssValueBlock] = useState<ValueBlock | null>(null);
+  const [loadingValueBlock, setLoadingValueBlock] = useState(false);
   const { toast } = useToast();
   const webln = useWebLN();
+
+  // Use passed RSS value block or fetch our own
+  const rssValueBlock = passedRssValueBlock || fetchedRssValueBlock;
 
   // Auto-detect payment method based on WebLN availability
   useEffect(() => {
@@ -45,38 +61,180 @@ export function ZapDialog({ open, onOpenChange, track }: ZapDialogProps) {
     }
   }, [webln.isAvailable]);
 
+  // Fetch RSS value block for PodcastIndex tracks (only if not passed from parent)
+  useEffect(() => {
+    async function fetchValueBlock() {
+      // Skip if we already have a value block passed from parent
+      if (passedRssValueBlock) {
+        return;
+      }
+
+      if (!track || !isUnifiedTrack(track) || track.source !== 'podcastindex') {
+        setFetchedRssValueBlock(null);
+        return;
+      }
+
+      // Skip if we already have value block data
+      if (track.value?.recipients && track.value.recipients.length > 0) {
+        setFetchedRssValueBlock(track.value);
+        return;
+      }
+
+      // Try to fetch from RSS feed
+      if (!track.feedUrl || !track.episodeGuid) {
+        setFetchedRssValueBlock(null);
+        return;
+      }
+
+      setLoadingValueBlock(true);
+      try {
+        const valueBlock = await parseRSSEpisodeValueBlock(track.feedUrl, track.episodeGuid);
+        setFetchedRssValueBlock(valueBlock);
+      } catch (error) {
+        console.error('Failed to parse RSS value block:', error);
+        setFetchedRssValueBlock(null);
+      } finally {
+        setLoadingValueBlock(false);
+      }
+    }
+
+    if (open) {
+      fetchValueBlock();
+    }
+  }, [open, track, passedRssValueBlock]);
+
+  // Check if this is a UnifiedTrack with podcast value data
+  const isUnifiedTrack = (t: WavlakeTrack | UnifiedTrack): t is UnifiedTrack => {
+    return 'source' in t;
+  };
+
+  // Helper to handle keysend payment to a single recipient
+  const sendKeysend = async (recipient: ValueRecipient, amountSats: number) => {
+    if (!webln.keysend) {
+      throw new Error('Keysend not supported by WebLN provider');
+    }
+
+    // Build custom records for podcast:valueTimeSplit
+    const customRecords: Record<string, string> = {};
+    if (recipient.customKey && recipient.customValue) {
+      customRecords[recipient.customKey] = recipient.customValue;
+    }
+
+    // Send keysend payment
+    return await webln.keysend(recipient.address, amountSats, customRecords);
+  };
+
+  // Handle podcast value4value payments (keysend + lightning address)
+  const handlePodcastValue4ValuePayment = async (valueBlock: ValueBlock) => {
+    if (!track || !isUnifiedTrack(track)) {
+      throw new Error('Invalid track data');
+    }
+
+    const amountSats = parseInt(amount);
+    const recipients = valueBlock.recipients || [];
+
+    if (recipients.length === 0) {
+      throw new Error('No payment recipients configured');
+    }
+
+    // Calculate splits
+    const splits = calculateSplits(amountSats, recipients);
+    const payments: Promise<unknown>[] = [];
+
+    // Process each recipient
+    for (const [recipient, recipientAmount] of splits.entries()) {
+      if (isKeysendRecipient(recipient)) {
+        // Keysend payment
+        if (paymentMethod === 'webln') {
+          payments.push(sendKeysend(recipient, recipientAmount));
+        } else {
+          // External wallet - can't do keysend, so skip
+          console.warn('Keysend not supported for external wallet', recipient);
+        }
+      } else if (isLightningAddress(recipient)) {
+        // Lightning address payment
+        const lnurlPayInfo = await fetchLightningAddressInfo(recipient.address);
+        const amountMsats = recipientAmount * 1000;
+
+        // Check amount limits
+        if (amountMsats < lnurlPayInfo.minSendable || amountMsats > lnurlPayInfo.maxSendable) {
+          console.warn(`Amount ${recipientAmount} sats out of range for ${recipient.address}`);
+          continue;
+        }
+
+        // Request invoice
+        const invoiceResponse = await requestLNURLPayInvoice(
+          lnurlPayInfo.callback,
+          amountMsats,
+          comment || undefined
+        );
+
+        // Pay invoice
+        if (paymentMethod === 'webln') {
+          payments.push(webln.sendPayment(invoiceResponse.pr));
+        } else {
+          // For external wallet, open first invoice only
+          if (payments.length === 0) {
+            window.open(`lightning:${invoiceResponse.pr}`, '_blank');
+          }
+        }
+      }
+    }
+
+    // Wait for all payments to complete (WebLN only)
+    if (paymentMethod === 'webln' && payments.length > 0) {
+      await Promise.all(payments);
+    }
+  };
+
   const handleZapWithWebLN = async () => {
     if (!track) return;
 
     try {
-      // Get LNURL for the track
-      const lnurlResponse = await wavlakeAPI.getLnurl(track.id, WAVLAKE_APP_ID);
+      // Check if this is a podcast track with value block
+      if (isUnifiedTrack(track) && track.source === 'podcastindex') {
+        // Use RSS-parsed value block or track's value block
+        const valueBlock = rssValueBlock || track.value;
 
-      // Check if the response contains a valid LNURL
+        if (!valueBlock || !valueBlock.recipients || valueBlock.recipients.length === 0) {
+          throw new Error('This track does not have payment information configured. Cannot send zap.');
+        }
+
+        await handlePodcastValue4ValuePayment(valueBlock);
+        toast({
+          title: "Zap successful! ⚡",
+          description: `Successfully zapped ${amount} sats to "${track.title}"`,
+        });
+        onOpenChange(false);
+        return;
+      }
+
+      // Wavlake track or UnifiedTrack from Wavlake - use existing LNURL flow
+      // Extract the actual track ID (remove source prefix if present)
+      const trackId = isUnifiedTrack(track) && track.source === 'wavlake'
+        ? track.sourceId
+        : track.id;
+
+      const lnurlResponse = await wavlakeAPI.getLnurl(trackId, WAVLAKE_APP_ID);
+
       if (!lnurlResponse.lnurl) {
         throw new Error('No LNURL in response from Wavlake');
       }
 
-      // Fetch LNURL-pay info
       const lnurlPayInfo = await fetchLNURLPayInfo(lnurlResponse.lnurl);
-
-      // Convert sats to millisats
       const amountMsats = parseInt(amount) * 1000;
 
-      // Check amount limits
       if (amountMsats < lnurlPayInfo.minSendable || amountMsats > lnurlPayInfo.maxSendable) {
         throw new Error(`Amount must be between ${lnurlPayInfo.minSendable / 1000} and ${lnurlPayInfo.maxSendable / 1000} sats`);
       }
 
-      // Request invoice from LNURL callback
       const invoiceResponse = await requestLNURLPayInvoice(
         lnurlPayInfo.callback,
         amountMsats,
         comment || undefined
       );
 
-      // Pay the invoice using WebLN
-      const paymentResult = await webln.sendPayment(invoiceResponse.pr);
+      await webln.sendPayment(invoiceResponse.pr);
 
       toast({
         title: "Zap successful! ⚡",
@@ -84,7 +242,6 @@ export function ZapDialog({ open, onOpenChange, track }: ZapDialogProps) {
       });
 
       onOpenChange(false);
-      return paymentResult;
     } catch (error) {
       console.error('WebLN zap failed:', error);
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
@@ -96,33 +253,49 @@ export function ZapDialog({ open, onOpenChange, track }: ZapDialogProps) {
     if (!track) return;
 
     try {
-      // Get LNURL for the track
-      const lnurlResponse = await wavlakeAPI.getLnurl(track.id, WAVLAKE_APP_ID);
+      // Check if this is a podcast track with value block
+      if (isUnifiedTrack(track) && track.source === 'podcastindex') {
+        // Use RSS-parsed value block or track's value block
+        const valueBlock = rssValueBlock || track.value;
 
-      // Check if the response contains a valid LNURL
+        if (!valueBlock || !valueBlock.recipients || valueBlock.recipients.length === 0) {
+          throw new Error('This track does not have payment information configured. Cannot send zap.');
+        }
+
+        await handlePodcastValue4ValuePayment(valueBlock);
+        toast({
+          title: "Zap initiated",
+          description: `Opening lightning wallet to zap ${amount} sats to "${track.title}"`,
+        });
+        onOpenChange(false);
+        return;
+      }
+
+      // Wavlake track or UnifiedTrack from Wavlake - use existing LNURL flow
+      // Extract the actual track ID (remove source prefix if present)
+      const trackId = isUnifiedTrack(track) && track.source === 'wavlake'
+        ? track.sourceId
+        : track.id;
+
+      const lnurlResponse = await wavlakeAPI.getLnurl(trackId, WAVLAKE_APP_ID);
+
       if (!lnurlResponse.lnurl) {
         throw new Error('No LNURL in response from Wavlake');
       }
 
-      // Fetch LNURL-pay info
       const lnurlPayInfo = await fetchLNURLPayInfo(lnurlResponse.lnurl);
-
-      // Convert sats to millisats
       const amountMsats = parseInt(amount) * 1000;
 
-      // Check amount limits
       if (amountMsats < lnurlPayInfo.minSendable || amountMsats > lnurlPayInfo.maxSendable) {
         throw new Error(`Amount must be between ${lnurlPayInfo.minSendable / 1000} and ${lnurlPayInfo.maxSendable / 1000} sats`);
       }
 
-      // Request invoice from LNURL callback
       const invoiceResponse = await requestLNURLPayInvoice(
         lnurlPayInfo.callback,
         amountMsats,
         comment || undefined
       );
 
-      // Open the invoice (not the LNURL) in external wallet
       window.open(`lightning:${invoiceResponse.pr}`, '_blank');
 
       toast({

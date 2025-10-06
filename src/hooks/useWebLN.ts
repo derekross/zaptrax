@@ -23,6 +23,13 @@ interface WebLNProvider {
     signature: string;
   }>;
   verifyMessage(signature: string, message: string): Promise<void>;
+  keysend?(args: {
+    destination: string;
+    amount: number;
+    customRecords?: Record<string, string>;
+  }): Promise<{
+    preimage: string;
+  }>;
 }
 
 declare global {
@@ -146,10 +153,52 @@ export function useWebLN() {
     }
   };
 
+  const keysend = async (destination: string, amount: number, customRecords?: Record<string, string>) => {
+    if (!state.provider) {
+      throw new Error('WebLN not available');
+    }
+
+    if (!state.provider.keysend) {
+      throw new Error('Keysend not supported by this WebLN provider');
+    }
+
+    // Try to enable WebLN if not already enabled
+    if (!state.isEnabled) {
+      setState(prev => ({ ...prev, isLoading: true, error: null }));
+      try {
+        await state.provider.enable();
+        setState(prev => ({ ...prev, isEnabled: true, isLoading: false }));
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Failed to enable WebLN';
+        setState(prev => ({
+          ...prev,
+          error: errorMessage,
+          isEnabled: false,
+          isLoading: false
+        }));
+        throw new Error(`WebLN not enabled: ${errorMessage}`);
+      }
+    }
+
+    try {
+      const result = await state.provider.keysend({
+        destination,
+        amount,
+        customRecords,
+      });
+      return result;
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Keysend payment failed';
+      setState(prev => ({ ...prev, error: errorMessage }));
+      throw error;
+    }
+  };
+
   return {
     ...state,
     enable,
     sendPayment,
     getInfo,
+    keysend,
   };
 }
