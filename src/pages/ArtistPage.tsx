@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useWavlakeArtist, useWavlakeRadioTracks } from '@/hooks/useWavlake';
 import { useWavlakeArtistTracks } from '@/hooks/useWavlakeArtistTracks';
@@ -13,6 +14,9 @@ export function ArtistPage() {
   const { data: artist, isLoading: artistLoading } = useWavlakeArtist(artistId);
   const { data: tracks, isLoading: tracksLoading } = useWavlakeArtistTracks(artistId);
   const { state, playTrack } = useMusicPlayer();
+
+  const [showAllTracks, setShowAllTracks] = useState(false);
+  const [showAllAlbums, setShowAllAlbums] = useState(false);
 
   // Use a default genre for radio functionality since tracks don't include genre data
   // We'll use 'rock' as a popular default genre for radio
@@ -167,7 +171,7 @@ export function ArtistPage() {
                   const bSats = parseInt(b.msatTotal || '0');
                   return bSats - aSats; // Sort descending by sats
                 })
-                .slice(0, 5)
+                .slice(0, showAllTracks ? tracks.length : 5)
                 .map((track, index) => (
                 <div
                   key={track.id}
@@ -222,8 +226,9 @@ export function ArtistPage() {
               <Button
                 variant="ghost"
                 className="text-gray-400 hover:text-purple-400 hover:bg-purple-900/20 mt-4"
+                onClick={() => setShowAllTracks(!showAllTracks)}
               >
-                Show all
+                {showAllTracks ? 'Show less' : 'Show all'}
               </Button>
             )}
           </div>
@@ -234,15 +239,18 @@ export function ArtistPage() {
           <div className="mb-8">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-2xl font-bold text-white">Albums</h2>
-              <Button
-                variant="ghost"
-                className="text-gray-400 hover:text-purple-400 hover:bg-purple-900/20"
-              >
-                Show all
-              </Button>
+              {albums.length > 6 && (
+                <Button
+                  variant="ghost"
+                  className="text-gray-400 hover:text-purple-400 hover:bg-purple-900/20"
+                  onClick={() => setShowAllAlbums(!showAllAlbums)}
+                >
+                  {showAllAlbums ? 'Show less' : 'Show all'}
+                </Button>
+              )}
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 md:gap-4">
-              {albums.slice(0, 6).map((album) => (
+              {albums.slice(0, showAllAlbums ? albums.length : 6).map((album) => (
                 <div
                   key={album.id}
                   className="group cursor-pointer"

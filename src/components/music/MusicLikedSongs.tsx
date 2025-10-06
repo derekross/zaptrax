@@ -59,9 +59,9 @@ export function MusicLikedSongs() {
           }
 
           // No metadata - must be an old Wavlake track, fetch from API
-          const isWavlake = url.includes('/album/') || url.includes('wavlake.com/track/');
+          const isWavlake = url.includes('/album/') || url.includes('wavlake.com/track/') || url.includes('/track/');
           if (isWavlake) {
-            // Extract track ID from URL (works for both /album/ and /track/ formats)
+            // Extract track ID from URL (works for /album/, /track/, and wavlake.com/track/ formats)
             const trackId = url.substring(url.lastIndexOf('/') + 1);
             const trackData = await wavlakeAPI.getTrack(trackId);
             const wavlakeTrack = Array.isArray(trackData) ? trackData[0] : trackData;

@@ -163,10 +163,10 @@ export function MusicPlayer() {
   const { currentTrack, isPlaying, currentTime, duration, volume } = state;
 
   // Generate track URL based on source
-  // Wavlake: use app URL, PodcastIndex: use direct media URL
+  // Wavlake: use Wavlake track URL, PodcastIndex: use direct media URL
   let trackUrl = '';
   if (currentTrack.source === 'wavlake') {
-    trackUrl = `/album/${currentTrack.albumId}`;
+    trackUrl = `https://wavlake.com/track/${currentTrack.sourceId}`;
   } else if (currentTrack.source === 'podcastindex') {
     trackUrl = currentTrack.mediaUrl;
   }
