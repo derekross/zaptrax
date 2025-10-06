@@ -37,22 +37,20 @@ export function CommentDialog({ open, onOpenChange, track }: CommentDialogProps)
   const navigate = useNavigate();
 
   // Generate correct URL based on track source
+  // Use the same format as likes for consistency
   const trackUrl = track ? (() => {
     if ('source' in track) {
       // UnifiedTrack
-      const baseUrl = import.meta.env.VITE_APP_URL || window.location.origin;
-
       if (track.source === 'wavlake') {
-        // Wavlake: use app URL to album page
-        return `${baseUrl}/album/${track.albumId}`;
+        // Wavlake: use Wavlake track URL
+        return `https://wavlake.com/track/${track.sourceId}`;
       } else if (track.source === 'podcastindex') {
-        // PodcastIndex: use app URL to feed page
-        return `${baseUrl}/feed/${track.feedId}`;
+        // PodcastIndex: use direct media URL (enclosure URL)
+        return track.mediaUrl;
       }
     } else {
       // WavlakeTrack (backward compatibility)
-      const baseUrl = import.meta.env.VITE_APP_URL || window.location.origin;
-      return `${baseUrl}/album/${track.albumId}`;
+      return `https://wavlake.com/track/${track.id}`;
     }
     return '';
   })() : '';
@@ -64,10 +62,24 @@ export function CommentDialog({ open, onOpenChange, track }: CommentDialogProps)
 
     if (!track || !comment.trim()) return;
 
+    // Generate app URL for display in comment content
+    const baseUrl = import.meta.env.VITE_APP_URL || window.location.origin;
+    let appUrl = '';
+
+    if ('source' in track) {
+      if (track.source === 'wavlake') {
+        appUrl = `${baseUrl}/album/${track.albumId}`;
+      } else if (track.source === 'podcastindex') {
+        appUrl = `${baseUrl}/feed/${track.feedId}`;
+      }
+    } else {
+      appUrl = `${baseUrl}/album/${track.albumId}`;
+    }
+
     const content = `${comment.trim()}
 
 🎵 ${track.title} - ${track.artist}
-${trackUrl}`;
+${appUrl}`;
 
     commentOnTrack(
       { content, trackUrl },
