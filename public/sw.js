@@ -28,6 +28,13 @@ self.addEventListener('fetch', (event) => {
   const { request } = event;
   const url = new URL(request.url);
 
+  // Skip service worker for RSS feeds and CORS proxies - let browser handle directly
+  if (url.hostname === 'corsproxy.io' ||
+      url.hostname === 'api.allorigins.win' ||
+      (url.hostname === 'wavlake.com' && url.pathname.includes('/feed/'))) {
+    return; // Don't intercept - let browser fetch directly
+  }
+
   // For same-origin requests (app files)
   if (url.origin === location.origin) {
     // Static assets (images, manifest) - cache first

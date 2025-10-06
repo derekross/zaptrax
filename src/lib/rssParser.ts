@@ -4,8 +4,8 @@ import type { ValueBlock, ValueRecipient } from './podcastindex';
  * Use a CORS proxy to fetch RSS feeds that don't have CORS headers
  */
 function getCorsProxiedUrl(feedUrl: string): string {
-  // Use allorigins.win CORS proxy
-  return `https://api.allorigins.win/raw?url=${encodeURIComponent(feedUrl)}`;
+  // Use corsproxy.io which has better CORS header support
+  return `https://corsproxy.io/?${encodeURIComponent(feedUrl)}`;
 }
 
 /**

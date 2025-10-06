@@ -17,22 +17,25 @@ setupScrollbar();
 
 // Register service worker for PWA with update handling
 if ('serviceWorker' in navigator) {
+  let updatePromptShown = false; // Prevent showing update prompt multiple times
+
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('/sw.js')
       .then((registration) => {
         console.log('SW registered: ', registration);
 
-        // Check for updates every 30 seconds
+        // Check for updates less frequently (every 5 minutes instead of 30 seconds)
         setInterval(() => {
           registration.update();
-        }, 30000);
+        }, 5 * 60 * 1000);
 
         // Handle service worker updates
         registration.addEventListener('updatefound', () => {
           const newWorker = registration.installing;
           if (newWorker) {
             newWorker.addEventListener('statechange', () => {
-              if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+              if (newWorker.state === 'installed' && navigator.serviceWorker.controller && !updatePromptShown) {
+                updatePromptShown = true; // Only show once
                 // New version available, notify user
                 const currentVersion = __APP_VERSION__;
                 if (confirm(`A new version of ZapTrax (v${currentVersion}) is available. Refresh to update?`)) {
@@ -49,9 +52,13 @@ if ('serviceWorker' in navigator) {
       });
 
     // Listen for service worker controlling the page
+    let controllerChangeHandled = false;
     navigator.serviceWorker.addEventListener('controllerchange', () => {
       // New service worker has taken control, reload to get fresh content
-      window.location.reload();
+      if (!controllerChangeHandled) {
+        controllerChangeHandled = true;
+        window.location.reload();
+      }
     });
   });
 }

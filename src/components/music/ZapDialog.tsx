@@ -191,8 +191,8 @@ export function ZapDialog({ open, onOpenChange, track, rssValueBlock: passedRssV
     if (!track) return;
 
     try {
-      // Check if this is a podcast track with value block
-      if (isUnifiedTrack(track) && track.source === 'podcastindex') {
+      // Check if this track has RSS feed value block (works for both PodcastIndex and Wavlake RSS feeds)
+      if (isUnifiedTrack(track) && (track.feedUrl || rssValueBlock)) {
         // Use RSS-parsed value block or track's value block
         const valueBlock = rssValueBlock || track.value;
 
@@ -209,7 +209,7 @@ export function ZapDialog({ open, onOpenChange, track, rssValueBlock: passedRssV
         return;
       }
 
-      // Wavlake track or UnifiedTrack from Wavlake - use existing LNURL flow
+      // Wavlake API track (no RSS feed) - use Wavlake LNURL flow
       // Extract the actual track ID (remove source prefix if present)
       const trackId = isUnifiedTrack(track) && track.source === 'wavlake'
         ? track.sourceId
@@ -253,8 +253,8 @@ export function ZapDialog({ open, onOpenChange, track, rssValueBlock: passedRssV
     if (!track) return;
 
     try {
-      // Check if this is a podcast track with value block
-      if (isUnifiedTrack(track) && track.source === 'podcastindex') {
+      // Check if this track has RSS feed value block (works for both PodcastIndex and Wavlake RSS feeds)
+      if (isUnifiedTrack(track) && (track.feedUrl || rssValueBlock)) {
         // Use RSS-parsed value block or track's value block
         const valueBlock = rssValueBlock || track.value;
 
@@ -271,7 +271,7 @@ export function ZapDialog({ open, onOpenChange, track, rssValueBlock: passedRssV
         return;
       }
 
-      // Wavlake track or UnifiedTrack from Wavlake - use existing LNURL flow
+      // Wavlake API track (no RSS feed) - use Wavlake LNURL flow
       // Extract the actual track ID (remove source prefix if present)
       const trackId = isUnifiedTrack(track) && track.source === 'wavlake'
         ? track.sourceId
@@ -368,18 +368,18 @@ export function ZapDialog({ open, onOpenChange, track, rssValueBlock: passedRssV
         </DialogHeader>
 
         {/* Track Info */}
-        <div className="flex items-center space-x-3 p-3 bg-muted rounded-lg">
-          <Avatar className="h-12 w-12 rounded-md">
+        <div className="flex items-center space-x-3 p-3 bg-muted rounded-lg overflow-hidden">
+          <Avatar className="h-12 w-12 rounded-md flex-shrink-0">
             <AvatarImage src={track.albumArtUrl} alt={track.albumTitle} />
             <AvatarFallback className="rounded-md">
               {track.title.charAt(0)}
             </AvatarFallback>
           </Avatar>
-          <div className="flex-1 min-w-0">
-            <h4 className="font-medium text-sm truncate">
+          <div className="flex-1 min-w-0 overflow-hidden">
+            <h4 className="font-medium text-sm truncate break-all">
               {track.title}
             </h4>
-            <p className="text-sm text-muted-foreground truncate">
+            <p className="text-sm text-muted-foreground truncate break-all">
               {track.artist}
             </p>
             {track.msatTotal && (

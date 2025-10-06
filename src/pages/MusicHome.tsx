@@ -54,7 +54,19 @@ export function MusicHome() {
   // Load all liked tracks data
   const allLikedTracksData = useQueries({
     queries: likedTrackUrls.map(url => {
-      const trackId = url.substring(url.lastIndexOf('/') + 1);
+      // Extract track ID from Wavlake URL (format: https://wavlake.com/track/{trackId})
+      // or from content URL (format: https://wavlake.com/api/v1/content/track/AUDIO---DEFAULT---{trackId}.mp3)
+      let trackId = '';
+      if (url.includes('/track/')) {
+        // Standard track URL
+        trackId = url.split('/track/')[1].split('/')[0];
+      } else if (url.includes('/content/track/')) {
+        // Content API URL - extract UUID from filename
+        const filename = url.substring(url.lastIndexOf('/') + 1);
+        const uuidMatch = filename.match(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i);
+        trackId = uuidMatch ? uuidMatch[0] : '';
+      }
+
       return {
         queryKey: ['wavlake-track', trackId],
         queryFn: () => wavlakeAPI.getTrack(trackId),

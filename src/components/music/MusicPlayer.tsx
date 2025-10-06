@@ -118,12 +118,12 @@ export function MusicPlayer() {
     }
   }, [likedSongs, optimisticLikes]);
 
-  // Fetch RSS value block for PodcastIndex tracks
+  // Fetch RSS value block for any tracks with RSS feed data (PodcastIndex or Wavlake RSS feeds)
   useEffect(() => {
     async function fetchValueBlock() {
       const currentTrack = state.currentTrack;
 
-      if (!currentTrack || currentTrack.source !== 'podcastindex') {
+      if (!currentTrack) {
         setRssValueBlock(null);
         return;
       }
@@ -134,7 +134,8 @@ export function MusicPlayer() {
         return;
       }
 
-      // Try to fetch from RSS feed
+      // Try to fetch from RSS feed if feed URL and guid are available
+      // This works for both PodcastIndex tracks AND Wavlake RSS feeds
       if (!currentTrack.feedUrl || !currentTrack.episodeGuid) {
         setRssValueBlock(null);
         return;
@@ -230,11 +231,14 @@ export function MusicPlayer() {
   const supportsZap = () => {
     if (!currentTrack) return false;
 
-    // Wavlake tracks always support zapping
-    if (currentTrack.source === 'wavlake') return true;
+    // Wavlake API tracks (no feedUrl) always support zapping via Wavlake API
+    if (currentTrack.source === 'wavlake' && !currentTrack.feedUrl) {
+      return true;
+    }
 
-    // PodcastIndex tracks need value block with recipients (from track data or RSS)
-    if (currentTrack.source === 'podcastindex') {
+    // For any track with RSS feed data (Wavlake RSS feeds or PodcastIndex):
+    // Check if there's a value block with recipients
+    if (currentTrack.feedUrl) {
       // Check track's built-in value block first
       if (currentTrack.value?.recipients && currentTrack.value.recipients.length > 0) {
         return true;
@@ -247,6 +251,7 @@ export function MusicPlayer() {
       if (checkingRssValue) {
         return false;
       }
+      // No value block found in RSS
       return false;
     }
 
