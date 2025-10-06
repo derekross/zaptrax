@@ -13,12 +13,11 @@ function getCorsProxiedUrl(feedUrl: string): string {
  */
 export async function parseRSSValueBlock(feedUrl: string): Promise<ValueBlock | null> {
   try {
-    // Try direct fetch first
+    // Try direct fetch first (will usually fail due to CORS, that's expected)
     let response = await fetch(feedUrl).catch(() => null);
 
-    // If direct fetch fails, try with CORS proxy
+    // If direct fetch fails, try with CORS proxy (normal fallback)
     if (!response || !response.ok) {
-      console.log('Direct RSS fetch failed, trying CORS proxy...');
       const proxiedUrl = getCorsProxiedUrl(feedUrl);
       response = await fetch(proxiedUrl);
     }
@@ -117,12 +116,11 @@ export async function parseRSSEpisodeValueBlock(
   episodeGuid: string
 ): Promise<ValueBlock | null> {
   try {
-    // Try direct fetch first
+    // Try direct fetch first (will usually fail due to CORS, that's expected)
     let response = await fetch(feedUrl).catch(() => null);
 
-    // If direct fetch fails, try with CORS proxy
+    // If direct fetch fails, try with CORS proxy (normal fallback)
     if (!response || !response.ok) {
-      console.log('Direct RSS fetch failed, trying CORS proxy...');
       const proxiedUrl = getCorsProxiedUrl(feedUrl);
       response = await fetch(proxiedUrl);
     }
