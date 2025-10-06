@@ -22,12 +22,14 @@ import { useNostrPublish } from '@/hooks/useNostrPublish';
 import { useToast } from '@/hooks/useToast';
 import { CreatePlaylistDialog } from './CreatePlaylistDialog';
 import type { WavlakeTrack } from '@/lib/wavlake';
+import type { UnifiedTrack } from '@/lib/unifiedTrack';
+import { wavlakeToUnified } from '@/lib/unifiedTrack';
 import type { NostrEvent } from '@nostrify/nostrify';
 
 interface AddToPlaylistDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  track: WavlakeTrack | null;
+  track: UnifiedTrack | WavlakeTrack | null;
 }
 
 export function AddToPlaylistDialog({
@@ -64,7 +66,16 @@ export function AddToPlaylistDialog({
   const handleAddToExistingPlaylist = async (playlist: NostrEvent) => {
     if (!track || !user) return;
 
-    const trackUrl = `https://wavlake.com/track/${track.id}`;
+    // Convert to UnifiedTrack format
+    const unifiedTrack: UnifiedTrack = 'source' in track ? track : wavlakeToUnified(track);
+
+    // Generate trackUrl based on source
+    let trackUrl = '';
+    if (unifiedTrack.source === 'wavlake') {
+      trackUrl = `https://wavlake.com/track/${unifiedTrack.sourceId}`;
+    } else if (unifiedTrack.source === 'podcastindex') {
+      trackUrl = unifiedTrack.mediaUrl;
+    }
 
     // Check if track is already in playlist
     if (isTrackInPlaylist(playlist, trackUrl)) {
@@ -83,26 +94,45 @@ export function AddToPlaylistDialog({
       const titleTag = playlist.tags.find(tag => tag[0] === 'title');
       const descriptionTag = playlist.tags.find(tag => tag[0] === 'description');
       const dTag = playlist.tags.find(tag => tag[0] === 'd');
-      const existingTrackTags = playlist.tags.filter(tag => tag[0] === 'r');
+
+      // Get existing track-related tags
+      const existingTrackMetadata = playlist.tags.filter(tag =>
+        ['r', 'track-title', 'track-artist', 'track-image', 'track-source', 'track-feed-id'].includes(tag[0])
+      );
+
+      // Create new track tags with metadata
+      const newTrackTags: string[][] = [
+        ['r', trackUrl],
+        ['track-title', trackUrl, unifiedTrack.title || ''],
+        ['track-artist', trackUrl, unifiedTrack.artist || ''],
+        ['track-image', trackUrl, unifiedTrack.albumArtUrl || ''],
+        ['track-source', trackUrl, unifiedTrack.source || 'wavlake'],
+      ];
+
+      // Add feed ID for PodcastIndex tracks
+      if (unifiedTrack.source === 'podcastindex' && unifiedTrack.feedId) {
+        newTrackTags.push(['track-feed-id', trackUrl, String(unifiedTrack.feedId)]);
+      }
 
       // Create new playlist event with the additional track
       const tags = [
         ['d', dTag?.[1] || ''],
         ['title', titleTag?.[1] || 'Untitled Playlist'],
+        ['t', 'music'],
         ...(descriptionTag ? [['description', descriptionTag[1]]] : []),
-        ...existingTrackTags,
-        ['r', trackUrl],
+        ...existingTrackMetadata,
+        ...newTrackTags,
       ];
 
       createEvent({
-        kind: 30001,
+        kind: 30003,
         content: '',
         tags,
       });
 
       toast({
         title: "Track added to playlist",
-        description: `"${track.title}" has been added to "${titleTag?.[1] || 'Untitled Playlist'}".`,
+        description: `"${unifiedTrack.title}" has been added to "${titleTag?.[1] || 'Untitled Playlist'}".`,
       });
 
       onOpenChange(false);
@@ -192,7 +222,18 @@ export function AddToPlaylistDialog({
                   <div className="space-y-1">
                     {userPlaylists.map((playlist) => {
                       const { title, trackCount } = getPlaylistInfo(playlist);
-                      const trackUrl = track ? `https://wavlake.com/track/${track.id}` : '';
+
+                      // Generate trackUrl based on track source
+                      let trackUrl = '';
+                      if (track) {
+                        const unifiedTrack: UnifiedTrack = 'source' in track ? track : wavlakeToUnified(track);
+                        if (unifiedTrack.source === 'wavlake') {
+                          trackUrl = `https://wavlake.com/track/${unifiedTrack.sourceId}`;
+                        } else if (unifiedTrack.source === 'podcastindex') {
+                          trackUrl = unifiedTrack.mediaUrl;
+                        }
+                      }
+
                       const isAlreadyInPlaylist = track ? isTrackInPlaylist(playlist, trackUrl) : false;
                       const isAdding = addingToPlaylist === playlist.id;
 

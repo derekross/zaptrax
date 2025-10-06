@@ -39,6 +39,8 @@ import { genUserName } from '@/lib/genUserName';
 import { nip19 } from 'nostr-tools';
 import { wavlakeAPI } from '@/lib/wavlake';
 import type { WavlakeTrack } from '@/lib/wavlake';
+import { wavlakeToUnified } from '@/lib/unifiedTrack';
+import type { UnifiedTrack } from '@/lib/unifiedTrack';
 import { EditPlaylistDialog } from '@/components/music/EditPlaylistDialog';
 import { DeletePlaylistDialog } from '@/components/music/DeletePlaylistDialog';
 import { SharePlaylistDialog } from '@/components/music/SharePlaylistDialog';
@@ -108,22 +110,78 @@ export function PlaylistPage() {
 
   const playlistTrackUrls = getPlaylistTrackUrls();
 
-  // Fetch all track data for the playlist
+  // Fetch all track data for the playlist - supports both Wavlake and PodcastIndex
   const allPlaylistTracksData = useQueries({
     queries: playlistTrackUrls.map(url => {
-      const trackId = url.substring(url.lastIndexOf('/') + 1);
+      // Check if we have metadata tags for this track
+      const titleTag = playlist?.tags.find(tag => tag[0] === 'track-title' && tag[1] === url);
+      const hasMetadata = !!titleTag;
+
       return {
-        queryKey: ['wavlake-track', trackId],
-        queryFn: () => wavlakeAPI.getTrack(trackId),
-        enabled: !!trackId,
+        queryKey: ['playlist-track', url],
+        queryFn: async (): Promise<UnifiedTrack> => {
+          // If we have metadata tags, use them
+          if (hasMetadata && playlist) {
+            const artistTag = playlist.tags.find(tag => tag[0] === 'track-artist' && tag[1] === url);
+            const imageTag = playlist.tags.find(tag => tag[0] === 'track-image' && tag[1] === url);
+            const sourceTag = playlist.tags.find(tag => tag[0] === 'track-source' && tag[1] === url);
+            const feedIdTag = playlist.tags.find(tag => tag[0] === 'track-feed-id' && tag[1] === url);
+
+            const source = (sourceTag?.[2] || 'wavlake') as 'wavlake' | 'podcastindex';
+            const feedId = feedIdTag?.[2] ? parseInt(feedIdTag[2]) : undefined;
+
+            return {
+              id: url,
+              sourceId: url,
+              source,
+              title: titleTag?.[2] || 'Unknown Title',
+              artist: artistTag?.[2] || 'Unknown Artist',
+              albumTitle: '',
+              albumArtUrl: imageTag?.[2] || '',
+              artistArtUrl: '',
+              mediaUrl: url,
+              duration: 0,
+              releaseDate: new Date().toISOString(),
+              feedId,
+            };
+          }
+
+          // No metadata - must be an old track, fetch from API
+          const isWavlake = url.includes('/album/') || url.includes('wavlake.com/track/') || url.includes('/track/');
+          if (isWavlake) {
+            // Extract track ID from URL
+            const trackId = url.substring(url.lastIndexOf('/') + 1);
+            const trackData = await wavlakeAPI.getTrack(trackId);
+            const wavlakeTrack = Array.isArray(trackData) ? trackData[0] : trackData;
+            return wavlakeToUnified(wavlakeTrack);
+          }
+
+          // Assume it's a PodcastIndex track with direct media URL
+          // We can't fetch full metadata without more info, so return basic track
+          return {
+            id: url,
+            sourceId: url,
+            source: 'podcastindex',
+            title: 'Unknown Track',
+            artist: 'Unknown Artist',
+            albumTitle: '',
+            albumArtUrl: '',
+            artistArtUrl: '',
+            mediaUrl: url,
+            duration: 0,
+            releaseDate: new Date().toISOString(),
+          };
+        },
+        enabled: !!url,
         staleTime: 30 * 60 * 1000,
+        retry: 1,
       };
     }),
   });
 
-  const allPlaylistTracks: WavlakeTrack[] = allPlaylistTracksData
+  const allPlaylistTracks: UnifiedTrack[] = allPlaylistTracksData
     .filter(query => query.isSuccess && query.data)
-    .map(query => (Array.isArray(query.data) ? query.data[0] : query.data));
+    .map(query => query.data as UnifiedTrack);
 
   const allPlaylistTracksLoading = allPlaylistTracksData.some(query => query.isLoading);
 
@@ -493,10 +551,12 @@ export function PlaylistPage() {
                   <div className="min-w-0">
                     <div className="text-white font-medium truncate">{track.title}</div>
                     <div
-                      className="text-gray-400 text-sm truncate hover:text-purple-400 cursor-pointer"
+                      className={track.artistId ? "text-gray-400 text-sm truncate hover:text-purple-400 cursor-pointer" : "text-gray-400 text-sm truncate"}
                       onClick={(e) => {
-                        e.stopPropagation();
-                        navigate(`/artist/${track.artistId}`);
+                        if (track.artistId) {
+                          e.stopPropagation();
+                          navigate(`/artist/${track.artistId}`);
+                        }
                       }}
                     >
                       {track.artist}
@@ -507,15 +567,15 @@ export function PlaylistPage() {
                 {/* Album */}
                 <div className="col-span-3 flex items-center">
                   <span
-                    className="text-gray-400 text-sm truncate hover:text-purple-400 cursor-pointer"
+                    className={track.albumId ? "text-gray-400 text-sm truncate hover:text-purple-400 cursor-pointer" : "text-gray-400 text-sm truncate"}
                     onClick={(e) => {
-                      e.stopPropagation();
                       if (track.albumId) {
+                        e.stopPropagation();
                         navigate(`/album/${track.albumId}`);
                       }
                     }}
                   >
-                    {track.albumTitle}
+                    {track.albumTitle || track.artist}
                   </span>
                 </div>
 
@@ -580,16 +640,30 @@ export function PlaylistPage() {
                         <ListPlus className="h-4 w-4 mr-2" />
                         Add to Queue
                       </DropdownMenuItem>
-                      <DropdownMenuItem
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          window.open(`https://wavlake.com/track/${track.id}`, '_blank');
-                        }}
-                        className="hover:bg-purple-900/20 hover:text-purple-400"
-                      >
-                        <ExternalLink className="h-4 w-4 mr-2" />
-                        View on Wavlake
-                      </DropdownMenuItem>
+                      {track.source === 'wavlake' && (
+                        <DropdownMenuItem
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            window.open(`https://wavlake.com/track/${track.sourceId}`, '_blank');
+                          }}
+                          className="hover:bg-purple-900/20 hover:text-purple-400"
+                        >
+                          <ExternalLink className="h-4 w-4 mr-2" />
+                          View on Wavlake
+                        </DropdownMenuItem>
+                      )}
+                      {track.source === 'podcastindex' && track.feedId && (
+                        <DropdownMenuItem
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            navigate(`/feed/${track.feedId}`);
+                          }}
+                          className="hover:bg-purple-900/20 hover:text-purple-400"
+                        >
+                          <ExternalLink className="h-4 w-4 mr-2" />
+                          View Podcast
+                        </DropdownMenuItem>
+                      )}
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </div>

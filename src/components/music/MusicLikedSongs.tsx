@@ -58,8 +58,8 @@ export function MusicLikedSongs() {
             };
           }
 
-          // No metadata - must be an old Wavlake track, fetch from API
-          const isWavlake = url.includes('/album/') || url.includes('wavlake.com/track/') || url.includes('/track/');
+          // No metadata - must be an old track, fetch from API or handle gracefully
+          const isWavlake = url.includes('wavlake.com') || url.match(/^\/(?:album|track)\//);
           if (isWavlake) {
             // Extract track ID from URL (works for /album/, /track/, and wavlake.com/track/ formats)
             const trackId = url.substring(url.lastIndexOf('/') + 1);
@@ -68,8 +68,42 @@ export function MusicLikedSongs() {
             return wavlakeToUnified(wavlakeTrack);
           }
 
-          // Unknown format
-          throw new Error(`Cannot load track: ${url}`);
+          // Check if it's an old PodcastIndex feed URL (e.g., /feed/123 or http://localhost:8080/feed/123)
+          const feedMatch = url.match(/\/feed\/(\d+)/);
+          if (feedMatch) {
+            // This is an old liked song with a feed URL instead of media URL
+            // We can't fetch the specific episode without more info, return placeholder
+            return {
+              id: url,
+              sourceId: url,
+              source: 'podcastindex' as const,
+              title: 'Podcast Episode (Re-like to restore)',
+              artist: 'Unknown',
+              albumTitle: '',
+              albumArtUrl: '',
+              artistArtUrl: '',
+              mediaUrl: '', // Can't play without media URL
+              duration: 0,
+              releaseDate: new Date().toISOString(),
+              feedId: parseInt(feedMatch[1]),
+            };
+          }
+
+          // Unknown format - likely a direct media URL for PodcastIndex
+          // Return a basic playable track
+          return {
+            id: url,
+            sourceId: url,
+            source: 'podcastindex' as const,
+            title: 'Podcast Episode',
+            artist: 'Unknown',
+            albumTitle: '',
+            albumArtUrl: '',
+            artistArtUrl: '',
+            mediaUrl: url, // Use the URL as media URL
+            duration: 0,
+            releaseDate: new Date().toISOString(),
+          };
         },
         enabled: !!url,
         staleTime: 30 * 60 * 1000,
@@ -83,6 +117,15 @@ export function MusicLikedSongs() {
     .map(query => query.data as UnifiedTrack);
 
   const isLoadingTracks = trackQueries.some(query => query.isLoading);
+
+  // Debug: Log failed queries
+  const failedQueries = trackQueries.filter(query => query.isError);
+  if (failedQueries.length > 0) {
+    console.log('Failed to load tracks:', failedQueries.map((q, i) => ({
+      url: trackUrls[trackQueries.indexOf(q)],
+      error: q.error
+    })));
+  }
 
   const handleTrackClick = (track: UnifiedTrack) => {
     if (likedTracks) {

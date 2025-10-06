@@ -14,11 +14,12 @@ import { Label } from '@/components/ui/label';
 import { useCreatePlaylist } from '@/hooks/useNostrMusic';
 import { useToast } from '@/hooks/useToast';
 import type { WavlakeTrack } from '@/lib/wavlake';
+import type { UnifiedTrack } from '@/lib/unifiedTrack';
 
 interface CreatePlaylistDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  initialTracks?: WavlakeTrack[];
+  initialTracks?: Array<UnifiedTrack | WavlakeTrack>;
   title?: string;
 }
 
@@ -55,13 +56,11 @@ export function CreatePlaylistDialog({
       return;
     }
 
-    const trackUrls = initialTracks.map(track => `https://wavlake.com/track/${track.id}`);
-
     createPlaylist(
       {
         name: name.trim(),
         description: description.trim() || undefined,
-        tracks: trackUrls.length > 0 ? trackUrls : undefined,
+        tracks: initialTracks.length > 0 ? initialTracks : undefined,
       },
       {
         onSuccess: () => {

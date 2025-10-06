@@ -290,7 +290,7 @@ export function useCreatePlaylist() {
     mutationFn: async ({ name, description, tracks }: {
       name: string;
       description?: string;
-      tracks?: string[];
+      tracks?: Array<UnifiedTrack | WavlakeTrack>;
     }) => {
       const tags = [
         ['d', `playlist-${Date.now()}`],
@@ -302,10 +302,31 @@ export function useCreatePlaylist() {
         tags.push(['description', description]);
       }
 
-      // Add track URLs as 'r' tags
-      if (tracks) {
-        tracks.forEach(trackUrl => {
+      // Add track URLs and metadata as tags
+      if (tracks && tracks.length > 0) {
+        tracks.forEach(track => {
+          // Convert to UnifiedTrack format
+          const unifiedTrack: UnifiedTrack = 'source' in track ? track : wavlakeToUnified(track);
+
+          // Generate trackUrl based on source
+          let trackUrl = '';
+          if (unifiedTrack.source === 'wavlake') {
+            trackUrl = `https://wavlake.com/track/${unifiedTrack.sourceId}`;
+          } else if (unifiedTrack.source === 'podcastindex') {
+            trackUrl = unifiedTrack.mediaUrl;
+          }
+
+          // Add track with metadata
           tags.push(['r', trackUrl]);
+          tags.push(['track-title', trackUrl, unifiedTrack.title || '']);
+          tags.push(['track-artist', trackUrl, unifiedTrack.artist || '']);
+          tags.push(['track-image', trackUrl, unifiedTrack.albumArtUrl || '']);
+          tags.push(['track-source', trackUrl, unifiedTrack.source || 'wavlake']);
+
+          // Add feed ID for PodcastIndex tracks
+          if (unifiedTrack.source === 'podcastindex' && unifiedTrack.feedId) {
+            tags.push(['track-feed-id', trackUrl, String(unifiedTrack.feedId)]);
+          }
         });
       }
 
@@ -332,8 +353,9 @@ export function useAddToPlaylist() {
   const { user } = useCurrentUser();
 
   return useMutation({
-    mutationFn: async ({ playlistEvent, trackUrl }: {
+    mutationFn: async ({ playlistEvent, track, trackUrl }: {
       playlistEvent: NostrEvent;
+      track: UnifiedTrack | WavlakeTrack;
       trackUrl: string;
     }) => {
       // Create updated playlist with new track
@@ -345,10 +367,37 @@ export function useAddToPlaylist() {
         throw new Error('Track already in playlist');
       }
 
-      const newTags = [
-        ...playlistEvent.tags.filter(tag => tag[0] !== 'r'),
-        ...existingTracks.map(url => ['r', url]),
+      // Convert track to UnifiedTrack format
+      const unifiedTrack: UnifiedTrack = 'source' in track ? track : wavlakeToUnified(track);
+
+      // Filter out old metadata tags for other tracks
+      const existingNonTrackTags = playlistEvent.tags.filter(tag =>
+        !['r', 'track-title', 'track-artist', 'track-image', 'track-source', 'track-feed-id'].includes(tag[0])
+      );
+
+      // Get existing track metadata tags
+      const existingTrackMetadata = playlistEvent.tags.filter(tag =>
+        ['r', 'track-title', 'track-artist', 'track-image', 'track-source', 'track-feed-id'].includes(tag[0])
+      );
+
+      // Create new track tags with metadata
+      const newTrackTags: string[][] = [
         ['r', trackUrl],
+        ['track-title', trackUrl, unifiedTrack.title || ''],
+        ['track-artist', trackUrl, unifiedTrack.artist || ''],
+        ['track-image', trackUrl, unifiedTrack.albumArtUrl || ''],
+        ['track-source', trackUrl, unifiedTrack.source || 'wavlake'],
+      ];
+
+      // Add feed ID for PodcastIndex tracks
+      if (unifiedTrack.source === 'podcastindex' && unifiedTrack.feedId) {
+        newTrackTags.push(['track-feed-id', trackUrl, String(unifiedTrack.feedId)]);
+      }
+
+      const newTags = [
+        ...existingNonTrackTags,
+        ...existingTrackMetadata,
+        ...newTrackTags,
       ];
 
       createEvent({
@@ -754,16 +803,15 @@ export function useRemoveFromPlaylist() {
         throw new Error('Invalid playlist: missing identifier');
       }
 
-      // Remove the track from existing tracks
-      const existingTracks = playlistEvent.tags
-        .filter(tag => tag[0] === 'r')
-        .map(tag => tag[1])
-        .filter(url => url !== trackUrl);
+      // Remove the track and its metadata - filter out all tags related to this URL
+      const updatedTags = playlistEvent.tags.filter(tag =>
+        // Keep all tags that are not related to this specific track URL
+        (tag[0] === 'r' && tag[1] !== trackUrl) ||
+        (['track-title', 'track-artist', 'track-image', 'track-source', 'track-feed-id'].includes(tag[0]) && tag[1] !== trackUrl) ||
+        !['r', 'track-title', 'track-artist', 'track-image', 'track-source', 'track-feed-id'].includes(tag[0])
+      );
 
-      const newTags = [
-        ...playlistEvent.tags.filter(tag => tag[0] !== 'r'),
-        ...existingTracks.map(url => ['r', url]),
-      ];
+      const newTags = updatedTags;
 
       createEvent({
         kind: 30003,
@@ -805,15 +853,21 @@ export function useRemoveFromLikedSongs() {
         throw new Error('Track not found in liked songs');
       }
 
-      // Remove the track from liked songs
-      const updatedTracks = existingTracks.filter(url => url !== trackUrl);
+      // Remove the track from liked songs - filter out all tags related to this URL
+      const updatedTags = existingLikedSongs.tags.filter(tag =>
+        // Keep structural tags
+        ['d', 'title', 'description', 't'].includes(tag[0]) ||
+        // Keep track tags that don't match this URL
+        (tag[0] === 'r' && tag[1] !== trackUrl) ||
+        (['track-title', 'track-artist', 'track-image', 'track-source', 'track-feed-id'].includes(tag[0]) && tag[1] !== trackUrl)
+      );
 
       const tags = [
-        ['d', 'liked-songs'], // Unique identifier for liked songs
+        ['d', 'liked-songs'],
         ['title', 'Liked Songs'],
         ['description', 'My favorite tracks'],
         ['t', 'music'],
-        ...updatedTracks.map(url => ['r', url]),
+        ...updatedTags.filter(tag => !['d', 'title', 'description', 't'].includes(tag[0])),
       ];
 
       createEvent({
