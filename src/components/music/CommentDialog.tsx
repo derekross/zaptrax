@@ -40,13 +40,14 @@ export function CommentDialog({ open, onOpenChange, track }: CommentDialogProps)
   const trackUrl = track ? (() => {
     if ('source' in track) {
       // UnifiedTrack
+      const baseUrl = import.meta.env.VITE_APP_URL || window.location.origin;
+
       if (track.source === 'wavlake') {
-        // Wavlake: use app URL
-        const baseUrl = import.meta.env.VITE_APP_URL || window.location.origin;
+        // Wavlake: use app URL to album page
         return `${baseUrl}/album/${track.albumId}`;
       } else if (track.source === 'podcastindex') {
-        // PodcastIndex: use direct media URL for universal playback
-        return track.mediaUrl;
+        // PodcastIndex: use app URL to feed page
+        return `${baseUrl}/feed/${track.feedId}`;
       }
     } else {
       // WavlakeTrack (backward compatibility)
