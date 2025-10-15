@@ -17,11 +17,20 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Play, Pause, Heart, MoreHorizontal, Check, Share2, Copy, ExternalLink, ListPlus } from 'lucide-react';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Progress } from '@/components/ui/progress';
+import { Play, Pause, Heart, MoreHorizontal, Check, Share2, Copy, ExternalLink, ListPlus, Download } from 'lucide-react';
 import { useMusicPlayer } from '@/contexts/MusicPlayerContext';
 import { useCreatePlaylist, useUserPlaylists } from '@/hooks/useNostrMusic';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { useToast } from '@/hooks/useToast';
+import { downloadAlbumAsZip, type DownloadProgress } from '@/lib/albumDownload';
 
 export function AlbumPage() {
   const { albumId } = useParams<{ albumId: string }>();
@@ -32,6 +41,8 @@ export function AlbumPage() {
   const { data: userPlaylists } = useUserPlaylists();
   const { toast } = useToast();
   const [isCreatingPlaylist, setIsCreatingPlaylist] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
+  const [downloadProgress, setDownloadProgress] = useState<DownloadProgress | null>(null);
 
   // Handle case where API might return an array
   const album = Array.isArray(albumData) ? albumData[0] : albumData;
@@ -212,6 +223,42 @@ export function AlbumPage() {
     }
   };
 
+  const handleDownloadAlbum = async () => {
+    if (!album || !tracks.length) {
+      toast({
+        title: "Error",
+        description: "Unable to download album - no tracks found",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsDownloading(true);
+    setDownloadProgress({ current: 0, total: tracks.length + 1 });
+
+    try {
+      await downloadAlbumAsZip(album, (progress) => {
+        setDownloadProgress(progress);
+      });
+
+      toast({
+        title: "Download complete!",
+        description: `"${album.albumTitle}" has been downloaded successfully`,
+      });
+    } catch (error) {
+      console.error('Failed to download album:', error);
+      const errorMessage = error instanceof Error ? error.message : "Failed to download album. Please try again.";
+      toast({
+        title: "Download failed",
+        description: errorMessage,
+        variant: "destructive",
+      });
+    } finally {
+      setIsDownloading(false);
+      setDownloadProgress(null);
+    }
+  };
+
   // Calculate total duration
   const totalDuration = tracks.reduce((sum, track) => sum + (track.duration || 0), 0);
   const formatDuration = (seconds: number) => {
@@ -326,6 +373,14 @@ export function AlbumPage() {
                       <ListPlus className="h-4 w-4 mr-2" />
                       Add to Queue
                     </DropdownMenuItem>
+                    <DropdownMenuItem onClick={handleDownloadAlbum} disabled={isDownloading} className="hover:bg-purple-900/20 hover:text-purple-400">
+                      {isDownloading ? (
+                        <div className="h-4 w-4 mr-2 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                      ) : (
+                        <Download className="h-4 w-4 mr-2" />
+                      )}
+                      {isDownloading ? 'Downloading...' : 'Download Album'}
+                    </DropdownMenuItem>
                     <DropdownMenuItem onClick={handleShare} className="hover:bg-purple-900/20 hover:text-purple-400">
                       <Share2 className="h-4 w-4 mr-2" />
                       Share
@@ -402,6 +457,44 @@ export function AlbumPage() {
           ))}
         </div>
       </div>
+
+      {/* Download Progress Dialog */}
+      <Dialog open={isDownloading} onOpenChange={() => {}}>
+        <DialogContent className="sm:max-w-md bg-gray-900 border-gray-800 text-white">
+          <DialogHeader>
+            <DialogTitle className="text-xl">Downloading Album</DialogTitle>
+            <DialogDescription className="text-gray-400">
+              Please wait while we prepare your download...
+            </DialogDescription>
+          </DialogHeader>
+
+          {downloadProgress && (
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-400">Progress</span>
+                  <span className="text-white font-medium">
+                    {downloadProgress.current} / {downloadProgress.total}
+                  </span>
+                </div>
+                <Progress
+                  value={(downloadProgress.current / downloadProgress.total) * 100}
+                  className="h-2"
+                />
+              </div>
+
+              {downloadProgress.currentTrack && (
+                <div className="space-y-1">
+                  <p className="text-sm text-gray-400">Currently downloading:</p>
+                  <p className="text-sm font-medium text-white truncate">
+                    {downloadProgress.currentTrack}
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
 
     </div>
   );
