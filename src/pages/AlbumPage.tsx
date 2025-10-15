@@ -110,10 +110,12 @@ export function AlbumPage() {
   // Check if album is already saved as a playlist
   const isAlbumSaved = () => {
     if (!album || !userPlaylists) return false;
-    // Check for playlist with just the album title
+    // Check for playlist with artist name as title and album title as description
     return userPlaylists.some(playlist => {
       const titleTag = playlist.tags.find(tag => tag[0] === 'title');
-      return titleTag && titleTag[1] === album.title;
+      const descTag = playlist.tags.find(tag => tag[0] === 'description');
+      return titleTag && titleTag[1] === album.artist &&
+             descTag && descTag[1] === album.title;
     });
   };
 
@@ -139,7 +141,7 @@ export function AlbumPage() {
     if (isAlbumSaved()) {
       toast({
         title: "Album already saved",
-        description: `"${album.title}" is already in your playlists`,
+        description: `"${album.title}" by ${album.artist} is already in your playlists`,
       });
       return;
     }
@@ -147,10 +149,9 @@ export function AlbumPage() {
     setIsCreatingPlaylist(true);
 
     try {
-      // Create playlist with album name only for the title
-      // Use album description if available, otherwise create a descriptive text
-      const playlistName = album.title;
-      const playlistDescription = `${album.title} by ${album.artist}`;
+      // Create playlist with artist as title and album as description
+      const playlistName = album.artist;
+      const playlistDescription = album.title;
 
       createPlaylist(
         {
@@ -162,7 +163,7 @@ export function AlbumPage() {
           onSuccess: () => {
             toast({
               title: "Album saved!",
-              description: `"${album.title}" has been added to your playlists`,
+              description: `"${album.title}" by ${album.artist} has been added to your playlists`,
             });
             setIsCreatingPlaylist(false);
           },

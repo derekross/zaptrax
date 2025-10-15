@@ -125,12 +125,15 @@ export function MusicPlaylists() {
             {/* User Playlists */}
             {userPlaylists?.map((playlist) => {
               const titleTag = playlist.tags.find(tag => tag[0] === 'title')?.[1] || 'Untitled Playlist';
+              const descriptionTag = playlist.tags.find(tag => tag[0] === 'description')?.[1];
               const trackTags = playlist.tags.filter(tag => tag[0] === 'r');
               const trackCount = trackTags.length;
+              const displayTitle = descriptionTag ? `${titleTag} - ${descriptionTag}` : titleTag;
 
               return (
                 <div
                   key={playlist.id}
+                  onClick={() => handlePlayPlaylist(playlist)}
                   className="bg-gray-900 hover:bg-gray-800 transition-colors cursor-pointer rounded-lg p-4 group"
                 >
                   <div className="relative mb-4">
@@ -148,7 +151,7 @@ export function MusicPlaylists() {
                       <Play className="h-4 w-4 fill-white" />
                     </Button>
                   </div>
-                  <h3 className="font-medium text-white truncate">{titleTag}</h3>
+                  <h3 className="font-medium text-white truncate">{displayTitle}</h3>
                   <p className="text-sm text-gray-400 truncate">
                     Playlist • {trackCount} song{trackCount !== 1 ? 's' : ''}
                   </p>
