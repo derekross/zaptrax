@@ -17,12 +17,20 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Progress } from '@/components/ui/progress';
 import { Play, Pause, Heart, MoreHorizontal, Check, Share2, Copy, ExternalLink, ListPlus, Download } from 'lucide-react';
 import { useMusicPlayer } from '@/contexts/MusicPlayerContext';
 import { useCreatePlaylist, useUserPlaylists } from '@/hooks/useNostrMusic';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { useToast } from '@/hooks/useToast';
-import { downloadAlbumAsZip } from '@/lib/albumDownload';
+import { downloadAlbumAsZip, type DownloadProgress } from '@/lib/albumDownload';
 
 export function AlbumPage() {
   const { albumId } = useParams<{ albumId: string }>();
@@ -34,6 +42,7 @@ export function AlbumPage() {
   const { toast } = useToast();
   const [isCreatingPlaylist, setIsCreatingPlaylist] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
+  const [downloadProgress, setDownloadProgress] = useState<DownloadProgress | null>(null);
 
   // Handle case where API might return an array
   const album = Array.isArray(albumData) ? albumData[0] : albumData;
@@ -225,22 +234,28 @@ export function AlbumPage() {
     }
 
     setIsDownloading(true);
+    setDownloadProgress({ current: 0, total: tracks.length + 1 });
 
     try {
-      await downloadAlbumAsZip(album);
+      await downloadAlbumAsZip(album, (progress) => {
+        setDownloadProgress(progress);
+      });
+
       toast({
-        title: "Download started!",
-        description: `Downloading "${album.albumTitle}" with ${tracks.length} tracks`,
+        title: "Download complete!",
+        description: `"${album.albumTitle}" has been downloaded successfully`,
       });
     } catch (error) {
       console.error('Failed to download album:', error);
+      const errorMessage = error instanceof Error ? error.message : "Failed to download album. Please try again.";
       toast({
         title: "Download failed",
-        description: "Failed to download album. Please try again.",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
       setIsDownloading(false);
+      setDownloadProgress(null);
     }
   };
 
@@ -442,6 +457,44 @@ export function AlbumPage() {
           ))}
         </div>
       </div>
+
+      {/* Download Progress Dialog */}
+      <Dialog open={isDownloading} onOpenChange={() => {}}>
+        <DialogContent className="sm:max-w-md bg-gray-900 border-gray-800 text-white">
+          <DialogHeader>
+            <DialogTitle className="text-xl">Downloading Album</DialogTitle>
+            <DialogDescription className="text-gray-400">
+              Please wait while we prepare your download...
+            </DialogDescription>
+          </DialogHeader>
+
+          {downloadProgress && (
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-400">Progress</span>
+                  <span className="text-white font-medium">
+                    {downloadProgress.current} / {downloadProgress.total}
+                  </span>
+                </div>
+                <Progress
+                  value={(downloadProgress.current / downloadProgress.total) * 100}
+                  className="h-2"
+                />
+              </div>
+
+              {downloadProgress.currentTrack && (
+                <div className="space-y-1">
+                  <p className="text-sm text-gray-400">Currently downloading:</p>
+                  <p className="text-sm font-medium text-white truncate">
+                    {downloadProgress.currentTrack}
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
 
     </div>
   );
