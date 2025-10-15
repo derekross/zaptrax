@@ -17,11 +17,12 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Play, Pause, Heart, MoreHorizontal, Check, Share2, Copy, ExternalLink, ListPlus } from 'lucide-react';
+import { Play, Pause, Heart, MoreHorizontal, Check, Share2, Copy, ExternalLink, ListPlus, Download } from 'lucide-react';
 import { useMusicPlayer } from '@/contexts/MusicPlayerContext';
 import { useCreatePlaylist, useUserPlaylists } from '@/hooks/useNostrMusic';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { useToast } from '@/hooks/useToast';
+import { downloadAlbumAsZip } from '@/lib/albumDownload';
 
 export function AlbumPage() {
   const { albumId } = useParams<{ albumId: string }>();
@@ -32,6 +33,7 @@ export function AlbumPage() {
   const { data: userPlaylists } = useUserPlaylists();
   const { toast } = useToast();
   const [isCreatingPlaylist, setIsCreatingPlaylist] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
 
   // Handle case where API might return an array
   const album = Array.isArray(albumData) ? albumData[0] : albumData;
@@ -212,6 +214,36 @@ export function AlbumPage() {
     }
   };
 
+  const handleDownloadAlbum = async () => {
+    if (!album || !tracks.length) {
+      toast({
+        title: "Error",
+        description: "Unable to download album - no tracks found",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsDownloading(true);
+
+    try {
+      await downloadAlbumAsZip(album);
+      toast({
+        title: "Download started!",
+        description: `Downloading "${album.albumTitle}" with ${tracks.length} tracks`,
+      });
+    } catch (error) {
+      console.error('Failed to download album:', error);
+      toast({
+        title: "Download failed",
+        description: "Failed to download album. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsDownloading(false);
+    }
+  };
+
   // Calculate total duration
   const totalDuration = tracks.reduce((sum, track) => sum + (track.duration || 0), 0);
   const formatDuration = (seconds: number) => {
@@ -325,6 +357,14 @@ export function AlbumPage() {
                     <DropdownMenuItem onClick={handleAddToQueue} className="hover:bg-purple-900/20 hover:text-purple-400">
                       <ListPlus className="h-4 w-4 mr-2" />
                       Add to Queue
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={handleDownloadAlbum} disabled={isDownloading} className="hover:bg-purple-900/20 hover:text-purple-400">
+                      {isDownloading ? (
+                        <div className="h-4 w-4 mr-2 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                      ) : (
+                        <Download className="h-4 w-4 mr-2" />
+                      )}
+                      {isDownloading ? 'Downloading...' : 'Download Album'}
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={handleShare} className="hover:bg-purple-900/20 hover:text-purple-400">
                       <Share2 className="h-4 w-4 mr-2" />
