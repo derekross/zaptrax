@@ -49,16 +49,16 @@ export function AlbumPage() {
 
   // Dynamic meta tags for social media
   useSeoMeta({
-    title: album ? `${album.albumTitle} - ${album.artist} | ZapTrax` : 'ZapTrax - Music Streaming',
-    description: album ? `Listen to "${album.albumTitle}" by ${album.artist} on ZapTrax. Stream this album and discover more music on the Lightning Network.` : 'Stream music on ZapTrax',
-    ogTitle: album ? `${album.albumTitle} - ${album.artist}` : 'ZapTrax',
-    ogDescription: album ? `Listen to "${album.albumTitle}" by ${album.artist} on ZapTrax` : 'Stream music on ZapTrax',
+    title: album ? `${album.title} - ${album.artist} | ZapTrax` : 'ZapTrax - Music Streaming',
+    description: album ? `Listen to "${album.title}" by ${album.artist} on ZapTrax. Stream this album and discover more music on the Lightning Network.` : 'Stream music on ZapTrax',
+    ogTitle: album ? `${album.title} - ${album.artist}` : 'ZapTrax',
+    ogDescription: album ? `Listen to "${album.title}" by ${album.artist} on ZapTrax` : 'Stream music on ZapTrax',
     ogImage: album?.albumArtUrl || `${window.location.origin}/zaptrax.png`,
     ogUrl: window.location.href,
     ogType: 'music.album',
     twitterCard: 'summary_large_image',
-    twitterTitle: album ? `${album.albumTitle} - ${album.artist}` : 'ZapTrax',
-    twitterDescription: album ? `Listen to "${album.albumTitle}" by ${album.artist} on ZapTrax` : 'Stream music on ZapTrax',
+    twitterTitle: album ? `${album.title} - ${album.artist}` : 'ZapTrax',
+    twitterDescription: album ? `Listen to "${album.title}" by ${album.artist} on ZapTrax` : 'Stream music on ZapTrax',
     twitterImage: album?.albumArtUrl || `${window.location.origin}/zaptrax.png`,
   });
 
@@ -113,7 +113,7 @@ export function AlbumPage() {
     // Check for playlist with just the album title
     return userPlaylists.some(playlist => {
       const titleTag = playlist.tags.find(tag => tag[0] === 'title');
-      return titleTag && titleTag[1] === album.albumTitle;
+      return titleTag && titleTag[1] === album.title;
     });
   };
 
@@ -139,7 +139,7 @@ export function AlbumPage() {
     if (isAlbumSaved()) {
       toast({
         title: "Album already saved",
-        description: `"${album.albumTitle}" is already in your playlists`,
+        description: `"${album.title}" is already in your playlists`,
       });
       return;
     }
@@ -147,24 +147,36 @@ export function AlbumPage() {
     setIsCreatingPlaylist(true);
 
     try {
-      // Create track URLs for all tracks in the album
-      const trackUrls = tracks.map(track => `https://wavlake.com/track/${track.id}`);
-
       // Create playlist with album name only for the title
       // Use album description if available, otherwise create a descriptive text
-      const playlistName = album.albumTitle;
-      const playlistDescription = album.description || `${album.albumTitle} by ${album.artist}`;
+      const playlistName = album.title;
+      const playlistDescription = `${album.title} by ${album.artist}`;
 
-      createPlaylist({
-        name: playlistName,
-        description: playlistDescription,
-        tracks: trackUrls,
-      });
-
-      toast({
-        title: "Album saved!",
-        description: `"${album.albumTitle}" has been added to your playlists`,
-      });
+      createPlaylist(
+        {
+          name: playlistName,
+          description: playlistDescription,
+          tracks: tracks,
+        },
+        {
+          onSuccess: () => {
+            toast({
+              title: "Album saved!",
+              description: `"${album.title}" has been added to your playlists`,
+            });
+            setIsCreatingPlaylist(false);
+          },
+          onError: (error) => {
+            console.error('Failed to create album playlist:', error);
+            toast({
+              title: "Error",
+              description: "Failed to save album as playlist",
+              variant: "destructive",
+            });
+            setIsCreatingPlaylist(false);
+          },
+        }
+      );
     } catch (error) {
       console.error('Failed to create album playlist:', error);
       toast({
@@ -172,7 +184,6 @@ export function AlbumPage() {
         description: "Failed to save album as playlist",
         variant: "destructive",
       });
-    } finally {
       setIsCreatingPlaylist(false);
     }
   };
@@ -190,7 +201,7 @@ export function AlbumPage() {
   const handleShare = async () => {
     const url = window.location.href;
     const shareData = {
-      title: `${album?.artist} - ${album?.albumTitle}`,
+      title: `${album?.artist} - ${album?.title}`,
       text: `Check out this album on ZapTrax`,
       url: url,
     };
@@ -243,7 +254,7 @@ export function AlbumPage() {
 
       toast({
         title: "Download complete!",
-        description: `"${album.albumTitle}" has been downloaded successfully`,
+        description: `"${album.title}" has been downloaded successfully`,
       });
     } catch (error) {
       console.error('Failed to download album:', error);
@@ -293,14 +304,14 @@ export function AlbumPage() {
             {/* Album Cover */}
             <img
               src={album.albumArtUrl}
-              alt={album.albumTitle}
+              alt={album.title}
               className="w-40 h-40 md:w-60 md:h-60 rounded-lg shadow-2xl flex-shrink-0"
             />
 
             {/* Album Details */}
             <div className="flex-1 text-center md:text-left md:pb-4">
               <p className="text-sm text-gray-300 mb-2">Album</p>
-              <h1 className="text-2xl md:text-4xl lg:text-5xl font-bold mb-3 md:mb-4">{album.albumTitle}</h1>
+              <h1 className="text-2xl md:text-4xl lg:text-5xl font-bold mb-3 md:mb-4">{album.title}</h1>
 
               <div className="flex flex-wrap items-center justify-center md:justify-start gap-2 text-sm text-gray-300 mb-4 md:mb-6">
                 <Link
