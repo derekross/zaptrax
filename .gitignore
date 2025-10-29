@@ -28,3 +28,11 @@ dist-ssr
 .env
 .env.*
 !.env.example
+
+# Android WebView App
+android-webview-app/keystore.properties
+android-webview-app/*.jks
+android-webview-app/*.keystore
+android-webview-app/app/build/
+android-webview-app/build/
+android-webview-app/.gradle/
