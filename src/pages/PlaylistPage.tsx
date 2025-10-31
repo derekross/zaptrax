@@ -126,21 +126,32 @@ export function PlaylistPage() {
             const imageTag = playlist.tags.find(tag => tag[0] === 'track-image' && tag[1] === url);
             const sourceTag = playlist.tags.find(tag => tag[0] === 'track-source' && tag[1] === url);
             const feedIdTag = playlist.tags.find(tag => tag[0] === 'track-feed-id' && tag[1] === url);
+            const mediaUrlTag = playlist.tags.find(tag => tag[0] === 'track-media-url' && tag[1] === url);
+            const trackUrlTag = playlist.tags.find(tag => tag[0] === 'track-url' && tag[1] === url);
+            const durationTag = playlist.tags.find(tag => tag[0] === 'track-duration' && tag[1] === url);
 
             const source = (sourceTag?.[2] || 'wavlake') as 'wavlake' | 'podcastindex';
             const feedId = feedIdTag?.[2] ? parseInt(feedIdTag[2]) : undefined;
+            const duration = durationTag?.[2] ? parseInt(durationTag[2]) : 0;
+
+            // Extract sourceId from URL for Wavlake tracks
+            let sourceId = url;
+            if (source === 'wavlake' && url.includes('/track/')) {
+              sourceId = url.substring(url.lastIndexOf('/') + 1);
+            }
 
             return {
               id: url,
-              sourceId: url,
+              sourceId,
               source,
               title: titleTag?.[2] || 'Unknown Title',
               artist: artistTag?.[2] || 'Unknown Artist',
               albumTitle: '',
               albumArtUrl: imageTag?.[2] || '',
               artistArtUrl: '',
-              mediaUrl: url,
-              duration: 0,
+              mediaUrl: mediaUrlTag?.[2] || url,
+              url: trackUrlTag?.[2] || url,
+              duration,
               releaseDate: new Date().toISOString(),
               feedId,
             };

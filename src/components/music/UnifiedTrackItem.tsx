@@ -12,17 +12,18 @@ import { Play, Pause, MoreHorizontal, Heart, Clock, Plus, MessageCircle, Zap } f
 import { useMusicPlayer } from '@/contexts/MusicPlayerContext';
 import { cn } from '@/lib/utils';
 import type { WavlakeTrack } from '@/lib/wavlake';
+import type { UnifiedTrack } from '@/lib/unifiedTrack';
 
 interface UnifiedTrackItemProps {
-  track: WavlakeTrack | null;
+  track: UnifiedTrack | WavlakeTrack | null;
   index: number;
   isLoading?: boolean;
   isError?: boolean;
-  onAddToPlaylist?: (track: WavlakeTrack) => void;
-  onRemoveFromLiked?: (track: WavlakeTrack) => void;
-  onComment?: (track: WavlakeTrack) => void;
-  onZap?: (track: WavlakeTrack) => void;
-  onClick?: (track: WavlakeTrack) => void;
+  onAddToPlaylist?: (track: UnifiedTrack | WavlakeTrack) => void;
+  onRemoveFromLiked?: (track: UnifiedTrack | WavlakeTrack) => void;
+  onComment?: (track: UnifiedTrack | WavlakeTrack) => void;
+  onZap?: (track: UnifiedTrack | WavlakeTrack) => void;
+  onClick?: (track: UnifiedTrack | WavlakeTrack) => void;
   showAlbum?: boolean;
   isLikedSongs?: boolean;
 }

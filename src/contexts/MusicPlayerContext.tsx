@@ -132,6 +132,7 @@ export function MusicPlayerProvider({ children }: { children: React.ReactNode })
   const audioRef = useRef<HTMLAudioElement>(null);
   const { mutate: updateNowPlaying } = useUpdateNowPlaying();
   const { user } = useCurrentUser();
+  const lastPublishedTrackRef = useRef<string | null>(null);
 
   const playTrack = (track: UnifiedTrack | WavlakeTrack, queue?: (UnifiedTrack | WavlakeTrack)[]) => {
     // Convert WavlakeTrack to UnifiedTrack if needed
@@ -309,13 +310,30 @@ export function MusicPlayerProvider({ children }: { children: React.ReactNode })
   // New useEffect to trigger NIP-38 update (keep this useEffect)
   useEffect(() => {
     if (user && state.currentTrack && state.isPlaying) {
+      // Use actual audio duration if track duration is 0 (for old playlists/liked songs)
+      const duration = state.currentTrack.duration || Math.floor(state.duration);
+
+      // Don't publish if duration is still 0 (audio hasn't loaded yet)
+      if (duration === 0) {
+        return;
+      }
+
+      // Create a unique key for this track to prevent duplicate publishes
+      // Only use track ID, not duration, since duration might vary slightly
+      const trackKey = state.currentTrack.id;
+
+      // Skip if we've already published for this track
+      if (lastPublishedTrackRef.current === trackKey) {
+        return;
+      }
+
       let trackUrl = '';
 
       // For PodcastIndex, use the direct RSS media URL so it's playable anywhere
-      // For Wavlake, use app URL since it requires the app to play
+      // For Wavlake, use track URL
       if (state.currentTrack.source === 'wavlake') {
-        const baseUrl = import.meta.env.VITE_APP_URL || window.location.origin;
-        trackUrl = `${baseUrl}/album/${state.currentTrack.albumId}`;
+        // Use the stored URL if available, otherwise construct from sourceId
+        trackUrl = state.currentTrack.url || `https://wavlake.com/track/${state.currentTrack.sourceId}`;
       } else if (state.currentTrack.source === 'podcastindex') {
         // Use direct media URL from RSS - universally playable
         trackUrl = state.currentTrack.mediaUrl;
@@ -330,7 +348,7 @@ export function MusicPlayerProvider({ children }: { children: React.ReactNode })
         albumArtUrl: state.currentTrack.albumArtUrl,
         artistArtUrl: state.currentTrack.artistArtUrl,
         mediaUrl: state.currentTrack.mediaUrl,
-        duration: state.currentTrack.duration,
+        duration,
         releaseDate: state.currentTrack.releaseDate,
         artistId: state.currentTrack.artistId || '',
         albumId: state.currentTrack.albumId || '',
@@ -339,9 +357,12 @@ export function MusicPlayerProvider({ children }: { children: React.ReactNode })
         order: state.currentTrack.order || 0,
       };
 
+      // Mark this track as published
+      lastPublishedTrackRef.current = trackKey;
+
       updateNowPlaying({ track: trackData, trackUrl });
     }
-  }, [user, state.currentTrack, state.isPlaying, updateNowPlaying]);
+  }, [user, state.currentTrack, state.isPlaying, state.duration, updateNowPlaying]);
 
 
 
