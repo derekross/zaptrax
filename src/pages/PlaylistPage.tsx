@@ -120,7 +120,7 @@ export function PlaylistPage() {
       return {
         queryKey: ['playlist-track', url],
         queryFn: async (): Promise<UnifiedTrack> => {
-          // If we have metadata tags, use them
+          // If we have metadata tags, use them as base
           if (hasMetadata && playlist) {
             const artistTag = playlist.tags.find(tag => tag[0] === 'track-artist' && tag[1] === url);
             const imageTag = playlist.tags.find(tag => tag[0] === 'track-image' && tag[1] === url);
@@ -140,6 +140,19 @@ export function PlaylistPage() {
               sourceId = url.substring(url.lastIndexOf('/') + 1);
             }
 
+            // For Wavlake tracks, fetch full data from API to get fresh msatTotal, artistId, albumId, etc.
+            if (source === 'wavlake' && sourceId) {
+              try {
+                const trackData = await wavlakeAPI.getTrack(sourceId);
+                const wavlakeTrack = Array.isArray(trackData) ? trackData[0] : trackData;
+                return wavlakeToUnified(wavlakeTrack);
+              } catch (error) {
+                console.error('Failed to fetch Wavlake track data:', error);
+                // Fall back to metadata tags
+              }
+            }
+
+            // For PodcastIndex or if Wavlake fetch failed, use metadata tags
             return {
               id: url,
               sourceId,
@@ -515,7 +528,7 @@ export function PlaylistPage() {
             <div className="col-span-1 text-center">#</div>
             <div className="col-span-5">Title</div>
             <div className="col-span-3">Album</div>
-            <div className="col-span-2">Date added</div>
+            <div className="col-span-2">Zaps</div>
             <div className="col-span-1 text-center">
               <Clock className="h-4 w-4 mx-auto" />
             </div>
@@ -590,93 +603,16 @@ export function PlaylistPage() {
                   </span>
                 </div>
 
-                {/* Date Added */}
+                {/* Zaps */}
                 <div className="col-span-2 flex items-center">
                   <span className="text-gray-400 text-sm">
-                    {formatDate(playlist.created_at)}
+                    {track.msatTotal ? `${Math.floor(parseInt(track.msatTotal) / 1000)} sats` : '--'}
                   </span>
                 </div>
 
                 {/* Duration */}
                 <div className="col-span-1 text-center text-gray-400 text-sm">
                   {track.duration ? `${Math.floor(track.duration / 60)}:${(track.duration % 60).toString().padStart(2, '0')}` : '--:--'}
-                </div>
-
-                {/* Actions */}
-                <div className="absolute right-8 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-2">
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="text-gray-400 hover:text-purple-400 p-2"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            // Like track action
-                          }}
-                        >
-                          <Heart className="h-4 w-4" />
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>Like track</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="text-gray-400 hover:text-purple-400 p-2"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        <MoreHorizontal className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="bg-black border-gray-800">
-                      <DropdownMenuItem
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          addToQueue(track);
-                          toast({
-                            title: "Added to queue",
-                            description: `"${track.title}" added to queue`,
-                          });
-                        }}
-                        className="hover:bg-purple-900/20 hover:text-purple-400"
-                      >
-                        <ListPlus className="h-4 w-4 mr-2" />
-                        Add to Queue
-                      </DropdownMenuItem>
-                      {track.source === 'wavlake' && (
-                        <DropdownMenuItem
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            window.open(`https://wavlake.com/track/${track.sourceId}`, '_blank');
-                          }}
-                          className="hover:bg-purple-900/20 hover:text-purple-400"
-                        >
-                          <ExternalLink className="h-4 w-4 mr-2" />
-                          View on Wavlake
-                        </DropdownMenuItem>
-                      )}
-                      {track.source === 'podcastindex' && track.feedId && (
-                        <DropdownMenuItem
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            navigate(`/feed/${track.feedId}`);
-                          }}
-                          className="hover:bg-purple-900/20 hover:text-purple-400"
-                        >
-                          <ExternalLink className="h-4 w-4 mr-2" />
-                          View Podcast
-                        </DropdownMenuItem>
-                      )}
-                    </DropdownMenuContent>
-                  </DropdownMenu>
                 </div>
               </div>
             ))

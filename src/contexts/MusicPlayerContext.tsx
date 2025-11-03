@@ -327,16 +327,26 @@ export function MusicPlayerProvider({ children }: { children: React.ReactNode })
         return;
       }
 
+      // Always use our app's URL for status updates to drive traffic to our app
+      const baseUrl = import.meta.env.VITE_APP_URL || window.location.origin;
       let trackUrl = '';
 
-      // For PodcastIndex, use the direct RSS media URL so it's playable anywhere
-      // For Wavlake, use track URL
       if (state.currentTrack.source === 'wavlake') {
-        // Use the stored URL if available, otherwise construct from sourceId
-        trackUrl = state.currentTrack.url || `https://wavlake.com/track/${state.currentTrack.sourceId}`;
+        // For Wavlake tracks, link to the album page in our app
+        if (state.currentTrack.albumId) {
+          trackUrl = `${baseUrl}/album/${state.currentTrack.albumId}`;
+        } else {
+          // Fallback to home page if no albumId
+          trackUrl = baseUrl;
+        }
       } else if (state.currentTrack.source === 'podcastindex') {
-        // Use direct media URL from RSS - universally playable
-        trackUrl = state.currentTrack.mediaUrl;
+        // For PodcastIndex tracks, link to the feed page in our app
+        if (state.currentTrack.feedId) {
+          trackUrl = `${baseUrl}/feed/${state.currentTrack.feedId}`;
+        } else {
+          // Fallback to home page if no feedId
+          trackUrl = baseUrl;
+        }
       }
 
       // Create a WavlakeTrack-like object for the hook (works for both sources)

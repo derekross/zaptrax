@@ -424,7 +424,7 @@ export function MusicPlayer() {
             {currentTrack.title}
           </h1>
           <Link
-            to={`/artist/${currentTrack.artistId}`}
+            to={getArtistLink()}
             className="text-muted-foreground hover:text-foreground transition-colors"
             style={{
               fontSize: showQueue ? 'min(3.5vw, 0.875rem)' : 'min(4.5vw, 1.125rem)',
