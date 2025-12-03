@@ -1,8 +1,9 @@
 // NOTE: This file is stable and usually should not be modified.
 // It is important that all functionality in this file is preserved, and should only be modified if explicitly requested.
 
-import React, { useRef, useState } from 'react';
-import { Shield, Upload } from 'lucide-react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { QRCodeSVG } from 'qrcode.react';
+import { Shield, Upload, Loader2, Copy, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button.tsx';
 import { Input } from '@/components/ui/input.tsx';
 import {
@@ -13,7 +14,12 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog.tsx';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs.tsx';
-import { useLoginActions } from '@/hooks/useLoginActions';
+import {
+  useLoginActions,
+  generateNostrConnectParams,
+  generateNostrConnectURI,
+  type NostrConnectParams,
+} from '@/hooks/useLoginActions';
 
 interface LoginDialogProps {
   isOpen: boolean;
@@ -26,8 +32,75 @@ const LoginDialog: React.FC<LoginDialogProps> = ({ isOpen, onClose, onLogin, onS
   const [isLoading, setIsLoading] = useState(false);
   const [nsec, setNsec] = useState('');
   const [bunkerUri, setBunkerUri] = useState('');
+  const [nostrConnectParams, setNostrConnectParams] = useState<NostrConnectParams | null>(null);
+  const [nostrConnectUri, setNostrConnectUri] = useState<string>('');
+  const [isWaitingForConnect, setIsWaitingForConnect] = useState(false);
+  const [connectError, setConnectError] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const abortControllerRef = useRef<AbortController | null>(null);
   const login = useLoginActions();
+
+  // Generate nostrconnect params (sync) - just creates the QR code data
+  const generateConnectSession = useCallback(() => {
+    const relayUrl = login.getRelayUrl();
+    const params = generateNostrConnectParams([relayUrl]);
+    const uri = generateNostrConnectURI(params, 'Zaptrax');
+    setNostrConnectParams(params);
+    setNostrConnectUri(uri);
+    setConnectError(null);
+  }, [login]);
+
+  // Start listening for connection (async) - runs after params are set
+  useEffect(() => {
+    if (!nostrConnectParams || isWaitingForConnect) return;
+
+    const startListening = async () => {
+      setIsWaitingForConnect(true);
+      abortControllerRef.current = new AbortController();
+
+      try {
+        await login.nostrconnect(nostrConnectParams);
+        onLogin();
+        onClose();
+      } catch (error) {
+        console.error('Nostrconnect failed:', error);
+        setConnectError(error instanceof Error ? error.message : 'Connection failed');
+        setIsWaitingForConnect(false);
+      }
+    };
+
+    startListening();
+  }, [nostrConnectParams, login, onLogin, onClose, isWaitingForConnect]);
+
+  // Clean up on close
+  useEffect(() => {
+    if (!isOpen) {
+      setNostrConnectParams(null);
+      setNostrConnectUri('');
+      setIsWaitingForConnect(false);
+      setConnectError(null);
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+    }
+  }, [isOpen]);
+
+  // Retry connection with new params
+  const handleRetry = useCallback(() => {
+    setNostrConnectParams(null);
+    setNostrConnectUri('');
+    setIsWaitingForConnect(false);
+    setConnectError(null);
+    // Generate new session after state clears
+    setTimeout(() => generateConnectSession(), 0);
+  }, [generateConnectSession]);
+
+  const handleCopyUri = async () => {
+    await navigator.clipboard.writeText(nostrConnectUri);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   const handleExtensionLogin = () => {
     setIsLoading(true);
@@ -105,11 +178,19 @@ const LoginDialog: React.FC<LoginDialogProps> = ({ isOpen, onClose, onLogin, onS
         </DialogHeader>
 
         <div className='px-6 py-8 space-y-6'>
-          <Tabs defaultValue={'nostr' in window ? 'extension' : 'key'} className='w-full'>
+          <Tabs
+            defaultValue={'nostr' in window ? 'extension' : 'key'}
+            className='w-full'
+            onValueChange={(value) => {
+              if (value === 'connect' && !nostrConnectParams && !connectError) {
+                generateConnectSession();
+              }
+            }}
+          >
             <TabsList className='grid grid-cols-3 mb-6'>
               <TabsTrigger value='extension'>Extension</TabsTrigger>
               <TabsTrigger value='key'>Nsec</TabsTrigger>
-              <TabsTrigger value='bunker'>Bunker</TabsTrigger>
+              <TabsTrigger value='connect'>Connect</TabsTrigger>
             </TabsList>
 
             <TabsContent value='extension' className='space-y-4'>
@@ -173,30 +254,89 @@ const LoginDialog: React.FC<LoginDialogProps> = ({ isOpen, onClose, onLogin, onS
               </div>
             </TabsContent>
 
-            <TabsContent value='bunker' className='space-y-4'>
-              <div className='space-y-2'>
-                <label htmlFor='bunkerUri' className='text-sm font-medium text-gray-700 dark:text-gray-400'>
-                  Bunker URI
-                </label>
-                <Input
-                  id='bunkerUri'
-                  value={bunkerUri}
-                  onChange={(e) => setBunkerUri(e.target.value)}
-                  className='rounded-lg border-gray-300 dark:border-gray-700 focus-visible:ring-primary'
-                  placeholder='bunker://'
-                />
-                {bunkerUri && !bunkerUri.startsWith('bunker://') && (
-                  <p className='text-red-500 text-xs'>URI must start with bunker://</p>
+            <TabsContent value='connect' className='space-y-4'>
+              {/* QR Code Section */}
+              <div className='flex flex-col items-center space-y-4'>
+                {connectError ? (
+                  <div className='flex flex-col items-center space-y-4 py-4'>
+                    <p className='text-sm text-red-500 text-center'>{connectError}</p>
+                    <Button variant='outline' onClick={handleRetry}>
+                      Try Again
+                    </Button>
+                  </div>
+                ) : nostrConnectUri ? (
+                  <>
+                    <div className='p-4 bg-white rounded-xl'>
+                      <QRCodeSVG
+                        value={nostrConnectUri}
+                        size={180}
+                        level='M'
+                        includeMargin={false}
+                      />
+                    </div>
+                    <div className='flex items-center gap-2 text-sm text-muted-foreground'>
+                      {isWaitingForConnect ? (
+                        <>
+                          <Loader2 className='w-4 h-4 animate-spin' />
+                          <span>Waiting for connection...</span>
+                        </>
+                      ) : (
+                        <span>Scan with your signer app</span>
+                      )}
+                    </div>
+                    <Button
+                      variant='outline'
+                      size='sm'
+                      className='gap-2'
+                      onClick={handleCopyUri}
+                    >
+                      {copied ? (
+                        <>
+                          <Check className='w-4 h-4' />
+                          Copied!
+                        </>
+                      ) : (
+                        <>
+                          <Copy className='w-4 h-4' />
+                          Copy URI
+                        </>
+                      )}
+                    </Button>
+                  </>
+                ) : (
+                  <div className='flex items-center justify-center h-[180px]'>
+                    <Loader2 className='w-8 h-8 animate-spin text-muted-foreground' />
+                  </div>
                 )}
               </div>
 
-              <Button
-                className='w-full rounded-full py-6'
-                onClick={handleBunkerLogin}
-                disabled={isLoading || !bunkerUri.trim() || !bunkerUri.startsWith('bunker://')}
-              >
-                {isLoading ? 'Connecting...' : 'Login with Bunker'}
-              </Button>
+              {/* Legacy Bunker URI Section */}
+              <div className='pt-4 border-t border-gray-200 dark:border-gray-700'>
+                <p className='text-xs text-muted-foreground text-center mb-3'>
+                  Or enter a bunker URI manually
+                </p>
+                <div className='space-y-2'>
+                  <Input
+                    id='bunkerUri'
+                    value={bunkerUri}
+                    onChange={(e) => setBunkerUri(e.target.value)}
+                    className='rounded-lg border-gray-300 dark:border-gray-700 focus-visible:ring-primary text-sm'
+                    placeholder='bunker://'
+                  />
+                  {bunkerUri && !bunkerUri.startsWith('bunker://') && (
+                    <p className='text-red-500 text-xs'>URI must start with bunker://</p>
+                  )}
+                </div>
+
+                <Button
+                  className='w-full rounded-full py-4 mt-3'
+                  variant='outline'
+                  onClick={handleBunkerLogin}
+                  disabled={isLoading || !bunkerUri.trim() || !bunkerUri.startsWith('bunker://')}
+                >
+                  {isLoading ? 'Connecting...' : 'Connect with Bunker URI'}
+                </Button>
+              </div>
             </TabsContent>
           </Tabs>
 

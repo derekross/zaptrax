@@ -1,5 +1,7 @@
-import { type NLoginType, NUser, useNostrLogin } from '@nostrify/react/login';
+import { type NLoginBunker, type NLoginType, NUser, useNostrLogin } from '@nostrify/react/login';
 import { useNostr } from '@nostrify/react';
+import { NConnectSigner, NSecSigner } from '@nostrify/nostrify';
+import { nip19 } from 'nostr-tools';
 import { useCallback, useMemo } from 'react';
 
 import { useAuthor } from './useAuthor.ts';
@@ -13,7 +15,8 @@ export function useCurrentUser() {
       case 'nsec': // Nostr login with secret key
         return NUser.fromNsecLogin(login);
       case 'bunker': // Nostr login with NIP-46 "bunker://" URI
-        return NUser.fromBunkerLogin(login, nostr);
+        // Custom implementation to fix bunker pubkey issue
+        return fromBunkerLogin(login, nostr);
       case 'extension': // Nostr login with NIP-07 browser extension
         return NUser.fromExtensionLogin(login);
       // Other login types can be defined here
@@ -45,4 +48,21 @@ export function useCurrentUser() {
     users,
     ...author.data,
   };
+}
+
+/** Custom bunker login handler that correctly uses bunkerPubkey for NConnectSigner */
+function fromBunkerLogin(login: NLoginBunker, pool: Parameters<typeof NUser.fromBunkerLogin>[1]): NUser {
+  const clientSk = nip19.decode(login.data.clientNsec);
+  const clientSigner = new NSecSigner(clientSk.data);
+
+  return new NUser(
+    login.type,
+    login.pubkey,
+    new NConnectSigner({
+      relay: pool.group(login.data.relays),
+      pubkey: login.data.bunkerPubkey, // Use bunker pubkey, not user pubkey
+      signer: clientSigner,
+      timeout: 60_000,
+    }),
+  );
 }
