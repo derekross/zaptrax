@@ -10,11 +10,124 @@ This NIP defines a protocol for music applications built on Nostr, enabling dece
 
 This protocol uses existing Nostr event kinds and patterns to create a comprehensive music application experience:
 
-- **NIP-51 Lists** for playlists and liked songs
+- **Kind 36787** for native Nostr music tracks
+- **Kind 34139** for native Nostr music playlists
+- **NIP-51 Lists** for mixed-source playlists and liked songs
 - **NIP-38 User Statuses** for "now playing" updates
 - **NIP-25 Reactions** for liking tracks and artists
 - **Kind 1 Text Notes** for track comments
 - **NIP-57 Lightning Zaps** for supporting artists and tracks
+
+## Native Nostr Music Tracks (Kind 36787)
+
+Native Nostr music tracks are addressable events containing metadata about audio files hosted on decentralized storage (e.g., Blossom servers).
+
+### Track Event Structure
+
+```json
+{
+  "kind": 36787,
+  "content": "Lyrics:\n[Verse 1]\n...\n\nCredits:\nProducer: John Doe",
+  "tags": [
+    ["d", "summer-nights-2024"],
+    ["title", "Summer Nights"],
+    ["url", "https://cdn.blossom.example/audio/abc123.mp3"],
+    ["image", "https://cdn.blossom.example/img/artwork.jpg"],
+    ["video", "https://cdn.blossom.example/video/abc123.mp4"],
+    ["artist", "The Midnight Collective"],
+    ["album", "Endless Summer"],
+    ["track_number", "3"],
+    ["released", "2024-06-15"],
+    ["duration", "245"],
+    ["format", "mp3"],
+    ["t", "music"],
+    ["t", "electronic"],
+    ["alt", "Music track: Summer Nights by The Midnight Collective"]
+  ]
+}
+```
+
+### Required Tags
+
+- `d`: Unique identifier for this track
+- `title`: Track title
+- `artist`: Artist name
+- `url`: Direct URL to the audio file
+- `t`: Must include at least one tag with value "music"
+
+### Optional Tags
+
+- `image`: URL to album artwork
+- `video`: URL to music video file
+- `album`: Album name
+- `track_number`: Position in album
+- `released`: ISO 8601 date (YYYY-MM-DD)
+- `duration`: Track length in seconds
+- `format`: Audio format (mp3, flac, m4a, ogg)
+- `bitrate`: Audio bitrate (e.g., "320kbps")
+- `sample_rate`: Sample rate in Hz
+- `language`: ISO 639-1 language code
+- `explicit`: Set to "true" for explicit content
+- `alt`: Human-readable description (NIP-31)
+
+### Content Field
+
+The `.content` field MAY contain lyrics and production credits in plain text or Markdown.
+
+## Native Nostr Music Playlists (Kind 34139)
+
+Native Nostr playlists are addressable events containing ordered lists of music tracks (kind 36787).
+
+### Playlist Event Structure
+
+```json
+{
+  "kind": 34139,
+  "content": "My favorite summer vibes from 2024",
+  "tags": [
+    ["d", "summer-vibes-2024"],
+    ["title", "Summer Vibes 2024"],
+    ["image", "https://cdn.blossom.example/img/playlist.jpg"],
+    ["description", "Chill electronic tracks for summer"],
+    ["a", "36787:abc123...:summer-nights-2024"],
+    ["a", "36787:def456...:sunset-dreams"],
+    ["a", "36787:abc123...:ocean-breeze"],
+    ["t", "playlist"],
+    ["t", "electronic"],
+    ["t", "summer"],
+    ["public", "true"],
+    ["alt", "Playlist: Summer Vibes 2024"]
+  ]
+}
+```
+
+### Required Tags
+
+- `d`: Unique identifier for this playlist
+- `title`: Playlist title
+- `alt`: Human-readable description (NIP-31)
+
+### Optional Tags
+
+- `description`: Short description (can also use content field)
+- `image`: URL to playlist artwork
+- `a`: Track references in format `36787:<pubkey>:<d-tag>` (multiple, ordered)
+- `t`: Category tags for discovery
+- `public`: Set to "true" for public playlists (default)
+- `private`: Set to "true" for private playlists
+- `collaborative`: Set to "true" to allow others to add tracks
+
+### Track References
+
+Playlists reference music tracks using `a` tags in the format:
+```
+["a", "36787:<pubkey>:<d-tag>"]
+```
+
+Where:
+- `36787` is the Music Track event kind
+- `<pubkey>` is the track author's public key (hex)
+- `<d-tag>` is the track's unique identifier
 
 ## Music Playlists
 

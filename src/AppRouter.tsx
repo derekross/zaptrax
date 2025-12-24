@@ -9,6 +9,8 @@ import { SearchPage } from "./pages/SearchPage";
 import { SocialFeedPage } from "./pages/SocialFeedPage";
 import { PlaylistPage } from "./pages/PlaylistPage";
 import { ProfilePage } from "./pages/ProfilePage";
+import { NostrTrackPage } from "./pages/NostrTrackPage";
+import { NostrPlaylistPage } from "./pages/NostrPlaylistPage";
 import { MusicPlayer } from "./components/music/MusicPlayer";
 import NotFound from "./pages/NotFound";
 import { Layout } from "./components/Layout";
@@ -32,6 +34,8 @@ export function AppRouter() {
               <Route path="playlists" element={<MusicPlaylists />} />
               <Route path="liked" element={<MusicLikedSongs />} />
               <Route path="playlist/:nip19Id" element={<PlaylistPage />} />
+              <Route path="track/:naddr" element={<NostrTrackPage />} />
+              <Route path="nostr-playlist/:naddr" element={<NostrPlaylistPage />} />
               <Route path="profile/:npub" element={<ProfilePage />} />
               <Route path="artist/:artistId" element={<ArtistPage />} />
               <Route path="album/:albumId" element={<AlbumPage />} />

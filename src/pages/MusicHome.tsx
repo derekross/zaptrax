@@ -17,6 +17,7 @@ import type { NostrEvent } from '@nostrify/nostrify';
 import { cn } from '@/lib/utils';
 import { nip19 } from 'nostr-tools';
 import { useQueries } from '@tanstack/react-query';
+import { NostrMusicSection } from '@/components/music/NostrMusicSection';
 
 const categories = [
   'All', 'Rock', 'Pop', 'Hip Hop', 'Electronic', 'Jazz', 'Classical', 'Folk', 'Blues', 'Country', 'Reggae'
@@ -417,6 +418,9 @@ export function MusicHome() {
           </div>
         </div>
       )}
+
+      {/* Nostr Music Section - Native Nostr Tracks */}
+      <NostrMusicSection />
 
       {/* PodcastIndex Top Music Section */}
       {podcastIndexTop100 && podcastIndexTop100.length > 0 && (

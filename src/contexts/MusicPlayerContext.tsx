@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useReducer, useRef, useEffect } from 'react';
+import { nip19 } from 'nostr-tools';
 import type { WavlakeTrack } from '@/lib/wavlake';
 import type { UnifiedTrack } from '@/lib/unifiedTrack';
 import { wavlakeToUnified } from '@/lib/unifiedTrack';
@@ -345,6 +346,18 @@ export function MusicPlayerProvider({ children }: { children: React.ReactNode })
           trackUrl = `${baseUrl}/feed/${state.currentTrack.feedId}`;
         } else {
           // Fallback to home page if no feedId
+          trackUrl = baseUrl;
+        }
+      } else if (state.currentTrack.source === 'nostr') {
+        // For Nostr tracks, link to the track page in our app using naddr
+        if (state.currentTrack.nostrPubkey && state.currentTrack.nostrDTag) {
+          const naddr = nip19.naddrEncode({
+            kind: 36787,
+            pubkey: state.currentTrack.nostrPubkey,
+            identifier: state.currentTrack.nostrDTag,
+          });
+          trackUrl = `${baseUrl}/track/${naddr}`;
+        } else {
           trackUrl = baseUrl;
         }
       }

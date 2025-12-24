@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import { nip19 } from 'nostr-tools';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
@@ -197,7 +198,15 @@ export function MusicPlayer() {
     if (currentTrack.source === 'podcastindex') {
       return `/feed/${currentTrack.feedId}`;
     }
-    return `/artist/${currentTrack.artistId}`;
+    if (currentTrack.source === 'nostr' && currentTrack.nostrPubkey) {
+      const npub = nip19.npubEncode(currentTrack.nostrPubkey);
+      return `/profile/${npub}`;
+    }
+    // Fallback for wavlake tracks
+    if (currentTrack.artistId) {
+      return `/artist/${currentTrack.artistId}`;
+    }
+    return '#';
   };
 
   const handleLike = () => {

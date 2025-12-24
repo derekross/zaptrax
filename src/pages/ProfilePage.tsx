@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import { nip19 } from 'nostr-tools';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -10,12 +10,18 @@ import {
   User,
   Music,
   Copy,
-  Globe
+  Globe,
+  Disc3,
+  ListMusic,
+  Play,
 } from 'lucide-react';
 import { useAuthor } from '@/hooks/useAuthor';
 import { useUserPlaylists, useLikedSongs } from '@/hooks/useNostrMusic';
+import { useNostrMusicTracksByAuthor, useNostrMusicPlaylists, getNostrTrackNaddr, getNostrPlaylistNaddr } from '@/hooks/useNostrMusicTracks';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
+import { useMusicPlayer } from '@/contexts/MusicPlayerContext';
 import { genUserName } from '@/lib/genUserName';
+import { nostrTrackToUnified, type NostrMusicTrack } from '@/lib/unifiedTrack';
 import { PlaylistCard } from '@/components/music/PlaylistCard';
 import { LikedSongsCard } from '@/components/music/LikedSongsCard';
 import { CreatePlaylistDialog } from '@/components/music/CreatePlaylistDialog';
@@ -52,6 +58,9 @@ export function ProfilePage() {
   const author = useAuthor(pubkey || undefined);
   const { data: userPlaylists, isLoading: playlistsLoading } = useUserPlaylists(pubkey || undefined);
   const { data: likedSongs, isLoading: likedSongsLoading } = useLikedSongs(pubkey || undefined);
+  const { data: nostrMusicTracks, isLoading: nostrTracksLoading } = useNostrMusicTracksByAuthor(pubkey || undefined);
+  const { data: nostrMusicPlaylists, isLoading: nostrPlaylistsLoading } = useNostrMusicPlaylists(pubkey || undefined);
+  const { playTrack } = useMusicPlayer();
 
   // Handle decode error after hooks
   if (decodeError) {
@@ -139,6 +148,22 @@ export function ProfilePage() {
   const handleSharePlaylist = (playlist: NostrEvent) => {
     setSelectedPlaylist(playlist);
     setSharePlaylistOpen(true);
+  };
+
+  const handleNostrTrackPlay = (track: NostrMusicTrack) => {
+    const unifiedTrack = nostrTrackToUnified(track);
+    const unifiedQueue = nostrMusicTracks ? nostrMusicTracks.map(nostrTrackToUnified) : [unifiedTrack];
+    playTrack(unifiedTrack, unifiedQueue);
+  };
+
+  const handleNostrTrackClick = (track: NostrMusicTrack) => {
+    const naddr = getNostrTrackNaddr(track);
+    navigate(`/track/${naddr}`);
+  };
+
+  const handleNostrPlaylistClick = (playlist: Parameters<typeof getNostrPlaylistNaddr>[0]) => {
+    const naddr = getNostrPlaylistNaddr(playlist);
+    navigate(`/nostr-playlist/${naddr}`);
   };
 
   const copyProfileUrl = () => {
@@ -341,6 +366,172 @@ export function ProfilePage() {
           </Card>
         )}
       </div>
+
+      {/* Nostr Music Tracks Section */}
+      {(nostrMusicTracks && nostrMusicTracks.length > 0) || nostrTracksLoading ? (
+        <div className="space-y-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Disc3 className="h-6 w-6 text-purple-500" />
+              <h2 className="text-2xl font-semibold">
+                {isOwnProfile ? 'Your Music' : `${displayName}'s Music`}
+              </h2>
+            </div>
+            {nostrMusicTracks && nostrMusicTracks.length > 0 && (
+              <Badge variant="outline" className="border-purple-500/50 text-purple-400">
+                {nostrMusicTracks.length} {nostrMusicTracks.length === 1 ? 'Track' : 'Tracks'}
+              </Badge>
+            )}
+          </div>
+
+          {nostrTracksLoading ? (
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              {[...Array(4)].map((_, i) => (
+                <Card key={i} className="bg-gray-900 border-gray-800">
+                  <CardContent className="p-0">
+                    <Skeleton className="w-full aspect-square rounded-t-lg" />
+                    <div className="p-3 space-y-2">
+                      <Skeleton className="h-4 w-3/4" />
+                      <Skeleton className="h-3 w-1/2" />
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          ) : (
+            <Card className="bg-gray-900/50 border-gray-800">
+              <CardContent className="p-6">
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                  {nostrMusicTracks?.map((track) => (
+                    <Card
+                      key={track.event.id}
+                      className="bg-gray-900 border-gray-800 hover:bg-gray-800 transition-colors cursor-pointer group"
+                      onClick={() => handleNostrTrackClick(track)}
+                    >
+                      <CardContent className="p-0">
+                        <div className="relative">
+                          {track.image ? (
+                            <img
+                              src={track.image}
+                              alt={track.title}
+                              className="w-full aspect-square object-cover rounded-t-lg"
+                            />
+                          ) : (
+                            <div className="w-full aspect-square bg-gradient-to-br from-purple-600 to-purple-900 rounded-t-lg flex items-center justify-center">
+                              <Disc3 className="h-12 w-12 text-white/60" />
+                            </div>
+                          )}
+                          <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity rounded-t-lg flex items-center justify-center">
+                            <Button
+                              size="sm"
+                              className="bg-purple-600 hover:bg-purple-700 text-white rounded-full"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleNostrTrackPlay(track);
+                              }}
+                            >
+                              <Play className="h-4 w-4" />
+                            </Button>
+                          </div>
+                          <div className="absolute top-2 right-2 bg-purple-600/90 text-white text-xs px-2 py-0.5 rounded-full font-medium">
+                            Nostr
+                          </div>
+                        </div>
+                        <div className="p-3">
+                          <p className="text-white font-medium text-sm truncate">{track.title}</p>
+                          <p className="text-gray-400 text-xs truncate">{track.artist}</p>
+                          {track.album && (
+                            <p className="text-gray-500 text-xs truncate mt-0.5">{track.album}</p>
+                          )}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+        </div>
+      ) : null}
+
+      {/* Nostr Music Playlists Section */}
+      {(nostrMusicPlaylists && nostrMusicPlaylists.length > 0) || nostrPlaylistsLoading ? (
+        <div className="space-y-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <ListMusic className="h-6 w-6 text-purple-500" />
+              <h2 className="text-2xl font-semibold">
+                {isOwnProfile ? 'Your Nostr Playlists' : `${displayName}'s Nostr Playlists`}
+              </h2>
+            </div>
+            {nostrMusicPlaylists && nostrMusicPlaylists.length > 0 && (
+              <Badge variant="outline" className="border-purple-500/50 text-purple-400">
+                {nostrMusicPlaylists.length} {nostrMusicPlaylists.length === 1 ? 'Playlist' : 'Playlists'}
+              </Badge>
+            )}
+          </div>
+
+          {nostrPlaylistsLoading ? (
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              {[...Array(3)].map((_, i) => (
+                <Card key={i} className="bg-gray-900 border-gray-800">
+                  <CardContent className="p-0">
+                    <Skeleton className="w-full aspect-square rounded-t-lg" />
+                    <div className="p-3 space-y-2">
+                      <Skeleton className="h-4 w-3/4" />
+                      <Skeleton className="h-3 w-1/2" />
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          ) : (
+            <Card className="bg-gray-900/50 border-gray-800">
+              <CardContent className="p-6">
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                  {nostrMusicPlaylists?.map((playlist) => (
+                    <Card
+                      key={playlist.event.id}
+                      className="bg-gray-900 border-gray-800 hover:bg-gray-800 transition-colors cursor-pointer group"
+                      onClick={() => handleNostrPlaylistClick(playlist)}
+                    >
+                      <CardContent className="p-0">
+                        <div className="relative">
+                          {playlist.image ? (
+                            <img
+                              src={playlist.image}
+                              alt={playlist.title}
+                              className="w-full aspect-square object-cover rounded-t-lg"
+                            />
+                          ) : (
+                            <div className="w-full aspect-square bg-gradient-to-br from-purple-600 to-purple-800 rounded-t-lg flex items-center justify-center">
+                              <ListMusic className="h-12 w-12 text-white/60" />
+                            </div>
+                          )}
+                          <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity rounded-t-lg flex items-center justify-center">
+                            <Button
+                              size="sm"
+                              className="bg-purple-600 hover:bg-purple-700 text-white rounded-full"
+                            >
+                              <Play className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </div>
+                        <div className="p-3">
+                          <p className="text-white font-medium text-sm truncate">{playlist.title}</p>
+                          <p className="text-gray-400 text-xs truncate">
+                            {playlist.trackRefs.length} tracks
+                          </p>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+        </div>
+      ) : null}
 
       {/* Clone Playlist Dialog */}
       <CreatePlaylistDialog

@@ -1,20 +1,23 @@
 import React, { useState, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
+import { nip19 } from 'nostr-tools';
 import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Search, Music, User, Disc, CheckCircle, XCircle, AtSign, Radio } from 'lucide-react';
+import { Search, Music, User, Disc, CheckCircle, XCircle, AtSign, Radio, Disc3, Play } from 'lucide-react';
 import { SearchTrackItem } from './SearchTrackItem';
 import { useWavlakeSearch } from '@/hooks/useWavlake';
 import { usePodcastIndexSearch } from '@/hooks/usePodcastIndex';
 import { useNostrSearch } from '@/hooks/useNostrSearch';
+import { useNostrMusicSearch, getNostrTrackNaddr } from '@/hooks/useNostrMusicTracks';
 import { useAuthor } from '@/hooks/useAuthor';
 import { useMusicPlayer } from '@/contexts/MusicPlayerContext';
 import { wavlakeAPI } from '@/lib/wavlake';
 import { podcastIndexAPI } from '@/lib/podcastindex';
-import { wavlakeToUnified, podcastIndexEpisodeToUnified } from '@/lib/unifiedTrack';
+import { wavlakeToUnified, podcastIndexEpisodeToUnified, nostrTrackToUnified, type NostrMusicTrack } from '@/lib/unifiedTrack';
 import { useDebounce } from '@/hooks/useDebounce';
 import { createNpub, isNpub, isNip05 } from '@/lib/nostrSearch';
 import { genUserName } from '@/lib/genUserName';
@@ -70,7 +73,13 @@ export function MusicSearch({
     debouncedSearchTerm.length > 2 && isNostrSearch
   );
 
-  const isLoading = musicLoading || nostrLoading || podcastIndexLoading;
+  // Nostr music tracks search (kind 36787)
+  const { data: nostrMusicResults, isLoading: nostrMusicLoading } = useNostrMusicSearch(
+    debouncedSearchTerm,
+    debouncedSearchTerm.length > 2 && !isNostrSearch
+  );
+
+  const isLoading = musicLoading || nostrLoading || podcastIndexLoading || nostrMusicLoading;
   const error = musicError || nostrError || podcastIndexError;
 
   const groupedResults = useMemo(() => {
@@ -206,6 +215,17 @@ export function MusicSearch({
     onUserSelect?.(result);
   };
 
+  const handleNostrTrackPlay = (track: NostrMusicTrack, allTracks: NostrMusicTrack[]) => {
+    const unifiedTrack = nostrTrackToUnified(track);
+    const unifiedQueue = allTracks.map(nostrTrackToUnified);
+    playTrack(unifiedTrack, unifiedQueue);
+  };
+
+  const handleNostrTrackClick = (track: NostrMusicTrack) => {
+    const naddr = getNostrTrackNaddr(track);
+    navigate(`/track/${naddr}`);
+  };
+
   // Component for displaying user search results
   function UserSearchResult({ result }: { result: NostrSearchResult }) {
     const author = useAuthor(result.pubkey || undefined);
@@ -318,6 +338,73 @@ export function MusicSearch({
           <CardContent className="space-y-2">
             {nostrResults.map((result, index) => (
               <UserSearchResult key={`${result.identifier}-${index}`} result={result} />
+            ))}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Nostr Music Tracks Results */}
+      {nostrMusicResults && nostrMusicResults.length > 0 && (
+        <Card className="bg-gray-900 border-gray-800">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-lg flex items-center space-x-2">
+              <Disc3 className="h-5 w-5 text-purple-500" />
+              <span>Nostr Music</span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            {nostrMusicResults.map((track) => (
+              <div
+                key={track.event.id}
+                className="flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-800 group"
+              >
+                <div className="relative">
+                  <Avatar
+                    className="h-12 w-12 rounded-md cursor-pointer"
+                    onClick={() => handleNostrTrackClick(track)}
+                  >
+                    {track.image ? (
+                      <AvatarImage src={track.image} alt={track.title} />
+                    ) : null}
+                    <AvatarFallback className="rounded-md bg-purple-600">
+                      <Disc3 className="h-5 w-5 text-white" />
+                    </AvatarFallback>
+                  </Avatar>
+                  <Button
+                    size="icon"
+                    className="absolute inset-0 h-12 w-12 rounded-md bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity"
+                    onClick={() => handleNostrTrackPlay(track, nostrMusicResults)}
+                  >
+                    <Play className="h-5 w-5 text-white" />
+                  </Button>
+                </div>
+
+                <div className="flex-1 min-w-0">
+                  <h4
+                    className="font-medium text-sm truncate hover:underline cursor-pointer"
+                    onClick={() => handleNostrTrackClick(track)}
+                  >
+                    {track.title}
+                  </h4>
+                  <Link
+                    to={`/profile/${nip19.npubEncode(track.event.pubkey)}`}
+                    className="text-sm text-muted-foreground truncate block hover:text-purple-400 transition-colors"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    {track.artist}
+                  </Link>
+                  {track.album && (
+                    <p className="text-xs text-muted-foreground truncate">
+                      {track.album}
+                    </p>
+                  )}
+                </div>
+
+                <Badge variant="outline" className="text-purple-400 border-purple-400/50">
+                  <Disc3 className="h-3 w-3 mr-1" />
+                  Nostr
+                </Badge>
+              </div>
             ))}
           </CardContent>
         </Card>
