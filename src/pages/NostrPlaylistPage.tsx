@@ -48,7 +48,7 @@ export function NostrPlaylistPage() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-black text-white">
-        <div className="relative h-[400px] overflow-hidden">
+        <div className="relative h-[520px] md:h-[400px] overflow-hidden">
           <Skeleton className="w-full h-full" />
         </div>
         <div className="max-w-7xl mx-auto px-8 py-8">
@@ -139,7 +139,7 @@ export function NostrPlaylistPage() {
   return (
     <div className="min-h-screen bg-black text-white pb-20">
       {/* Hero Section */}
-      <div className="relative h-[400px] overflow-hidden">
+      <div className="relative h-[520px] md:h-[400px] overflow-hidden">
         {/* Background Image */}
         <div
           className="absolute inset-0 bg-cover bg-center bg-no-repeat"

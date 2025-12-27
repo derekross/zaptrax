@@ -36,6 +36,13 @@ export function AppRouter() {
         <PullToRefresh>
           <div className="flex-1 bg-black" style={{ paddingTop: 'calc(4rem + env(safe-area-inset-top, 0px))' }}>
             <Routes>
+              {/* Full-screen hero pages - outside Layout for edge-to-edge display */}
+              <Route path="artist/:artistId" element={<ArtistPage />} />
+              <Route path="album/:albumId" element={<AlbumPage />} />
+              <Route path="track/:naddr" element={<NostrTrackPage />} />
+              <Route path="feed/:feedId" element={<PodcastIndexFeedPage />} />
+
+              {/* Pages with tab bar navigation */}
               <Route path="/" element={<Layout />}>
                 <Route index element={<MusicHome />} />
                 <Route path="social" element={<SocialFeedPage />} />
@@ -43,12 +50,8 @@ export function AppRouter() {
                 <Route path="playlists" element={<MusicPlaylists />} />
                 <Route path="liked" element={<MusicLikedSongs />} />
                 <Route path="playlist/:nip19Id" element={<PlaylistPage />} />
-                <Route path="track/:naddr" element={<NostrTrackPage />} />
                 <Route path="nostr-playlist/:naddr" element={<NostrPlaylistPage />} />
                 <Route path="profile/:npub" element={<ProfilePage />} />
-                <Route path="artist/:artistId" element={<ArtistPage />} />
-                <Route path="album/:albumId" element={<AlbumPage />} />
-                <Route path="feed/:feedId" element={<PodcastIndexFeedPage />} />
                 <Route path="*" element={<NotFound />} />
               </Route>
             </Routes>

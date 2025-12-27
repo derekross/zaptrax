@@ -35,7 +35,7 @@ export function Layout() {
         className="w-full bg-black border-b border-gray-800"
         style={{
           position: 'fixed',
-          top: '4rem',
+          top: 'calc(4rem + env(safe-area-inset-top, 0px))',
           zIndex: 40,
           width: '100%'
         }}
@@ -103,7 +103,7 @@ export function Layout() {
       </div>
 
       {/* The content for each tab will be rendered by the Outlet */}
-      <div className="bg-black" style={{ marginTop: '5rem' }}>
+      <div className="bg-black" style={{ marginTop: '3rem' }}>
         <Outlet />
       </div>
     </div>

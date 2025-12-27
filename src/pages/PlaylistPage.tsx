@@ -331,7 +331,7 @@ export function PlaylistPage() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-black text-white">
-        <div className="relative h-[400px] overflow-hidden">
+        <div className="relative h-[520px] md:h-[400px] overflow-hidden">
           <Skeleton className="w-full h-full bg-gray-800" />
         </div>
         <div className="max-w-7xl mx-auto px-8 py-8">
@@ -367,7 +367,7 @@ export function PlaylistPage() {
   return (
     <div className="min-h-screen bg-black text-white pb-20">
       {/* Hero Section */}
-      <div className="relative h-[400px] overflow-hidden">
+      <div className="relative h-[520px] md:h-[400px] overflow-hidden">
         {/* Background Image */}
         {playlistCoverUrl && (
           <div
