@@ -90,7 +90,7 @@ export function PodcastIndexFeedPage() {
   return (
     <div className="min-h-screen bg-black text-white pb-20">
       {/* Hero Section with Background Image - matching ArtistPage style */}
-      <div className="relative overflow-hidden h-[580px] md:h-[500px]" style={{ marginTop: 'calc(-4rem - env(safe-area-inset-top, 0px))', paddingTop: 'calc(4rem + env(safe-area-inset-top, 0px))' }}>
+      <div className="relative overflow-hidden h-[520px] md:h-[400px]">
         {/* Background Image */}
         <div
           className="absolute inset-0 bg-cover bg-center bg-no-repeat"
