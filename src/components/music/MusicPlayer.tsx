@@ -372,7 +372,7 @@ export function MusicPlayer() {
 
   // Fullscreen player (mobile)
   const fullPlayer = (
-    <div className="fixed inset-0 z-50 bg-black flex flex-col sm:hidden">
+    <div className="fixed inset-0 z-50 bg-black flex flex-col sm:hidden" style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}>
       {/* Header */}
       <div className="flex items-center justify-between p-4 border-b border-border/50">
         <Button

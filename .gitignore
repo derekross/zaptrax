@@ -29,10 +29,25 @@ dist-ssr
 .env.*
 !.env.example
 
-# Android WebView App
+# Android WebView App (legacy)
 android-webview-app/keystore.properties
 android-webview-app/*.jks
 android-webview-app/*.keystore
 android-webview-app/app/build/
 android-webview-app/build/
 android-webview-app/.gradle/
+
+# Capacitor Android
+android/keystore.properties
+android/*.jks
+android/*.keystore
+android/app/build/
+android/build/
+android/.gradle/
+android/local.properties
+
+# Capacitor iOS
+ios/App/Pods/
+ios/App/App.xcworkspace/xcuserdata/
+ios/App/App.xcodeproj/xcuserdata/
+ios/DerivedData/

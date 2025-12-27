@@ -46,7 +46,7 @@ export function NostrTrackPage() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-black text-white">
-        <div className="relative h-[400px] overflow-hidden">
+        <div className="relative h-[400px] overflow-hidden" style={{ marginTop: 'calc(-1 * env(safe-area-inset-top, 0px))', paddingTop: 'env(safe-area-inset-top, 0px)' }}>
           <Skeleton className="w-full h-full" />
         </div>
         <div className="max-w-7xl mx-auto px-8 py-8">
@@ -126,7 +126,7 @@ export function NostrTrackPage() {
   return (
     <div className="min-h-screen bg-black text-white pb-20">
       {/* Hero Section with Track Art */}
-      <div className="relative h-[400px] overflow-hidden">
+      <div className="relative h-[400px] overflow-hidden" style={{ marginTop: 'calc(-1 * env(safe-area-inset-top, 0px))', paddingTop: 'env(safe-area-inset-top, 0px)' }}>
         {/* Background Image */}
         <div
           className="absolute inset-0 bg-cover bg-center bg-no-repeat"

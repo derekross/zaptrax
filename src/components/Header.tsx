@@ -12,7 +12,8 @@ export function Header() {
         position: 'fixed',
         top: 0,
         zIndex: 50,
-        width: '100%'
+        width: '100%',
+        paddingTop: 'env(safe-area-inset-top, 0px)'
       }}
     >
       <div className="container flex h-16 items-center justify-between px-6">

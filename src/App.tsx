@@ -14,6 +14,8 @@ import { AppProvider } from '@/components/AppProvider';
 import { AppConfig } from '@/contexts/AppContext';
 import { MusicPlayerProvider } from '@/contexts/MusicPlayerContext';
 import { PWAInstallPrompt } from '@/components/PWAInstallPrompt';
+import { CapacitorMediaSessionBridge } from '@/components/CapacitorMediaSessionBridge';
+import { useCapacitorStatusBar } from '@/hooks/useCapacitorStatusBar';
 import AppRouter from './AppRouter';
 
 const head = createHead({
@@ -45,6 +47,9 @@ const presetRelays = [
 ];
 
 export function App() {
+  // Configure status bar for native apps
+  useCapacitorStatusBar();
+
   return (
     <UnheadProvider head={head}>
       <AppProvider storageKey="nostr:app-config" defaultConfig={defaultConfig} presetRelays={presetRelays}>
@@ -52,6 +57,7 @@ export function App() {
           <NostrLoginProvider storageKey='nostr:login'>
             <NostrProvider>
               <MusicPlayerProvider>
+                <CapacitorMediaSessionBridge />
                 <TooltipProvider>
                   <Toaster />
                   <Sonner />

@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Zaptrax</string>
+    <string name="title_activity_main">Zaptrax</string>
+    <string name="package_name">app.zaptrax</string>
+    <string name="custom_url_scheme">app.zaptrax</string>
+</resources>

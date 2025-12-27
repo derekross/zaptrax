@@ -2,6 +2,7 @@
 // It is important that all functionality in this file is preserved, and should only be modified if explicitly requested.
 
 import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { Capacitor } from '@capacitor/core';
 import { QRCodeSVG } from 'qrcode.react';
 import { Shield, Upload, Loader2, Copy, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button.tsx';
@@ -41,6 +42,11 @@ const LoginDialog: React.FC<LoginDialogProps> = ({ isOpen, onClose, onLogin, onS
   const abortControllerRef = useRef<AbortController | null>(null);
   const login = useLoginActions();
 
+  // Check if running in native app (Capacitor)
+  const isNative = Capacitor.isNativePlatform();
+  // Extension only available on web when window.nostr exists
+  const hasExtension = !isNative && 'nostr' in window;
+
   // Generate nostrconnect params (sync) - just creates the QR code data
   const generateConnectSession = useCallback(() => {
     const relayUrl = login.getRelayUrl();
@@ -73,7 +79,7 @@ const LoginDialog: React.FC<LoginDialogProps> = ({ isOpen, onClose, onLogin, onS
     startListening();
   }, [nostrConnectParams, login, onLogin, onClose, isWaitingForConnect]);
 
-  // Clean up on close
+  // Clean up on close, or generate session when opening on native
   useEffect(() => {
     if (!isOpen) {
       setNostrConnectParams(null);
@@ -83,8 +89,12 @@ const LoginDialog: React.FC<LoginDialogProps> = ({ isOpen, onClose, onLogin, onS
       if (abortControllerRef.current) {
         abortControllerRef.current.abort();
       }
+    } else if (!hasExtension && !nostrConnectParams && !connectError) {
+      // On native or web without extension, 'connect' is the default tab
+      // Generate the session when dialog opens
+      generateConnectSession();
     }
-  }, [isOpen]);
+  }, [isOpen, hasExtension, nostrConnectParams, connectError, generateConnectSession]);
 
   // Retry connection with new params
   const handleRetry = useCallback(() => {
@@ -134,9 +144,10 @@ const LoginDialog: React.FC<LoginDialogProps> = ({ isOpen, onClose, onLogin, onS
   };
 
   const handleBunkerLogin = () => {
-    if (!bunkerUri.trim() || !bunkerUri.startsWith('bunker://')) return;
+    if (!bunkerUri.trim()) return;
+    if (!bunkerUri.startsWith('bunker://') && !bunkerUri.startsWith('nostrconnect://')) return;
     setIsLoading(true);
-    
+
     try {
       login.bunker(bunkerUri);
       onLogin();
@@ -179,7 +190,7 @@ const LoginDialog: React.FC<LoginDialogProps> = ({ isOpen, onClose, onLogin, onS
 
         <div className='px-6 py-8 space-y-6'>
           <Tabs
-            defaultValue={'nostr' in window ? 'extension' : 'key'}
+            defaultValue={hasExtension ? 'extension' : 'connect'}
             className='w-full'
             onValueChange={(value) => {
               if (value === 'connect' && !nostrConnectParams && !connectError) {
@@ -187,27 +198,29 @@ const LoginDialog: React.FC<LoginDialogProps> = ({ isOpen, onClose, onLogin, onS
               }
             }}
           >
-            <TabsList className='grid grid-cols-3 mb-6'>
-              <TabsTrigger value='extension'>Extension</TabsTrigger>
-              <TabsTrigger value='key'>Nsec</TabsTrigger>
+            <TabsList className={`grid mb-6 ${hasExtension ? 'grid-cols-3' : 'grid-cols-2'}`}>
+              {hasExtension && <TabsTrigger value='extension'>Extension</TabsTrigger>}
               <TabsTrigger value='connect'>Connect</TabsTrigger>
+              <TabsTrigger value='key'>Nsec</TabsTrigger>
             </TabsList>
 
-            <TabsContent value='extension' className='space-y-4'>
-              <div className='text-center p-4 rounded-lg bg-gray-50 dark:bg-gray-800'>
-                <Shield className='w-12 h-12 mx-auto mb-3 text-primary' />
-                <p className='text-sm text-gray-600 dark:text-gray-300 mb-4'>
-                  Login with one click using the browser extension
-                </p>
-                <Button
-                  className='w-full rounded-full py-6'
-                  onClick={handleExtensionLogin}
-                  disabled={isLoading}
-                >
-                  {isLoading ? 'Logging in...' : 'Login with Extension'}
-                </Button>
-              </div>
-            </TabsContent>
+            {hasExtension && (
+              <TabsContent value='extension' className='space-y-4'>
+                <div className='text-center p-4 rounded-lg bg-gray-50 dark:bg-gray-800'>
+                  <Shield className='w-12 h-12 mx-auto mb-3 text-primary' />
+                  <p className='text-sm text-gray-600 dark:text-gray-300 mb-4'>
+                    Login with one click using the browser extension
+                  </p>
+                  <Button
+                    className='w-full rounded-full py-6'
+                    onClick={handleExtensionLogin}
+                    disabled={isLoading}
+                  >
+                    {isLoading ? 'Logging in...' : 'Login with Extension'}
+                  </Button>
+                </div>
+              </TabsContent>
+            )}
 
             <TabsContent value='key' className='space-y-4'>
               <div className='space-y-4'>
@@ -255,7 +268,7 @@ const LoginDialog: React.FC<LoginDialogProps> = ({ isOpen, onClose, onLogin, onS
             </TabsContent>
 
             <TabsContent value='connect' className='space-y-4'>
-              {/* QR Code Section */}
+              {/* Nostrconnect Section */}
               <div className='flex flex-col items-center space-y-4'>
                 {connectError ? (
                   <div className='flex flex-col items-center space-y-4 py-4'>
@@ -266,14 +279,19 @@ const LoginDialog: React.FC<LoginDialogProps> = ({ isOpen, onClose, onLogin, onS
                   </div>
                 ) : nostrConnectUri ? (
                   <>
-                    <div className='p-4 bg-white rounded-xl'>
-                      <QRCodeSVG
-                        value={nostrConnectUri}
-                        size={180}
-                        level='M'
-                        includeMargin={false}
-                      />
-                    </div>
+                    {/* QR Code - only show on web */}
+                    {!isNative && (
+                      <div className='p-4 bg-white rounded-xl'>
+                        <QRCodeSVG
+                          value={nostrConnectUri}
+                          size={180}
+                          level='M'
+                          includeMargin={false}
+                        />
+                      </div>
+                    )}
+
+                    {/* Status message */}
                     <div className='flex items-center gap-2 text-sm text-muted-foreground'>
                       {isWaitingForConnect ? (
                         <>
@@ -281,13 +299,15 @@ const LoginDialog: React.FC<LoginDialogProps> = ({ isOpen, onClose, onLogin, onS
                           <span>Waiting for connection...</span>
                         </>
                       ) : (
-                        <span>Scan with your signer app</span>
+                        <span>{isNative ? 'Copy and paste into your signer app' : 'Scan with your signer app'}</span>
                       )}
                     </div>
+
+                    {/* Copy button */}
                     <Button
-                      variant='outline'
-                      size='sm'
-                      className='gap-2'
+                      variant={isNative ? 'default' : 'outline'}
+                      size={isNative ? 'default' : 'sm'}
+                      className={isNative ? 'w-full gap-2' : 'gap-2'}
                       onClick={handleCopyUri}
                     >
                       {copied ? (
@@ -298,22 +318,29 @@ const LoginDialog: React.FC<LoginDialogProps> = ({ isOpen, onClose, onLogin, onS
                       ) : (
                         <>
                           <Copy className='w-4 h-4' />
-                          Copy URI
+                          Copy Connection String
                         </>
                       )}
                     </Button>
+
+                    {/* Show truncated URI on native for verification */}
+                    {isNative && (
+                      <p className='text-xs text-muted-foreground text-center break-all px-2'>
+                        {nostrConnectUri.substring(0, 50)}...
+                      </p>
+                    )}
                   </>
                 ) : (
-                  <div className='flex items-center justify-center h-[180px]'>
+                  <div className='flex items-center justify-center h-[100px]'>
                     <Loader2 className='w-8 h-8 animate-spin text-muted-foreground' />
                   </div>
                 )}
               </div>
 
-              {/* Legacy Bunker URI Section */}
+              {/* Manual URI input section */}
               <div className='pt-4 border-t border-gray-200 dark:border-gray-700'>
-                <p className='text-xs text-muted-foreground text-center mb-3'>
-                  Or enter a bunker URI manually
+                <p className='text-sm text-muted-foreground text-center mb-3'>
+                  Or paste a bunker:// URI from your signer
                 </p>
                 <div className='space-y-2'>
                   <Input
@@ -323,8 +350,8 @@ const LoginDialog: React.FC<LoginDialogProps> = ({ isOpen, onClose, onLogin, onS
                     className='rounded-lg border-gray-300 dark:border-gray-700 focus-visible:ring-primary text-sm'
                     placeholder='bunker://'
                   />
-                  {bunkerUri && !bunkerUri.startsWith('bunker://') && (
-                    <p className='text-red-500 text-xs'>URI must start with bunker://</p>
+                  {bunkerUri && !bunkerUri.startsWith('bunker://') && !bunkerUri.startsWith('nostrconnect://') && (
+                    <p className='text-red-500 text-xs'>URI must start with bunker:// or nostrconnect://</p>
                   )}
                 </div>
 
@@ -332,9 +359,9 @@ const LoginDialog: React.FC<LoginDialogProps> = ({ isOpen, onClose, onLogin, onS
                   className='w-full rounded-full py-4 mt-3'
                   variant='outline'
                   onClick={handleBunkerLogin}
-                  disabled={isLoading || !bunkerUri.trim() || !bunkerUri.startsWith('bunker://')}
+                  disabled={isLoading || !bunkerUri.trim() || (!bunkerUri.startsWith('bunker://') && !bunkerUri.startsWith('nostrconnect://'))}
                 >
-                  {isLoading ? 'Connecting...' : 'Connect with Bunker URI'}
+                  {isLoading ? 'Connecting...' : 'Connect with Bunker'}
                 </Button>
               </div>
             </TabsContent>

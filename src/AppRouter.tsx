@@ -1,5 +1,7 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { ScrollToTop } from "./components/ScrollToTop";
+import { useCapacitorDeepLinks } from "./hooks/useCapacitorDeepLinks";
+import { PullToRefresh } from "./components/PullToRefresh";
 
 import { MusicHome } from "./pages/MusicHome";
 import { ArtistPage } from "./pages/ArtistPage";
@@ -19,31 +21,39 @@ import { MusicLikedSongs } from "./components/music/MusicLikedSongs";
 import { PlayerPortal } from './components/PlayerPortal';
 import { Header } from "./components/Header";
 
+function CapacitorDeepLinkHandler() {
+  useCapacitorDeepLinks();
+  return null;
+}
+
 export function AppRouter() {
   return (
     <BrowserRouter>
+      <CapacitorDeepLinkHandler />
       <div className="min-h-screen flex flex-col bg-black">
         <ScrollToTop />
         <Header />
-        <div className="flex-1 bg-black" style={{ paddingTop: '4rem' }}>
-          <Routes>
-            <Route path="/" element={<Layout />}>
-              <Route index element={<MusicHome />} />
-              <Route path="social" element={<SocialFeedPage />} />
-              <Route path="search" element={<SearchPage />} />
-              <Route path="playlists" element={<MusicPlaylists />} />
-              <Route path="liked" element={<MusicLikedSongs />} />
-              <Route path="playlist/:nip19Id" element={<PlaylistPage />} />
-              <Route path="track/:naddr" element={<NostrTrackPage />} />
-              <Route path="nostr-playlist/:naddr" element={<NostrPlaylistPage />} />
-              <Route path="profile/:npub" element={<ProfilePage />} />
-              <Route path="artist/:artistId" element={<ArtistPage />} />
-              <Route path="album/:albumId" element={<AlbumPage />} />
-              <Route path="feed/:feedId" element={<PodcastIndexFeedPage />} />
-              <Route path="*" element={<NotFound />} />
-            </Route>
-          </Routes>
-        </div>
+        <PullToRefresh>
+          <div className="flex-1 bg-black" style={{ paddingTop: 'calc(4rem + env(safe-area-inset-top, 0px))' }}>
+            <Routes>
+              <Route path="/" element={<Layout />}>
+                <Route index element={<MusicHome />} />
+                <Route path="social" element={<SocialFeedPage />} />
+                <Route path="search" element={<SearchPage />} />
+                <Route path="playlists" element={<MusicPlaylists />} />
+                <Route path="liked" element={<MusicLikedSongs />} />
+                <Route path="playlist/:nip19Id" element={<PlaylistPage />} />
+                <Route path="track/:naddr" element={<NostrTrackPage />} />
+                <Route path="nostr-playlist/:naddr" element={<NostrPlaylistPage />} />
+                <Route path="profile/:npub" element={<ProfilePage />} />
+                <Route path="artist/:artistId" element={<ArtistPage />} />
+                <Route path="album/:albumId" element={<AlbumPage />} />
+                <Route path="feed/:feedId" element={<PodcastIndexFeedPage />} />
+                <Route path="*" element={<NotFound />} />
+              </Route>
+            </Routes>
+          </div>
+        </PullToRefresh>
         <PlayerPortal>
           <MusicPlayer />
         </PlayerPortal>
