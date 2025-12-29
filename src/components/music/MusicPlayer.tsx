@@ -273,6 +273,19 @@ export function MusicPlayer() {
 
   const canZap = supportsZap();
 
+  // Helper to extract actual media URL (handles op3.dev wrapper URLs)
+  const getDirectMediaUrl = (mediaUrl: string | undefined): string => {
+    if (!mediaUrl) return '';
+    // If the mediaUrl contains op3.dev, extract the direct CloudFront URL
+    if (mediaUrl.includes('op3.dev')) {
+      const urlMatch = mediaUrl.match(/https:\/\/op3\.dev\/[^/]+\/(https:\/\/.*)/);
+      if (urlMatch) {
+        return urlMatch[1];
+      }
+    }
+    return mediaUrl;
+  };
+
   const handleAddToPlaylist = () => {
     setAddToPlaylistOpen(true);
   };
@@ -287,8 +300,9 @@ export function MusicPlayer() {
     } else {
       // Start casting - this will pause local audio
       setCasting(true);
-      // Cast the current track
-      const success = await castMedia(currentTrack.mediaUrl);
+      // Cast the current track with direct URL
+      const directUrl = getDirectMediaUrl(currentTrack.mediaUrl);
+      const success = await castMedia(directUrl);
       if (!success) {
         // If casting failed, revert
         setCasting(false);
@@ -312,32 +326,38 @@ export function MusicPlayer() {
 
   // Handle next track - if casting, load the new track on Chromecast
   const handleNextTrack = async () => {
-    nextTrack();
-    // If casting, we need to load the next track on Chromecast after state updates
-    if (state.isCasting && state.currentIndex < state.queue.length - 1) {
-      const nextTrackItem = state.queue[state.currentIndex + 1];
+    // Calculate the next index BEFORE updating state
+    const nextIndex = state.currentIndex + 1;
+
+    if (state.isCasting && nextIndex < state.queue.length) {
+      // When casting, cast the next track first, then update UI state
+      const nextTrackItem = state.queue[nextIndex];
       if (nextTrackItem) {
-        // Small delay to let state update
-        setTimeout(() => {
-          castMedia(nextTrackItem.mediaUrl);
-        }, 100);
+        const directUrl = getDirectMediaUrl(nextTrackItem.mediaUrl);
+        console.log('[Cast] Next track URL:', directUrl);
+        await castMedia(directUrl);
       }
     }
+    // Update the UI state (this won't play locally because isCasting is true)
+    nextTrack();
   };
 
   // Handle previous track - if casting, load the previous track on Chromecast
   const handlePreviousTrack = async () => {
-    previousTrack();
-    // If casting, we need to load the previous track on Chromecast after state updates
-    if (state.isCasting && state.currentIndex > 0) {
-      const prevTrackItem = state.queue[state.currentIndex - 1];
+    // Calculate the previous index BEFORE updating state
+    const prevIndex = state.currentIndex - 1;
+
+    if (state.isCasting && prevIndex >= 0) {
+      // When casting, cast the previous track first, then update UI state
+      const prevTrackItem = state.queue[prevIndex];
       if (prevTrackItem) {
-        // Small delay to let state update
-        setTimeout(() => {
-          castMedia(prevTrackItem.mediaUrl);
-        }, 100);
+        const directUrl = getDirectMediaUrl(prevTrackItem.mediaUrl);
+        console.log('[Cast] Previous track URL:', directUrl);
+        await castMedia(directUrl);
       }
     }
+    // Update the UI state (this won't play locally because isCasting is true)
+    previousTrack();
   };
 
   // Mini player (default, mobile)
