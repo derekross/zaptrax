@@ -19,3 +19,15 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+
+# Google Cast SDK - preserve all Cast framework classes
+-keep class com.google.android.gms.cast.** { *; }
+-keep class com.google.android.gms.cast.framework.** { *; }
+-keep class com.google.android.gms.common.** { *; }
+
+# Keep CastOptionsProvider
+-keep class com.gameleap.plugins.chromecast.lib.CastOptionsProvider { *; }
+-keep class * extends com.google.android.gms.cast.framework.OptionsProvider { *; }
+
+# Keep MediaRouter classes
+-keep class androidx.mediarouter.** { *; }

@@ -221,7 +221,8 @@ export function MusicPlayerProvider({ children }: { children: React.ReactNode })
     const handleCanPlay = () => {
       console.log('Audio can play');
       dispatch({ type: 'SET_LOADING', payload: false });
-      if (state.isPlaying) {
+      // Don't auto-play locally when casting
+      if (state.isPlaying && !state.isCasting) {
         audio.play().catch((error) => {
           console.error('Audio play failed on canplay:', error);
           if (error.name === 'NotAllowedError') {
@@ -263,7 +264,7 @@ export function MusicPlayerProvider({ children }: { children: React.ReactNode })
       audio.removeEventListener('ended', handleEnded);
       audio.removeEventListener('error', handleError);
     };
-  }, [state.isPlaying]);
+  }, [state.isPlaying, state.isCasting]);
 
   // Update audio source when track changes
   useEffect(() => {

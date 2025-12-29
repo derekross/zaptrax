@@ -132,11 +132,38 @@ public class ChromecastConnection {
     public void initialize(final String applicationId, final PluginCall pluginCall) {
         activity.runOnUiThread(new Runnable() {
             public void run() {
-                // Check if Cast is available (GMS must be present)
-                if (!castAvailable) {
-                    android.util.Log.i("ChromecastConnection", "Cast not available during initialize - GMS may be missing");
-                    pluginCall.reject("Google Play Services not available - Cast disabled");
-                    return;
+                // Try to initialize Cast if not already done
+                if (!castAvailable && cachedCastContext == null) {
+                    // Check if Google Play Services is available
+                    if (!isGooglePlayServicesAvailable()) {
+                        android.util.Log.i("ChromecastConnection", "Google Play Services not available - Cast disabled");
+                        pluginCall.reject("Google Play Services not available - Cast disabled");
+                        return;
+                    }
+
+                    // Try to get CastContext
+                    try {
+                        CastContext ctx = getContext();
+                        if (ctx != null) {
+                            if (listener != null) {
+                                ctx.addCastStateListener(listener);
+                            }
+                            castAvailable = true;
+                            android.util.Log.i("ChromecastConnection", "Cast initialized successfully in initialize()");
+                        } else {
+                            android.util.Log.w("ChromecastConnection", "CastContext is null");
+                            pluginCall.reject("Cast framework not available");
+                            return;
+                        }
+                    } catch (Exception e) {
+                        android.util.Log.e("ChromecastConnection", "Failed to initialize Cast in initialize(): " + e.getMessage());
+                        pluginCall.reject("Cast framework error: " + e.getMessage());
+                        return;
+                    } catch (Throwable t) {
+                        android.util.Log.e("ChromecastConnection", "Cast framework error in initialize(): " + t.getMessage());
+                        pluginCall.reject("Cast framework error: " + t.getMessage());
+                        return;
+                    }
                 }
 
                 // If the app Id changed
