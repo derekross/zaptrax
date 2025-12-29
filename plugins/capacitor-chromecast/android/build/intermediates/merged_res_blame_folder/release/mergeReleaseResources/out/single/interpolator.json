@@ -1,0 +1,38 @@
+[
+    {
+        "merged": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-release-35:/interpolator/btn_radio_to_off_mtrl_animation_interpolator_0.xml",
+        "source": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-appcompat-1.7.1-30:/interpolator/btn_radio_to_off_mtrl_animation_interpolator_0.xml"
+    },
+    {
+        "merged": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-release-35:/interpolator/btn_checkbox_unchecked_mtrl_animation_interpolator_1.xml",
+        "source": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-appcompat-1.7.1-30:/interpolator/btn_checkbox_unchecked_mtrl_animation_interpolator_1.xml"
+    },
+    {
+        "merged": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-release-35:/interpolator/btn_checkbox_checked_mtrl_animation_interpolator_0.xml",
+        "source": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-appcompat-1.7.1-30:/interpolator/btn_checkbox_checked_mtrl_animation_interpolator_0.xml"
+    },
+    {
+        "merged": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-release-35:/interpolator/btn_checkbox_checked_mtrl_animation_interpolator_1.xml",
+        "source": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-appcompat-1.7.1-30:/interpolator/btn_checkbox_checked_mtrl_animation_interpolator_1.xml"
+    },
+    {
+        "merged": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-release-35:/interpolator/btn_checkbox_unchecked_mtrl_animation_interpolator_0.xml",
+        "source": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-appcompat-1.7.1-30:/interpolator/btn_checkbox_unchecked_mtrl_animation_interpolator_0.xml"
+    },
+    {
+        "merged": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-release-35:/interpolator/btn_radio_to_on_mtrl_animation_interpolator_0.xml",
+        "source": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-appcompat-1.7.1-30:/interpolator/btn_radio_to_on_mtrl_animation_interpolator_0.xml"
+    },
+    {
+        "merged": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-release-35:/interpolator/mr_fast_out_slow_in.xml",
+        "source": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-mediarouter-1.6.0-beta01-3:/interpolator/mr_fast_out_slow_in.xml"
+    },
+    {
+        "merged": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-release-35:/interpolator/mr_linear_out_slow_in.xml",
+        "source": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-mediarouter-1.6.0-beta01-3:/interpolator/mr_linear_out_slow_in.xml"
+    },
+    {
+        "merged": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-release-35:/interpolator/fast_out_slow_in.xml",
+        "source": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-appcompat-1.7.1-30:/interpolator/fast_out_slow_in.xml"
+    }
+]

@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:ns1="urn:oasis:names:tc:xliff:document:1.2">
+    <string msgid="5976598919945601918" name="abc_action_bar_home_description">"হোমে নেভিগেট করুন"</string>
+    <string msgid="8388173803310557296" name="abc_action_bar_up_description">"উপরে নেভিগেট করুন"</string>
+    <string msgid="3937310113216875497" name="abc_action_menu_overflow_description">"আরও বিকল্প"</string>
+    <string msgid="4692188335987374352" name="abc_action_mode_done">"হয়ে গেছে"</string>
+    <string msgid="1189761859438369441" name="abc_activity_chooser_view_see_all">"সবগুলি দেখুন"</string>
+    <string msgid="2165779757652331008" name="abc_activitychooserview_choose_application">"একটি অ্যাপ বেছে নিন"</string>
+    <string msgid="4215997306490295099" name="abc_capital_off">"বন্ধ আছে"</string>
+    <string msgid="884982626291842264" name="abc_capital_on">"চালু করুন"</string>
+    <string msgid="8833365367933412986" name="abc_menu_alt_shortcut_label">"Alt+"</string>
+    <string msgid="2223301931652355242" name="abc_menu_ctrl_shortcut_label">"Ctrl+"</string>
+    <string msgid="838001238306846836" name="abc_menu_delete_shortcut_label">"মুছুন"</string>
+    <string msgid="7986526966204849475" name="abc_menu_enter_shortcut_label">"enter"</string>
+    <string msgid="375214403600139847" name="abc_menu_function_shortcut_label">"Function+"</string>
+    <string msgid="4192209724446364286" name="abc_menu_meta_shortcut_label">"Meta+"</string>
+    <string msgid="4741552369836443843" name="abc_menu_shift_shortcut_label">"Shift+"</string>
+    <string msgid="5473865519181928982" name="abc_menu_space_shortcut_label">"space"</string>
+    <string msgid="6180552449598693998" name="abc_menu_sym_shortcut_label">"Sym+"</string>
+    <string msgid="5520303668377388990" name="abc_prepend_shortcut_label">"Menu+"</string>
+    <string msgid="7208076849092622260" name="abc_search_hint">"সার্চ করুন…"</string>
+    <string msgid="3741173234950517107" name="abc_searchview_description_clear">"কোয়েরি মুছে ফেলুন"</string>
+    <string msgid="693312494995508443" name="abc_searchview_description_query">"সার্চ কোয়েরি"</string>
+    <string msgid="3417662926640357176" name="abc_searchview_description_search">"সার্চ করুন"</string>
+    <string msgid="1486535517437947103" name="abc_searchview_description_submit">"কোয়েরি জমা দিন"</string>
+    <string msgid="2293578557972875415" name="abc_searchview_description_voice">"ভয়েস সার্চ করুন"</string>
+    <string msgid="8875138169939072951" name="abc_shareactionprovider_share_with">"শেয়ার করুন"</string>
+    <string msgid="9055268688411532828" name="abc_shareactionprovider_share_with_application">"<ns1:g id="APPLICATION_NAME">%s</ns1:g>-এর সাথে শেয়ার করুন"</string>
+    <string msgid="1656852541809559762" name="abc_toolbar_collapse_description">"সঙ্কুচিত করুন"</string>
+    <string msgid="881409763997275156" name="call_notification_answer_action">"উত্তর দিন"</string>
+    <string msgid="8793775615905189152" name="call_notification_answer_video_action">"ভিডিও"</string>
+    <string msgid="3229508546291798546" name="call_notification_decline_action">"বাতিল করুন"</string>
+    <string msgid="2659457946726154263" name="call_notification_hang_up_action">"কল কেটে দিন"</string>
+    <string msgid="6107532579223922871" name="call_notification_incoming_text">"ইনকামিং কল"</string>
+    <string msgid="8623827134497363134" name="call_notification_ongoing_text">"চালু থাকা কল"</string>
+    <string msgid="59049573811482460" name="call_notification_screening_text">"ইনকামিং কল স্ক্রিনিং করা হচ্ছে"</string>
+    <string name="cast_ad_label">বিজ্ঞাপন</string>
+    <string name="cast_casting_to_device">%1$s-এ কাস্ট করা হচ্ছে</string>
+    <string name="cast_closed_captions">সাবটাইটেলগুলি</string>
+    <string name="cast_closed_captions_unavailable">সাবটাইটেলগুলি অনুপলব্ধ</string>
+    <string name="cast_connecting_to_device">%1$s এর সাথে সংযোগ করা হচ্ছে</string>
+    <string name="cast_disconnect">সংযোগ বিচ্ছিন্ন</string>
+    <string name="cast_dynamic_group_name_format">%1$s + %2$d</string>
+    <string name="cast_expanded_controller_ad_image_description">যখন কাস্ট রিসিভার কোনো বিজ্ঞাপন চালায় তখন ছবি দেখানো হয়</string>
+    <string name="cast_expanded_controller_ad_in_progress">বিজ্ঞাপন প্রগতিতে রয়েছে…</string>
+    <string name="cast_expanded_controller_background_image">অ্যালবাম শৈলি</string>
+    <string name="cast_expanded_controller_live_head_description">লাইভ স্ট্রিমের ওপরের দিকেই বর্তমানে অবস্থান করছে</string>
+    <string name="cast_expanded_controller_live_stream_indicator">লাইভ স্ট্রিম</string>
+    <string name="cast_expanded_controller_loading">লোড হচ্ছে…</string>
+    <string name="cast_expanded_controller_skip_ad_label">বিজ্ঞাপন এড়িয়ে যান</string>
+    <string name="cast_expanded_controller_skip_ad_text">বিজ্ঞাপন এড়াতে আর %1$d…</string>
+    <string name="cast_forward">ফরওয়ার্ড</string>
+    <string name="cast_forward_10">দশ সেকেন্ড ফরওয়ার্ড করুন</string>
+    <string name="cast_forward_30">তিরিশ সেকেন্ড ফরওয়ার্ড করুন</string>
+    <string name="cast_intro_overlay_button_text">@android:string/ok</string>
+    <string name="cast_live_label">লাইভ</string>
+    <string name="cast_mute">মিউট করুন</string>
+    <string name="cast_notification_connected_message">%1$s এ সংযুক্ত হয়েছে</string>
+    <string name="cast_notification_connecting_message">%1$s এ সংযোগ করা হচ্ছে</string>
+    <string name="cast_notification_default_channel_name">কাস্ট করুন</string>
+    <string name="cast_notification_disconnect">সংযোগ বিচ্ছিন্ন করুন</string>
+    <string name="cast_pause">বিরাম দিন</string>
+    <string name="cast_play">চালান</string>
+    <string name="cast_rewind">পেছনের দিকে যান</string>
+    <string name="cast_rewind_10">দশ সেকেন্ডে পেছনের দিকে যান</string>
+    <string name="cast_rewind_30">তিরিশ সেকেন্ডে পেছনের দিকে যান</string>
+    <string name="cast_seek_bar">প্লেব্যাকের নিয়ন্ত্রণ</string>
+    <string name="cast_skip_next">পরবর্তী আইটেমে এড়িয়ে যান</string>
+    <string name="cast_skip_prev">পূর্ববর্তী আইটেমে এড়িয়ে যান</string>
+    <string name="cast_stop">থামান</string>
+    <string name="cast_stop_live_stream">লাইভ স্ট্রিম বন্ধ করুন</string>
+    <string name="cast_tracks_chooser_dialog_audio">অডিও</string>
+    <string name="cast_tracks_chooser_dialog_cancel">বাতিল করুন</string>
+    <string name="cast_tracks_chooser_dialog_closed_captions">বন্ধ করা ক্যাপশন</string>
+    <string name="cast_tracks_chooser_dialog_default_track_name">%1$d ট্র্যাক করুন</string>
+    <string name="cast_tracks_chooser_dialog_none">কোনো কিছুই নয়</string>
+    <string name="cast_tracks_chooser_dialog_ok">ঠিক আছে</string>
+    <string name="cast_tracks_chooser_dialog_subtitles">সাবটাইটেলগুলি</string>
+    <string name="cast_unmute">সশব্দ করুন</string>
+    <string msgid="2523291102206661146" name="common_google_play_services_enable_button">সক্ষম করুন</string>
+    <string msgid="227660514972886228" name="common_google_play_services_enable_text">আপনি Google Play পরিষেবা সক্ষম না করা পর্যন্ত %1$s কাজ করবে না।</string>
+    <string msgid="5122002158466380389" name="common_google_play_services_enable_title">Google Play পরিষেবা সক্ষম করুন</string>
+    <string msgid="7153882981874058840" name="common_google_play_services_install_button">ইনস্টল করুন</string>
+    <string name="common_google_play_services_install_text">Google Play পরিষেবা ছাড়া %1$s চলবে না, যা আপনার ডিভাইসে অনুপস্থিত।</string>
+    <string msgid="7215213145546190223" name="common_google_play_services_install_title">Google Play পরিষেবা পান</string>
+    <string name="common_google_play_services_notification_channel_name">Google Play পরিষেবার উপলভ্যতা</string>
+    <string name="common_google_play_services_notification_ticker">Google Play পরিষেবার ত্রুটি</string>
+    <string name="common_google_play_services_unknown_issue">Google Play পরিষেবাগুলির সাথে %1$s এর সমস্যা হচ্ছে৷ অনুগ্রহ করে আবার চেষ্টা করুন৷</string>
+    <string name="common_google_play_services_unsupported_text">Google Play পরিষেবা ছাড়া %1$s চলবে না, যেটি আপনার ডিভাইসে সমর্থিত নয়৷</string>
+    <string msgid="6556509956452265614" name="common_google_play_services_update_button">আপডেট করুন</string>
+    <string msgid="9053896323427875356" name="common_google_play_services_update_text">আপনি Google Play পরিষেবা আপডেট না করা পর্যন্ত %1$s চলবে না।</string>
+    <string msgid="6006316683626838685" name="common_google_play_services_update_title">Google Play পরিষেবা আপডেট করুন</string>
+    <string name="common_google_play_services_updating_text">Google Play পরিষেবা ছাড়া %1$s চলবে না যা বর্তমানে আপডেট হচ্ছে।</string>
+    <string name="common_google_play_services_wear_update_text">Google Play পরিষেবার নতুন ভার্সন প্রয়োজন৷ খুব শীঘ্রই এটা নিজেই আপডেট হবে৷</string>
+    <string name="common_open_on_phone">ফোনে খুলুন</string>
+    <string name="common_signin_button_text">সাইন-ইন করুন</string>
+    <string name="common_signin_button_text_long">Google এর মাধ্যমে সাইন-ইন করুন</string>
+    <string msgid="9119039724000326934" name="ic_media_route_learn_more_accessibility">"কীভাবে কাস্ট করবেন তা জানুন"</string>
+    <string name="media_notification_channel_name">কাস্ট</string>
+    <string msgid="2939063992730535343" name="mr_button_content_description">"কাস্ট করুন"</string>
+    <string msgid="6073720094880410356" name="mr_cast_button_connected">"কাস্ট করুন। কানেক্ট করা আছে"</string>
+    <string msgid="6629927151350192407" name="mr_cast_button_connecting">"কাস্ট করুন। কানেক্ট করা হচ্ছে"</string>
+    <string msgid="8071109333469380363" name="mr_cast_button_disconnected">"কাস্ট করুন। কানেক্ট করা নেই"</string>
+    <string msgid="2175930138959078155" name="mr_cast_dialog_title_view_placeholder">"কোনও তথ্য নেই"</string>
+    <string msgid="4257319068277776035" name="mr_chooser_looking_for_devices">"ডিভাইস খোঁজা হচ্ছে…"</string>
+    <string msgid="6114250663023140921" name="mr_chooser_searching">"ডিভাইস খোঁজা হচ্ছে"</string>
+    <string msgid="1419936397646839840" name="mr_chooser_title">"এখানে কাস্ট করুন:"</string>
+    <string msgid="3799500840179081429" name="mr_chooser_wifi_learn_more"><a href="https://support.google.com/chromecast/?p=trouble-finding-devices">"আরও জানুন"</a></string>
+    <string msgid="2998902945608081567" name="mr_chooser_wifi_warning_description_car">"এই গাড়িটি ও অন্য ডিভাইস একই ওয়াই-ফাই নেটওয়ার্কের সাথে কানেক্ট করা আছে কিনা তা ভালভাবে দেখে নিন"</string>
+    <string msgid="2555886884770958244" name="mr_chooser_wifi_warning_description_phone">"এই ফোনটি ও অন্য ডিভাইস একই ওয়াই-ফাই নেটওয়ার্কের সাথে কানেক্ট করা আছে কিনা তা ভালভাবে দেখে নিন"</string>
+    <string msgid="6038748488793588164" name="mr_chooser_wifi_warning_description_tablet">"এই ট্যাবলেট ও অন্য ডিভাইস একই ওয়াই-ফাই নেটওয়ার্কের সাথে কানেক্ট করা আছে কিনা তা ভালভাবে দেখে নিন"</string>
+    <string msgid="5845921667085074878" name="mr_chooser_wifi_warning_description_tv">"এই টিভি ও অন্য ডিভাইস একই ওয়াই-ফাই নেটওয়ার্কের সাথে কানেক্ট করা আছে কিনা তা ভালভাবে দেখে নিন"</string>
+    <string msgid="3459891599800041449" name="mr_chooser_wifi_warning_description_unknown">"এই ডিভাইস ও অন্য ডিভাইস একই ওয়াই-ফাই নেটওয়ার্কের সাথে কানেক্ট করা আছে কিনা তা ভালভাবে দেখে নিন"</string>
+    <string msgid="5255021372884233706" name="mr_chooser_wifi_warning_description_watch">"এই ওয়াচ ও অন্য ডিভাইস একই ওয়াই-ফাই নেটওয়ার্কের সাথে কানেক্ট করা আছে কিনা তা ভালভাবে দেখে নিন"</string>
+    <string msgid="5213435473397442608" name="mr_chooser_zero_routes_found_title">"কোনও ডিভাইস উপলভ্য নেই"</string>
+    <string msgid="3330502667672708728" name="mr_controller_album_art">"অ্যালবাম আর্ট"</string>
+    <string msgid="9171231064758955152" name="mr_controller_casting_screen">"স্ক্রিন কাস্ট করা হচ্ছে"</string>
+    <string msgid="5684434439232634509" name="mr_controller_close_description">"বন্ধ করুন"</string>
+    <string msgid="2585048604188129749" name="mr_controller_collapse_group">"আড়াল করুন"</string>
+    <string msgid="7812275474138309497" name="mr_controller_disconnect">"কানেকশন বিচ্ছিন্ন করুন"</string>
+    <string msgid="4521419834052044261" name="mr_controller_expand_group">"বড় করে দেখুন"</string>
+    <string msgid="855271725131981086" name="mr_controller_no_info_available">"কোনও তথ্য নেই"</string>
+    <string msgid="5495452265246139458" name="mr_controller_no_media_selected">"কোনও মিডিয়া বেছে নেননি"</string>
+    <string msgid="747801650871398383" name="mr_controller_pause">"পজ করুন"</string>
+    <string msgid="1253345086594430054" name="mr_controller_play">"চালান"</string>
+    <string msgid="5497722768305745508" name="mr_controller_stop">"থামান"</string>
+    <string msgid="804210341192624074" name="mr_controller_stop_casting">"কাস্ট করা বন্ধ করুন"</string>
+    <string msgid="2955862765169128170" name="mr_controller_volume_slider">"ভলিউম স্লাইডার"</string>
+    <string msgid="4115858704575247342" name="mr_dialog_default_group_name">"গ্রুপ"</string>
+    <string msgid="4307018456678388936" name="mr_dialog_groupable_header">"একটি ডিভাইস যোগ করুন"</string>
+    <string msgid="6068257520605505468" name="mr_dialog_transferable_header">"গ্রুপে প্লে করুন"</string>
+    <string msgid="7449553026175453403" name="mr_system_route_name">"সিস্টেম"</string>
+    <string msgid="4088331695424166162" name="mr_user_route_category_name">"ডিভাইস"</string>
+    <string msgid="6264217191555673260" name="search_menu_title">"সার্চ করুন"</string>
+    <string msgid="6277540029070332960" name="status_bar_notification_info_overflow">"৯৯৯+"</string>
+</resources>

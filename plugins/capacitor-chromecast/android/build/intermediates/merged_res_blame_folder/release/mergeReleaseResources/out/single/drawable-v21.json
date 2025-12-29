@@ -1,0 +1,26 @@
+[
+    {
+        "merged": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-release-35:/drawable-v21/notification_action_background.xml",
+        "source": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-core-1.17.0-23:/drawable-v21/notification_action_background.xml"
+    },
+    {
+        "merged": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-release-35:/drawable-v21/abc_edit_text_material.xml",
+        "source": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-appcompat-1.7.1-30:/drawable-v21/abc_edit_text_material.xml"
+    },
+    {
+        "merged": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-release-35:/drawable-v21/abc_btn_colored_material.xml",
+        "source": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-appcompat-1.7.1-30:/drawable-v21/abc_btn_colored_material.xml"
+    },
+    {
+        "merged": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-release-35:/drawable-v21/abc_dialog_material_background.xml",
+        "source": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-appcompat-1.7.1-30:/drawable-v21/abc_dialog_material_background.xml"
+    },
+    {
+        "merged": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-release-35:/drawable-v21/abc_action_bar_item_background_material.xml",
+        "source": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-appcompat-1.7.1-30:/drawable-v21/abc_action_bar_item_background_material.xml"
+    },
+    {
+        "merged": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-release-35:/drawable-v21/abc_list_divider_material.xml",
+        "source": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-appcompat-1.7.1-30:/drawable-v21/abc_list_divider_material.xml"
+    }
+]

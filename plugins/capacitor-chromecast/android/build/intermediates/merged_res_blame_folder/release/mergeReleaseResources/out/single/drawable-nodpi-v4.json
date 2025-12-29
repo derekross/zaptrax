@@ -1,0 +1,10 @@
+[
+    {
+        "merged": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-release-35:/drawable-nodpi-v4/cast_album_art_placeholder_large.png",
+        "source": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-play-services-cast-framework-21.5.0-24:/drawable-nodpi-v4/cast_album_art_placeholder_large.png"
+    },
+    {
+        "merged": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-release-35:/drawable-nodpi-v4/cast_album_art_placeholder.png",
+        "source": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-play-services-cast-framework-21.5.0-24:/drawable-nodpi-v4/cast_album_art_placeholder.png"
+    }
+]

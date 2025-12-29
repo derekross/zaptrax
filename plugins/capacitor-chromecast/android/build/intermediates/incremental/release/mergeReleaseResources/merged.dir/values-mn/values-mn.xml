@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:ns1="urn:oasis:names:tc:xliff:document:1.2">
+    <string msgid="5976598919945601918" name="abc_action_bar_home_description">"Нүүр хуудас уруу шилжих"</string>
+    <string msgid="8388173803310557296" name="abc_action_bar_up_description">"Дээш шилжих"</string>
+    <string msgid="3937310113216875497" name="abc_action_menu_overflow_description">"Бусад сонголт"</string>
+    <string msgid="4692188335987374352" name="abc_action_mode_done">"Болсон"</string>
+    <string msgid="1189761859438369441" name="abc_activity_chooser_view_see_all">"Бүгдийг харах"</string>
+    <string msgid="2165779757652331008" name="abc_activitychooserview_choose_application">"Аппыг сонгох"</string>
+    <string msgid="4215997306490295099" name="abc_capital_off">"ИДЭВХГҮЙ"</string>
+    <string msgid="884982626291842264" name="abc_capital_on">"ИДЭВХТЭЙ"</string>
+    <string msgid="8833365367933412986" name="abc_menu_alt_shortcut_label">"Alt+"</string>
+    <string msgid="2223301931652355242" name="abc_menu_ctrl_shortcut_label">"Ctrl+"</string>
+    <string msgid="838001238306846836" name="abc_menu_delete_shortcut_label">"устгах"</string>
+    <string msgid="7986526966204849475" name="abc_menu_enter_shortcut_label">"оруулах"</string>
+    <string msgid="375214403600139847" name="abc_menu_function_shortcut_label">"Функц+"</string>
+    <string msgid="4192209724446364286" name="abc_menu_meta_shortcut_label">"Мета+"</string>
+    <string msgid="4741552369836443843" name="abc_menu_shift_shortcut_label">"Шифт+"</string>
+    <string msgid="5473865519181928982" name="abc_menu_space_shortcut_label">"зай"</string>
+    <string msgid="6180552449598693998" name="abc_menu_sym_shortcut_label">"Sym+"</string>
+    <string msgid="5520303668377388990" name="abc_prepend_shortcut_label">"Цэс+"</string>
+    <string msgid="7208076849092622260" name="abc_search_hint">"Хайх…"</string>
+    <string msgid="3741173234950517107" name="abc_searchview_description_clear">"Асуулга арилгах"</string>
+    <string msgid="693312494995508443" name="abc_searchview_description_query">"Хайх асуулга"</string>
+    <string msgid="3417662926640357176" name="abc_searchview_description_search">"Хайх"</string>
+    <string msgid="1486535517437947103" name="abc_searchview_description_submit">"Асуулга илгээх"</string>
+    <string msgid="2293578557972875415" name="abc_searchview_description_voice">"Дуут хайлт"</string>
+    <string msgid="8875138169939072951" name="abc_shareactionprovider_share_with">"Дараахтай хуваалцах"</string>
+    <string msgid="9055268688411532828" name="abc_shareactionprovider_share_with_application">"<ns1:g id="APPLICATION_NAME">%s</ns1:g>-тай хуваалцах"</string>
+    <string msgid="1656852541809559762" name="abc_toolbar_collapse_description">"Буулгах"</string>
+    <string msgid="881409763997275156" name="call_notification_answer_action">"Хариулах"</string>
+    <string msgid="8793775615905189152" name="call_notification_answer_video_action">"Видео"</string>
+    <string msgid="3229508546291798546" name="call_notification_decline_action">"Татгалзах"</string>
+    <string msgid="2659457946726154263" name="call_notification_hang_up_action">"Таслах"</string>
+    <string msgid="6107532579223922871" name="call_notification_incoming_text">"Ирсэн дуудлага"</string>
+    <string msgid="8623827134497363134" name="call_notification_ongoing_text">"Дуудлага хийгдэж байна"</string>
+    <string msgid="59049573811482460" name="call_notification_screening_text">"Ирсэн дуудлагыг харуулж байна"</string>
+    <string name="cast_ad_label">Зар</string>
+    <string name="cast_casting_to_device">%1$s-д дамжуулж байна</string>
+    <string name="cast_closed_captions">Хаалттай тайлбарууд</string>
+    <string name="cast_closed_captions_unavailable">Хаалттай тайлбар байхгүй байна</string>
+    <string name="cast_connecting_to_device">%1$s-д холбогдож байна</string>
+    <string name="cast_disconnect">Салгах</string>
+    <string name="cast_dynamic_group_name_format">%1$s + %2$d</string>
+    <string name="cast_expanded_controller_ad_image_description">Дамжуулгыг хүлээн авагч зар тоглуулах явцад харуулсан зураг</string>
+    <string name="cast_expanded_controller_ad_in_progress">Зарыг боловсруулж байна…</string>
+    <string name="cast_expanded_controller_background_image">Цомгийн зураг</string>
+    <string name="cast_expanded_controller_live_head_description">Одоогийн байрлал шууд нэвтрүүлгийн дээр байна</string>
+    <string name="cast_expanded_controller_live_stream_indicator">Шууд дамжуулалт</string>
+    <string name="cast_expanded_controller_loading">Ачаалж байна...</string>
+    <string name="cast_expanded_controller_skip_ad_label">Зарыг алгасах</string>
+    <string name="cast_expanded_controller_skip_ad_text">Та зарыг %1$d-д алгасах боломжтой…</string>
+    <string name="cast_forward">Дамжуулах</string>
+    <string name="cast_forward_10">Арван секунд урагшлуулах</string>
+    <string name="cast_forward_30">Гучин секунд урагшлуулах</string>
+    <string name="cast_intro_overlay_button_text">@android:string/ok</string>
+    <string name="cast_live_label">ШУУД</string>
+    <string name="cast_mute">Дууг хаах</string>
+    <string name="cast_notification_connected_message">%1$s-тай холбогдсон</string>
+    <string name="cast_notification_connecting_message">%1$s руу холбогдож байна</string>
+    <string name="cast_notification_default_channel_name">Дамжуулах</string>
+    <string name="cast_notification_disconnect">Салгах</string>
+    <string name="cast_pause">Түр зогсоох</string>
+    <string name="cast_play">Тоглуулах</string>
+    <string name="cast_rewind">Ухраах</string>
+    <string name="cast_rewind_10">Арван секунд ухраах</string>
+    <string name="cast_rewind_30">Гучин секунд ухраах</string>
+    <string name="cast_seek_bar">Хайх хяналтыг дахин тоглуулах</string>
+    <string name="cast_skip_next">Дараагийн зүйл рүү очих</string>
+    <string name="cast_skip_prev">Өмнөх зүйл рүү очих</string>
+    <string name="cast_stop">Зогсоох</string>
+    <string name="cast_stop_live_stream">Шууд дамжуулалтыг зогсоох</string>
+    <string name="cast_tracks_chooser_dialog_audio">Дуу</string>
+    <string name="cast_tracks_chooser_dialog_cancel">Цуцлах</string>
+    <string name="cast_tracks_chooser_dialog_closed_captions">Хаалттай тайлбар</string>
+    <string name="cast_tracks_chooser_dialog_default_track_name">%1$d-г шинжлэх</string>
+    <string name="cast_tracks_chooser_dialog_none">Байхгүй</string>
+    <string name="cast_tracks_chooser_dialog_ok">ЗА</string>
+    <string name="cast_tracks_chooser_dialog_subtitles">Хадмал</string>
+    <string name="cast_unmute">Дууг нээх</string>
+    <string msgid="2523291102206661146" name="common_google_play_services_enable_button">Идэвхжүүлэх</string>
+    <string msgid="227660514972886228" name="common_google_play_services_enable_text">%1$s нь Google Play үйлчилгээг идэвхжүүлэх хүртэл ажиллахгүй.</string>
+    <string msgid="5122002158466380389" name="common_google_play_services_enable_title">Google Play үйлчилгээг идэвхжүүлэх</string>
+    <string msgid="7153882981874058840" name="common_google_play_services_install_button">Суулгах</string>
+    <string name="common_google_play_services_install_text">Таны төхөөрөмжид Google Play үйлчилгээ байхгүй тул %1$s ажиллахгүй.</string>
+    <string msgid="7215213145546190223" name="common_google_play_services_install_title">Google Play үйлчилгээг авах</string>
+    <string name="common_google_play_services_notification_channel_name">Google Play-н үйлчилгээнүүдийн боломжит байдал</string>
+    <string name="common_google_play_services_notification_ticker">Google Наадаан үйлчилгээний алдаа</string>
+    <string name="common_google_play_services_unknown_issue">%1$s-г Google Play-н үйлчилгээгээр ашиглахад асуудал гарлаа. Дахин оролдоно уу.</string>
+    <string name="common_google_play_services_unsupported_text">Таны төхөөрөмж Google Play үйлчилгээг дэмждэггүй учир %1$s ажиллахгүй.</string>
+    <string msgid="6556509956452265614" name="common_google_play_services_update_button">Шинэчлэх</string>
+    <string msgid="9053896323427875356" name="common_google_play_services_update_text">%1$s нь таныг Google Play үйлчилгээнүүдийг шинэчлэхээс нааш ажиллахгүй.</string>
+    <string msgid="6006316683626838685" name="common_google_play_services_update_title">Google Play үйлчилгээг шинэчлэх</string>
+    <string name="common_google_play_services_updating_text">%1$s нь одоогоор шинэчилж буй Google Play үйлчилгээгүйгээр ажиллахгүй.</string>
+    <string name="common_google_play_services_wear_update_text">Google Play үйлчилгээний шинэ хувилбар хэрэгтэй. Энэ нь удахгүй өөрөө өөрийгөө шинэчлэх болно.</string>
+    <string name="common_open_on_phone">Утсаар нээх</string>
+    <string name="common_signin_button_text">Нэвтрэх</string>
+    <string name="common_signin_button_text_long">Google-р нэвтрэх:</string>
+    <string msgid="9119039724000326934" name="ic_media_route_learn_more_accessibility">"Хэрхэн дамжуулахыг мэдэж авах"</string>
+    <string name="media_notification_channel_name">Cast</string>
+    <string msgid="2939063992730535343" name="mr_button_content_description">"Дамжуулах"</string>
+    <string msgid="6073720094880410356" name="mr_cast_button_connected">"Дамжуулалт. Холбогдсон"</string>
+    <string msgid="6629927151350192407" name="mr_cast_button_connecting">"Дамжуулалт. Холбогдож байна"</string>
+    <string msgid="8071109333469380363" name="mr_cast_button_disconnected">"Дамжуулалт. Салгасан"</string>
+    <string msgid="2175930138959078155" name="mr_cast_dialog_title_view_placeholder">"Мэдээлэл алга"</string>
+    <string msgid="4257319068277776035" name="mr_chooser_looking_for_devices">"Төхөөрөмжүүдийг хайж байна…"</string>
+    <string msgid="6114250663023140921" name="mr_chooser_searching">"Төхөөрөмжүүдийг хайж байна"</string>
+    <string msgid="1419936397646839840" name="mr_chooser_title">"Дараахад дамжуулах"</string>
+    <string msgid="3799500840179081429" name="mr_chooser_wifi_learn_more"><a href="https://support.google.com/chromecast/?p=trouble-finding-devices">"Нэмэлт мэдээлэл авах"</a></string>
+    <string msgid="2998902945608081567" name="mr_chooser_wifi_warning_description_car">"Нөгөө төхөөрөмж энэ машинтай ижил Wi-Fi сүлжээнд байгаа болохыг баталгаажуулна уу"</string>
+    <string msgid="2555886884770958244" name="mr_chooser_wifi_warning_description_phone">"Нөгөө төхөөрөмж энэ утастай ижил Wi-Fi сүлжээнд байгаа болохыг баталгаажуулна уу"</string>
+    <string msgid="6038748488793588164" name="mr_chooser_wifi_warning_description_tablet">"Нөгөө төхөөрөмж энэ таблеттай ижил Wi-Fi сүлжээнд байгаа болохыг баталгаажуулна уу"</string>
+    <string msgid="5845921667085074878" name="mr_chooser_wifi_warning_description_tv">"Нөгөө төхөөрөмж энэ ТВ-тэй ижил Wi-Fi сүлжээнд байгаа болохыг баталгаажуулна уу"</string>
+    <string msgid="3459891599800041449" name="mr_chooser_wifi_warning_description_unknown">"Нөгөө төхөөрөмж энэ төхөөрөмжтэй ижил Wi-Fi сүлжээнд байгаа болохыг баталгаажуулна уу"</string>
+    <string msgid="5255021372884233706" name="mr_chooser_wifi_warning_description_watch">"Нөгөө төхөөрөмж энэ цагтай ижил Wi-Fi сүлжээнд байгаа болохыг баталгаажуулна уу"</string>
+    <string msgid="5213435473397442608" name="mr_chooser_zero_routes_found_title">"Ямар ч боломжтой төхөөрөмж байхгүй"</string>
+    <string msgid="3330502667672708728" name="mr_controller_album_art">"Цомгийн зураг"</string>
+    <string msgid="9171231064758955152" name="mr_controller_casting_screen">"Дэлгэцийг дамжуулж байна"</string>
+    <string msgid="5684434439232634509" name="mr_controller_close_description">"Хаах"</string>
+    <string msgid="2585048604188129749" name="mr_controller_collapse_group">"Буулгах"</string>
+    <string msgid="7812275474138309497" name="mr_controller_disconnect">"Салгах"</string>
+    <string msgid="4521419834052044261" name="mr_controller_expand_group">"Дэлгэх"</string>
+    <string msgid="855271725131981086" name="mr_controller_no_info_available">"Мэдээлэл алга"</string>
+    <string msgid="5495452265246139458" name="mr_controller_no_media_selected">"Ямар ч медиа сонгоогүй байна"</string>
+    <string msgid="747801650871398383" name="mr_controller_pause">"Түр зогсоох"</string>
+    <string msgid="1253345086594430054" name="mr_controller_play">"Тоглуулах"</string>
+    <string msgid="5497722768305745508" name="mr_controller_stop">"Зогсоох"</string>
+    <string msgid="804210341192624074" name="mr_controller_stop_casting">"Дамжуулахыг зогсоох"</string>
+    <string msgid="2955862765169128170" name="mr_controller_volume_slider">"Дууны түвшин тохируулагч"</string>
+    <string msgid="4115858704575247342" name="mr_dialog_default_group_name">"Бүлэг"</string>
+    <string msgid="4307018456678388936" name="mr_dialog_groupable_header">"Төхөөрөмж нэмэх"</string>
+    <string msgid="6068257520605505468" name="mr_dialog_transferable_header">"Бүлэгт тоглуулах"</string>
+    <string msgid="7449553026175453403" name="mr_system_route_name">"Систем"</string>
+    <string msgid="4088331695424166162" name="mr_user_route_category_name">"Төхөөрөмжүүд"</string>
+    <string msgid="6264217191555673260" name="search_menu_title">"Хайх"</string>
+    <string msgid="6277540029070332960" name="status_bar_notification_info_overflow">"999+"</string>
+</resources>

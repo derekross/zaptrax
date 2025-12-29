@@ -1,0 +1,602 @@
+[
+    {
+        "merged": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-release-35:/drawable/common_google_signin_btn_text_disabled.xml",
+        "source": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-play-services-base-18.5.0-25:/drawable/common_google_signin_btn_text_disabled.xml"
+    },
+    {
+        "merged": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-release-35:/drawable/cast_ic_notification_forward30.xml",
+        "source": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-play-services-cast-framework-21.5.0-24:/drawable/cast_ic_notification_forward30.xml"
+    },
+    {
+        "merged": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-release-35:/drawable/common_google_signin_btn_icon_dark_focused.xml",
+        "source": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-play-services-base-18.5.0-25:/drawable/common_google_signin_btn_icon_dark_focused.xml"
+    },
+    {
+        "merged": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-release-35:/drawable/ic_call_decline.xml",
+        "source": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-core-1.17.0-23:/drawable/ic_call_decline.xml"
+    },
+    {
+        "merged": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-release-35:/drawable/common_google_signin_btn_text_light_focused.xml",
+        "source": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-play-services-base-18.5.0-25:/drawable/common_google_signin_btn_text_light_focused.xml"
+    },
+    {
+        "merged": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-release-35:/drawable/abc_seekbar_tick_mark_material.xml",
+        "source": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-appcompat-1.7.1-30:/drawable/abc_seekbar_tick_mark_material.xml"
+    },
+    {
+        "merged": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-release-35:/drawable/mr_wifi_icon_dark.xml",
+        "source": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-mediarouter-1.6.0-beta01-3:/drawable/mr_wifi_icon_dark.xml"
+    },
+    {
+        "merged": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-release-35:/drawable/mr_cast_thumb.xml",
+        "source": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-mediarouter-1.6.0-beta01-3:/drawable/mr_cast_thumb.xml"
+    },
+    {
+        "merged": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-release-35:/drawable/ic_call_decline_low.xml",
+        "source": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-core-1.17.0-23:/drawable/ic_call_decline_low.xml"
+    },
+    {
+        "merged": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-release-35:/drawable/mr_button_connecting_light.xml",
+        "source": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-mediarouter-1.6.0-beta01-3:/drawable/mr_button_connecting_light.xml"
+    },
+    {
+        "merged": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-release-35:/drawable/btn_radio_off_to_on_mtrl_animation.xml",
+        "source": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-appcompat-1.7.1-30:/drawable/btn_radio_off_to_on_mtrl_animation.xml"
+    },
+    {
+        "merged": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-release-35:/drawable/notification_tile_bg.xml",
+        "source": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-core-1.17.0-23:/drawable/notification_tile_bg.xml"
+    },
+    {
+        "merged": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-release-35:/drawable/common_google_signin_btn_text_dark_normal.xml",
+        "source": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-play-services-base-18.5.0-25:/drawable/common_google_signin_btn_text_dark_normal.xml"
+    },
+    {
+        "merged": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-release-35:/drawable/abc_ic_menu_overflow_material.xml",
+        "source": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-appcompat-1.7.1-30:/drawable/abc_ic_menu_overflow_material.xml"
+    },
+    {
+        "merged": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-release-35:/drawable/cast_ic_notification_rewind10.xml",
+        "source": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-play-services-cast-framework-21.5.0-24:/drawable/cast_ic_notification_rewind10.xml"
+    },
+    {
+        "merged": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-release-35:/drawable/cast_ic_mini_controller_rewind30.xml",
+        "source": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-play-services-cast-framework-21.5.0-24:/drawable/cast_ic_mini_controller_rewind30.xml"
+    },
+    {
+        "merged": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-release-35:/drawable/mr_dialog_material_background_dark.xml",
+        "source": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-mediarouter-1.6.0-beta01-3:/drawable/mr_dialog_material_background_dark.xml"
+    },
+    {
+        "merged": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-release-35:/drawable/mr_button_dark_static.xml",
+        "source": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-mediarouter-1.6.0-beta01-3:/drawable/mr_button_dark_static.xml"
+    },
+    {
+        "merged": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-release-35:/drawable/cast_ic_mini_controller_forward30.xml",
+        "source": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-play-services-cast-framework-21.5.0-24:/drawable/cast_ic_mini_controller_forward30.xml"
+    },
+    {
+        "merged": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-release-35:/drawable/cast_ic_mini_controller_skip_next.xml",
+        "source": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-play-services-cast-framework-21.5.0-24:/drawable/cast_ic_mini_controller_skip_next.xml"
+    },
+    {
+        "merged": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-release-35:/drawable/abc_ratingbar_indicator_material.xml",
+        "source": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-appcompat-1.7.1-30:/drawable/abc_ratingbar_indicator_material.xml"
+    },
+    {
+        "merged": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-release-35:/drawable/cast_ic_expanded_controller_skip_previous.xml",
+        "source": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-play-services-cast-framework-21.5.0-24:/drawable/cast_ic_expanded_controller_skip_previous.xml"
+    },
+    {
+        "merged": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-release-35:/drawable/abc_star_black_48dp.xml",
+        "source": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-appcompat-1.7.1-30:/drawable/abc_star_black_48dp.xml"
+    },
+    {
+        "merged": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-release-35:/drawable/mr_group_expand.xml",
+        "source": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-mediarouter-1.6.0-beta01-3:/drawable/mr_group_expand.xml"
+    },
+    {
+        "merged": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-release-35:/drawable/icon_background.xml",
+        "source": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-core-splashscreen-1.0.1-16:/drawable/icon_background.xml"
+    },
+    {
+        "merged": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-release-35:/drawable/abc_ratingbar_material.xml",
+        "source": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-appcompat-1.7.1-30:/drawable/abc_ratingbar_material.xml"
+    },
+    {
+        "merged": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-release-35:/drawable/abc_ic_menu_cut_mtrl_alpha.xml",
+        "source": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-appcompat-1.7.1-30:/drawable/abc_ic_menu_cut_mtrl_alpha.xml"
+    },
+    {
+        "merged": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-release-35:/drawable/cast_ic_notification_pause.xml",
+        "source": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-play-services-cast-framework-21.5.0-24:/drawable/cast_ic_notification_pause.xml"
+    },
+    {
+        "merged": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-release-35:/drawable/mr_button_connecting_dark.xml",
+        "source": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-mediarouter-1.6.0-beta01-3:/drawable/mr_button_connecting_dark.xml"
+    },
+    {
+        "merged": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-release-35:/drawable/mr_cast_stop.xml",
+        "source": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-mediarouter-1.6.0-beta01-3:/drawable/mr_cast_stop.xml"
+    },
+    {
+        "merged": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-release-35:/drawable/cast_mini_controller_progress_drawable.xml",
+        "source": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-play-services-cast-framework-21.5.0-24:/drawable/cast_mini_controller_progress_drawable.xml"
+    },
+    {
+        "merged": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-release-35:/drawable/mr_dialog_material_background_light.xml",
+        "source": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-mediarouter-1.6.0-beta01-3:/drawable/mr_dialog_material_background_light.xml"
+    },
+    {
+        "merged": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-release-35:/drawable/ic_call_answer_video_low.xml",
+        "source": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-core-1.17.0-23:/drawable/ic_call_answer_video_low.xml"
+    },
+    {
+        "merged": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-release-35:/drawable/btn_checkbox_checked_to_unchecked_mtrl_animation.xml",
+        "source": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-appcompat-1.7.1-30:/drawable/btn_checkbox_checked_to_unchecked_mtrl_animation.xml"
+    },
+    {
+        "merged": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-release-35:/drawable/mr_cast_group_seekbar_track.xml",
+        "source": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-mediarouter-1.6.0-beta01-3:/drawable/mr_cast_group_seekbar_track.xml"
+    },
+    {
+        "merged": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-release-35:/drawable/mr_cast_route_seekbar_track.xml",
+        "source": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-mediarouter-1.6.0-beta01-3:/drawable/mr_cast_route_seekbar_track.xml"
+    },
+    {
+        "merged": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-release-35:/drawable/cast_ic_expanded_controller_mute.xml",
+        "source": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-play-services-cast-framework-21.5.0-24:/drawable/cast_ic_expanded_controller_mute.xml"
+    },
+    {
+        "merged": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-release-35:/drawable/mr_media_pause_dark.xml",
+        "source": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-mediarouter-1.6.0-beta01-3:/drawable/mr_media_pause_dark.xml"
+    },
+    {
+        "merged": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-release-35:/drawable/cast_ic_notification_stop_live_stream.xml",
+        "source": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-play-services-cast-framework-21.5.0-24:/drawable/cast_ic_notification_stop_live_stream.xml"
+    },
+    {
+        "merged": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-release-35:/drawable/abc_ic_clear_material.xml",
+        "source": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-appcompat-1.7.1-30:/drawable/abc_ic_clear_material.xml"
+    },
+    {
+        "merged": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-release-35:/drawable/cast_ic_mini_controller_closed_caption.xml",
+        "source": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-play-services-cast-framework-21.5.0-24:/drawable/cast_ic_mini_controller_closed_caption.xml"
+    },
+    {
+        "merged": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-release-35:/drawable/cast_skip_ad_label_border.xml",
+        "source": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-play-services-cast-framework-21.5.0-24:/drawable/cast_skip_ad_label_border.xml"
+    },
+    {
+        "merged": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-release-35:/drawable/btn_radio_off_mtrl.xml",
+        "source": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-appcompat-1.7.1-30:/drawable/btn_radio_off_mtrl.xml"
+    },
+    {
+        "merged": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-release-35:/drawable/abc_list_selector_holo_dark.xml",
+        "source": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-appcompat-1.7.1-30:/drawable/abc_list_selector_holo_dark.xml"
+    },
+    {
+        "merged": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-release-35:/drawable/cast_ic_mini_controller_play_large.xml",
+        "source": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-play-services-cast-framework-21.5.0-24:/drawable/cast_ic_mini_controller_play_large.xml"
+    },
+    {
+        "merged": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-release-35:/drawable/cast_ic_notification_skip_next.xml",
+        "source": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-play-services-cast-framework-21.5.0-24:/drawable/cast_ic_notification_skip_next.xml"
+    },
+    {
+        "merged": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-release-35:/drawable/cast_ic_mini_controller_stop_large.xml",
+        "source": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-play-services-cast-framework-21.5.0-24:/drawable/cast_ic_mini_controller_stop_large.xml"
+    },
+    {
+        "merged": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-release-35:/drawable/abc_ic_menu_copy_mtrl_am_alpha.xml",
+        "source": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-appcompat-1.7.1-30:/drawable/abc_ic_menu_copy_mtrl_am_alpha.xml"
+    },
+    {
+        "merged": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-release-35:/drawable/abc_list_selector_holo_light.xml",
+        "source": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-appcompat-1.7.1-30:/drawable/abc_list_selector_holo_light.xml"
+    },
+    {
+        "merged": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-release-35:/drawable/cast_ic_notification_skip_prev.xml",
+        "source": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-play-services-cast-framework-21.5.0-24:/drawable/cast_ic_notification_skip_prev.xml"
+    },
+    {
+        "merged": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-release-35:/drawable/abc_spinner_textfield_background_material.xml",
+        "source": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-appcompat-1.7.1-30:/drawable/abc_spinner_textfield_background_material.xml"
+    },
+    {
+        "merged": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-release-35:/drawable/abc_btn_radio_material.xml",
+        "source": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-appcompat-1.7.1-30:/drawable/abc_btn_radio_material.xml"
+    },
+    {
+        "merged": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-release-35:/drawable/notification_bg.xml",
+        "source": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-core-1.17.0-23:/drawable/notification_bg.xml"
+    },
+    {
+        "merged": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-release-35:/drawable/abc_ic_go_search_api_material.xml",
+        "source": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-appcompat-1.7.1-30:/drawable/abc_ic_go_search_api_material.xml"
+    },
+    {
+        "merged": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-release-35:/drawable/mr_dialog_close_dark.xml",
+        "source": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-mediarouter-1.6.0-beta01-3:/drawable/mr_dialog_close_dark.xml"
+    },
+    {
+        "merged": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-release-35:/drawable/abc_ic_menu_share_mtrl_alpha.xml",
+        "source": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-appcompat-1.7.1-30:/drawable/abc_ic_menu_share_mtrl_alpha.xml"
+    },
+    {
+        "merged": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-release-35:/drawable/notification_bg_low.xml",
+        "source": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-core-1.17.0-23:/drawable/notification_bg_low.xml"
+    },
+    {
+        "merged": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-release-35:/drawable/cast_ic_notification_play.xml",
+        "source": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-play-services-cast-framework-21.5.0-24:/drawable/cast_ic_notification_play.xml"
+    },
+    {
+        "merged": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-release-35:/drawable/abc_cab_background_top_material.xml",
+        "source": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-appcompat-1.7.1-30:/drawable/abc_cab_background_top_material.xml"
+    },
+    {
+        "merged": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-release-35:/drawable/common_google_signin_btn_icon_disabled.xml",
+        "source": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-play-services-base-18.5.0-25:/drawable/common_google_signin_btn_icon_disabled.xml"
+    },
+    {
+        "merged": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-release-35:/drawable/abc_vector_test.xml",
+        "source": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-appcompat-resources-1.7.1-4:/drawable/abc_vector_test.xml"
+    },
+    {
+        "merged": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-release-35:/drawable/ic_call_answer_video.xml",
+        "source": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-core-1.17.0-23:/drawable/ic_call_answer_video.xml"
+    },
+    {
+        "merged": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-release-35:/drawable/tooltip_frame_dark.xml",
+        "source": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-appcompat-1.7.1-30:/drawable/tooltip_frame_dark.xml"
+    },
+    {
+        "merged": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-release-35:/drawable/abc_switch_thumb_material.xml",
+        "source": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-appcompat-1.7.1-30:/drawable/abc_switch_thumb_material.xml"
+    },
+    {
+        "merged": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-release-35:/drawable/abc_btn_radio_material_anim.xml",
+        "source": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-appcompat-1.7.1-30:/drawable/abc_btn_radio_material_anim.xml"
+    },
+    {
+        "merged": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-release-35:/drawable/cast_ic_notification_connecting.xml",
+        "source": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-play-services-cast-21.5.0-1:/drawable/cast_ic_notification_connecting.xml"
+    },
+    {
+        "merged": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-release-35:/drawable/cast_ic_expanded_controller_closed_caption.xml",
+        "source": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-play-services-cast-framework-21.5.0-24:/drawable/cast_ic_expanded_controller_closed_caption.xml"
+    },
+    {
+        "merged": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-release-35:/drawable/cast_ic_mini_controller_pause_large.xml",
+        "source": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-play-services-cast-framework-21.5.0-24:/drawable/cast_ic_mini_controller_pause_large.xml"
+    },
+    {
+        "merged": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-release-35:/drawable/abc_ic_arrow_drop_right_black_24dp.xml",
+        "source": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-appcompat-1.7.1-30:/drawable/abc_ic_arrow_drop_right_black_24dp.xml"
+    },
+    {
+        "merged": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-release-35:/drawable/cast_ic_notification_rewind30.xml",
+        "source": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-play-services-cast-framework-21.5.0-24:/drawable/cast_ic_notification_rewind30.xml"
+    },
+    {
+        "merged": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-release-35:/drawable/abc_ratingbar_small_material.xml",
+        "source": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-appcompat-1.7.1-30:/drawable/abc_ratingbar_small_material.xml"
+    },
+    {
+        "merged": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-release-35:/drawable/cast_ic_mini_controller_pause.xml",
+        "source": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-play-services-cast-framework-21.5.0-24:/drawable/cast_ic_mini_controller_pause.xml"
+    },
+    {
+        "merged": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-release-35:/drawable/btn_radio_on_to_off_mtrl_animation.xml",
+        "source": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-appcompat-1.7.1-30:/drawable/btn_radio_on_to_off_mtrl_animation.xml"
+    },
+    {
+        "merged": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-release-35:/drawable/common_google_signin_btn_icon_light.xml",
+        "source": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-play-services-base-18.5.0-25:/drawable/common_google_signin_btn_icon_light.xml"
+    },
+    {
+        "merged": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-release-35:/drawable/mr_button_dark.xml",
+        "source": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-mediarouter-1.6.0-beta01-3:/drawable/mr_button_dark.xml"
+    },
+    {
+        "merged": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-release-35:/drawable/abc_ic_voice_search_api_material.xml",
+        "source": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-appcompat-1.7.1-30:/drawable/abc_ic_voice_search_api_material.xml"
+    },
+    {
+        "merged": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-release-35:/drawable/mr_dialog_close_light.xml",
+        "source": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-mediarouter-1.6.0-beta01-3:/drawable/mr_dialog_close_light.xml"
+    },
+    {
+        "merged": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-release-35:/drawable/cast_ic_expanded_controller_forward30.xml",
+        "source": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-play-services-cast-framework-21.5.0-24:/drawable/cast_ic_expanded_controller_forward30.xml"
+    },
+    {
+        "merged": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-release-35:/drawable/cast_expanded_controller_bg_gradient_light.xml",
+        "source": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-play-services-cast-framework-21.5.0-24:/drawable/cast_expanded_controller_bg_gradient_light.xml"
+    },
+    {
+        "merged": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-release-35:/drawable/abc_list_selector_background_transition_holo_dark.xml",
+        "source": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-appcompat-1.7.1-30:/drawable/abc_list_selector_background_transition_holo_dark.xml"
+    },
+    {
+        "merged": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-release-35:/drawable/cast_mini_controller_gradient_light.xml",
+        "source": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-play-services-cast-framework-21.5.0-24:/drawable/cast_mini_controller_gradient_light.xml"
+    },
+    {
+        "merged": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-release-35:/drawable/abc_cab_background_internal_bg.xml",
+        "source": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-appcompat-1.7.1-30:/drawable/abc_cab_background_internal_bg.xml"
+    },
+    {
+        "merged": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-release-35:/drawable/common_google_signin_btn_icon_light_normal.xml",
+        "source": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-play-services-base-18.5.0-25:/drawable/common_google_signin_btn_icon_light_normal.xml"
+    },
+    {
+        "merged": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-release-35:/drawable/abc_btn_check_material_anim.xml",
+        "source": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-appcompat-1.7.1-30:/drawable/abc_btn_check_material_anim.xml"
+    },
+    {
+        "merged": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-release-35:/drawable/tooltip_frame_light.xml",
+        "source": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-appcompat-1.7.1-30:/drawable/tooltip_frame_light.xml"
+    },
+    {
+        "merged": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-release-35:/drawable/mr_vol_type_audiotrack_dark.xml",
+        "source": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-mediarouter-1.6.0-beta01-3:/drawable/mr_vol_type_audiotrack_dark.xml"
+    },
+    {
+        "merged": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-release-35:/drawable/cast_ic_expanded_controller_skip_next.xml",
+        "source": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-play-services-cast-framework-21.5.0-24:/drawable/cast_ic_expanded_controller_skip_next.xml"
+    },
+    {
+        "merged": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-release-35:/drawable/mr_cast_checkbox.xml",
+        "source": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-mediarouter-1.6.0-beta01-3:/drawable/mr_cast_checkbox.xml"
+    },
+    {
+        "merged": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-release-35:/drawable/abc_ic_ab_back_material.xml",
+        "source": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-appcompat-1.7.1-30:/drawable/abc_ic_ab_back_material.xml"
+    },
+    {
+        "merged": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-release-35:/drawable/abc_ic_search_api_material.xml",
+        "source": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-appcompat-1.7.1-30:/drawable/abc_ic_search_api_material.xml"
+    },
+    {
+        "merged": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-release-35:/drawable/test_level_drawable.xml",
+        "source": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-appcompat-1.7.1-30:/drawable/test_level_drawable.xml"
+    },
+    {
+        "merged": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-release-35:/drawable/abc_seekbar_thumb_material.xml",
+        "source": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-appcompat-1.7.1-30:/drawable/abc_seekbar_thumb_material.xml"
+    },
+    {
+        "merged": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-release-35:/drawable/abc_star_half_black_48dp.xml",
+        "source": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-appcompat-1.7.1-30:/drawable/abc_star_half_black_48dp.xml"
+    },
+    {
+        "merged": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-release-35:/drawable/mr_button_connected_light.xml",
+        "source": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-mediarouter-1.6.0-beta01-3:/drawable/mr_button_connected_light.xml"
+    },
+    {
+        "merged": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-release-35:/drawable/cast_ic_notification_small_icon.xml",
+        "source": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-play-services-cast-framework-21.5.0-24:/drawable/cast_ic_notification_small_icon.xml"
+    },
+    {
+        "merged": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-release-35:/drawable/ic_call_answer_low.xml",
+        "source": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-core-1.17.0-23:/drawable/ic_call_answer_low.xml"
+    },
+    {
+        "merged": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-release-35:/drawable/mr_media_stop_light.xml",
+        "source": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-mediarouter-1.6.0-beta01-3:/drawable/mr_media_stop_light.xml"
+    },
+    {
+        "merged": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-release-35:/drawable/common_google_signin_btn_icon_dark_normal.xml",
+        "source": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-play-services-base-18.5.0-25:/drawable/common_google_signin_btn_icon_dark_normal.xml"
+    },
+    {
+        "merged": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-release-35:/drawable/cast_ic_notification_forward.xml",
+        "source": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-play-services-cast-framework-21.5.0-24:/drawable/cast_ic_notification_forward.xml"
+    },
+    {
+        "merged": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-release-35:/drawable/ic_call_answer.xml",
+        "source": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-core-1.17.0-23:/drawable/ic_call_answer.xml"
+    },
+    {
+        "merged": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-release-35:/drawable/abc_tab_indicator_material.xml",
+        "source": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-appcompat-1.7.1-30:/drawable/abc_tab_indicator_material.xml"
+    },
+    {
+        "merged": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-release-35:/drawable/abc_btn_check_material.xml",
+        "source": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-appcompat-1.7.1-30:/drawable/abc_btn_check_material.xml"
+    },
+    {
+        "merged": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-release-35:/drawable/mr_button_light.xml",
+        "source": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-mediarouter-1.6.0-beta01-3:/drawable/mr_button_light.xml"
+    },
+    {
+        "merged": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-release-35:/drawable/cast_ic_mini_controller_skip_prev.xml",
+        "source": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-play-services-cast-framework-21.5.0-24:/drawable/cast_ic_mini_controller_skip_prev.xml"
+    },
+    {
+        "merged": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-release-35:/drawable/common_google_signin_btn_icon_light_focused.xml",
+        "source": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-play-services-base-18.5.0-25:/drawable/common_google_signin_btn_icon_light_focused.xml"
+    },
+    {
+        "merged": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-release-35:/drawable/mr_media_pause_light.xml",
+        "source": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-mediarouter-1.6.0-beta01-3:/drawable/mr_media_pause_light.xml"
+    },
+    {
+        "merged": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-release-35:/drawable/cast_ic_mini_controller_stop.xml",
+        "source": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-play-services-cast-framework-21.5.0-24:/drawable/cast_ic_mini_controller_stop.xml"
+    },
+    {
+        "merged": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-release-35:/drawable/mr_media_play_dark.xml",
+        "source": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-mediarouter-1.6.0-beta01-3:/drawable/mr_media_play_dark.xml"
+    },
+    {
+        "merged": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-release-35:/drawable/mr_button_light_static.xml",
+        "source": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-mediarouter-1.6.0-beta01-3:/drawable/mr_button_light_static.xml"
+    },
+    {
+        "merged": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-release-35:/drawable/cast_ic_mini_controller_play.xml",
+        "source": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-play-services-cast-framework-21.5.0-24:/drawable/cast_ic_mini_controller_play.xml"
+    },
+    {
+        "merged": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-release-35:/drawable/abc_seekbar_track_material.xml",
+        "source": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-appcompat-1.7.1-30:/drawable/abc_seekbar_track_material.xml"
+    },
+    {
+        "merged": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-release-35:/drawable/cast_ic_notification_forward10.xml",
+        "source": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-play-services-cast-framework-21.5.0-24:/drawable/cast_ic_notification_forward10.xml"
+    },
+    {
+        "merged": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-release-35:/drawable/btn_checkbox_unchecked_to_checked_mtrl_animation.xml",
+        "source": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-appcompat-1.7.1-30:/drawable/btn_checkbox_unchecked_to_checked_mtrl_animation.xml"
+    },
+    {
+        "merged": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-release-35:/drawable/common_google_signin_btn_text_light.xml",
+        "source": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-play-services-base-18.5.0-25:/drawable/common_google_signin_btn_text_light.xml"
+    },
+    {
+        "merged": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-release-35:/drawable/cast_ic_expanded_controller_pause.xml",
+        "source": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-play-services-cast-framework-21.5.0-24:/drawable/cast_ic_expanded_controller_pause.xml"
+    },
+    {
+        "merged": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-release-35:/drawable/btn_checkbox_unchecked_mtrl.xml",
+        "source": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-appcompat-1.7.1-30:/drawable/btn_checkbox_unchecked_mtrl.xml"
+    },
+    {
+        "merged": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-release-35:/drawable/cast_expanded_controller_seekbar_track.xml",
+        "source": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-play-services-cast-framework-21.5.0-24:/drawable/cast_expanded_controller_seekbar_track.xml"
+    },
+    {
+        "merged": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-release-35:/drawable/notification_icon_background.xml",
+        "source": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-core-1.17.0-23:/drawable/notification_icon_background.xml"
+    },
+    {
+        "merged": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-release-35:/drawable/common_google_signin_btn_text_dark.xml",
+        "source": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-play-services-base-18.5.0-25:/drawable/common_google_signin_btn_text_dark.xml"
+    },
+    {
+        "merged": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-release-35:/drawable/abc_textfield_search_material.xml",
+        "source": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-appcompat-1.7.1-30:/drawable/abc_textfield_search_material.xml"
+    },
+    {
+        "merged": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-release-35:/drawable/cast_expanded_controller_actionbar_bg_gradient_light.xml",
+        "source": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-play-services-cast-framework-21.5.0-24:/drawable/cast_expanded_controller_actionbar_bg_gradient_light.xml"
+    },
+    {
+        "merged": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-release-35:/drawable/mr_media_stop_dark.xml",
+        "source": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-mediarouter-1.6.0-beta01-3:/drawable/mr_media_stop_dark.xml"
+    },
+    {
+        "merged": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-release-35:/drawable/abc_item_background_holo_dark.xml",
+        "source": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-appcompat-1.7.1-30:/drawable/abc_item_background_holo_dark.xml"
+    },
+    {
+        "merged": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-release-35:/drawable/abc_btn_default_mtrl_shape.xml",
+        "source": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-appcompat-1.7.1-30:/drawable/abc_btn_default_mtrl_shape.xml"
+    },
+    {
+        "merged": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-release-35:/drawable/cast_ic_mini_controller_mute.xml",
+        "source": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-play-services-cast-framework-21.5.0-24:/drawable/cast_ic_mini_controller_mute.xml"
+    },
+    {
+        "merged": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-release-35:/drawable/abc_list_selector_background_transition_holo_light.xml",
+        "source": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-appcompat-1.7.1-30:/drawable/abc_list_selector_background_transition_holo_light.xml"
+    },
+    {
+        "merged": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-release-35:/drawable/mr_wifi_icon_light.xml",
+        "source": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-mediarouter-1.6.0-beta01-3:/drawable/mr_wifi_icon_light.xml"
+    },
+    {
+        "merged": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-release-35:/drawable/mr_media_play_light.xml",
+        "source": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-mediarouter-1.6.0-beta01-3:/drawable/mr_media_play_light.xml"
+    },
+    {
+        "merged": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-release-35:/drawable/abc_ic_menu_selectall_mtrl_alpha.xml",
+        "source": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-appcompat-1.7.1-30:/drawable/abc_ic_menu_selectall_mtrl_alpha.xml"
+    },
+    {
+        "merged": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-release-35:/drawable/common_google_signin_btn_icon_dark.xml",
+        "source": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-play-services-base-18.5.0-25:/drawable/common_google_signin_btn_icon_dark.xml"
+    },
+    {
+        "merged": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-release-35:/drawable/mr_cast_mute_button.xml",
+        "source": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-mediarouter-1.6.0-beta01-3:/drawable/mr_cast_mute_button.xml"
+    },
+    {
+        "merged": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-release-35:/drawable/btn_radio_on_mtrl.xml",
+        "source": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-appcompat-1.7.1-30:/drawable/btn_radio_on_mtrl.xml"
+    },
+    {
+        "merged": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-release-35:/drawable/btn_checkbox_checked_mtrl.xml",
+        "source": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-appcompat-1.7.1-30:/drawable/btn_checkbox_checked_mtrl.xml"
+    },
+    {
+        "merged": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-release-35:/drawable/abc_ic_menu_paste_mtrl_am_alpha.xml",
+        "source": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-appcompat-1.7.1-30:/drawable/abc_ic_menu_paste_mtrl_am_alpha.xml"
+    },
+    {
+        "merged": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-release-35:/drawable/abc_text_cursor_material.xml",
+        "source": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-appcompat-1.7.1-30:/drawable/abc_text_cursor_material.xml"
+    },
+    {
+        "merged": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-release-35:/drawable/abc_btn_borderless_material.xml",
+        "source": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-appcompat-1.7.1-30:/drawable/abc_btn_borderless_material.xml"
+    },
+    {
+        "merged": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-release-35:/drawable/cast_ic_notification_rewind.xml",
+        "source": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-play-services-cast-framework-21.5.0-24:/drawable/cast_ic_notification_rewind.xml"
+    },
+    {
+        "merged": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-release-35:/drawable/cast_ic_expanded_controller_rewind30.xml",
+        "source": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-play-services-cast-framework-21.5.0-24:/drawable/cast_ic_expanded_controller_rewind30.xml"
+    },
+    {
+        "merged": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-release-35:/drawable/cast_tooltip_background.xml",
+        "source": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-play-services-cast-framework-21.5.0-24:/drawable/cast_tooltip_background.xml"
+    },
+    {
+        "merged": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-release-35:/drawable/abc_item_background_holo_light.xml",
+        "source": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-appcompat-1.7.1-30:/drawable/abc_item_background_holo_light.xml"
+    },
+    {
+        "merged": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-release-35:/drawable/cast_ic_notification_disconnect.xml",
+        "source": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-play-services-cast-framework-21.5.0-24:/drawable/cast_ic_notification_disconnect.xml"
+    },
+    {
+        "merged": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-release-35:/drawable/mr_button_connected_dark.xml",
+        "source": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-mediarouter-1.6.0-beta01-3:/drawable/mr_button_connected_dark.xml"
+    },
+    {
+        "merged": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-release-35:/drawable/common_google_signin_btn_text_light_normal.xml",
+        "source": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-play-services-base-18.5.0-25:/drawable/common_google_signin_btn_text_light_normal.xml"
+    },
+    {
+        "merged": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-release-35:/drawable/mr_group_collapse.xml",
+        "source": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-mediarouter-1.6.0-beta01-3:/drawable/mr_group_collapse.xml"
+    },
+    {
+        "merged": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-release-35:/drawable/cast_expanded_controller_seekbar_thumb.xml",
+        "source": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-play-services-cast-framework-21.5.0-24:/drawable/cast_expanded_controller_seekbar_thumb.xml"
+    },
+    {
+        "merged": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-release-35:/drawable/cast_ic_expanded_controller_stop.xml",
+        "source": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-play-services-cast-framework-21.5.0-24:/drawable/cast_ic_expanded_controller_stop.xml"
+    },
+    {
+        "merged": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-release-35:/drawable/cast_ic_expanded_controller_play.xml",
+        "source": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-play-services-cast-framework-21.5.0-24:/drawable/cast_ic_expanded_controller_play.xml"
+    },
+    {
+        "merged": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-release-35:/drawable/common_google_signin_btn_text_dark_focused.xml",
+        "source": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-play-services-base-18.5.0-25:/drawable/common_google_signin_btn_text_dark_focused.xml"
+    },
+    {
+        "merged": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-release-35:/drawable/cast_expanded_controller_live_indicator_drawable.xml",
+        "source": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-play-services-cast-framework-21.5.0-24:/drawable/cast_expanded_controller_live_indicator_drawable.xml"
+    },
+    {
+        "merged": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-release-35:/drawable/mr_vol_type_audiotrack_light.xml",
+        "source": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-mediarouter-1.6.0-beta01-3:/drawable/mr_vol_type_audiotrack_light.xml"
+    }
+]

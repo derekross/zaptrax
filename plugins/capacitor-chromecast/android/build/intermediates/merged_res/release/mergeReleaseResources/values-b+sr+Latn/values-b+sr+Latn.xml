@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:ns1="urn:oasis:names:tc:xliff:document:1.2">
+    <string msgid="5976598919945601918" name="abc_action_bar_home_description">"Idite na početnu"</string>
+    <string msgid="8388173803310557296" name="abc_action_bar_up_description">"Idite nagore"</string>
+    <string msgid="3937310113216875497" name="abc_action_menu_overflow_description">"Još opcija"</string>
+    <string msgid="4692188335987374352" name="abc_action_mode_done">"Gotovo"</string>
+    <string msgid="1189761859438369441" name="abc_activity_chooser_view_see_all">"Prikaži sve"</string>
+    <string msgid="2165779757652331008" name="abc_activitychooserview_choose_application">"Izaberite aplikaciju"</string>
+    <string msgid="4215997306490295099" name="abc_capital_off">"ISKLJUČENO"</string>
+    <string msgid="884982626291842264" name="abc_capital_on">"UKLJUČENO"</string>
+    <string msgid="8833365367933412986" name="abc_menu_alt_shortcut_label">"Alt+"</string>
+    <string msgid="2223301931652355242" name="abc_menu_ctrl_shortcut_label">"Ctrl+"</string>
+    <string msgid="838001238306846836" name="abc_menu_delete_shortcut_label">"delete"</string>
+    <string msgid="7986526966204849475" name="abc_menu_enter_shortcut_label">"enter"</string>
+    <string msgid="375214403600139847" name="abc_menu_function_shortcut_label">"Function+"</string>
+    <string msgid="4192209724446364286" name="abc_menu_meta_shortcut_label">"Meta+"</string>
+    <string msgid="4741552369836443843" name="abc_menu_shift_shortcut_label">"Shift+"</string>
+    <string msgid="5473865519181928982" name="abc_menu_space_shortcut_label">"taster za razmak"</string>
+    <string msgid="6180552449598693998" name="abc_menu_sym_shortcut_label">"Sym+"</string>
+    <string msgid="5520303668377388990" name="abc_prepend_shortcut_label">"Menu+"</string>
+    <string msgid="7208076849092622260" name="abc_search_hint">"Pretražite…"</string>
+    <string msgid="3741173234950517107" name="abc_searchview_description_clear">"Obrišite upit"</string>
+    <string msgid="693312494995508443" name="abc_searchview_description_query">"Pretražite upit"</string>
+    <string msgid="3417662926640357176" name="abc_searchview_description_search">"Pretražite"</string>
+    <string msgid="1486535517437947103" name="abc_searchview_description_submit">"Pošaljite upit"</string>
+    <string msgid="2293578557972875415" name="abc_searchview_description_voice">"Glasovna pretraga"</string>
+    <string msgid="8875138169939072951" name="abc_shareactionprovider_share_with">"Delite pomoću"</string>
+    <string msgid="9055268688411532828" name="abc_shareactionprovider_share_with_application">"Delite pomoću aplikacije <ns1:g id="APPLICATION_NAME">%s</ns1:g>"</string>
+    <string msgid="1656852541809559762" name="abc_toolbar_collapse_description">"Skupi"</string>
+    <string msgid="881409763997275156" name="call_notification_answer_action">"Odgovori"</string>
+    <string msgid="8793775615905189152" name="call_notification_answer_video_action">"Video"</string>
+    <string msgid="3229508546291798546" name="call_notification_decline_action">"Odbij"</string>
+    <string msgid="2659457946726154263" name="call_notification_hang_up_action">"Prekini vezu"</string>
+    <string msgid="6107532579223922871" name="call_notification_incoming_text">"Dolazni poziv"</string>
+    <string msgid="8623827134497363134" name="call_notification_ongoing_text">"Poziv je u toku"</string>
+    <string msgid="59049573811482460" name="call_notification_screening_text">"Proverava se dolazni poziv"</string>
+    <string name="cast_ad_label">Oglas</string>
+    <string name="cast_casting_to_device">Prebacivanje na %1$s</string>
+    <string name="cast_closed_captions">Opcionalni titl</string>
+    <string name="cast_closed_captions_unavailable">Opcionalni titl je nedostupan</string>
+    <string name="cast_connecting_to_device">Povezuje se sa uređajem %1$s</string>
+    <string name="cast_disconnect">Prekini vezu</string>
+    <string name="cast_dynamic_group_name_format">%1$s + %2$d</string>
+    <string name="cast_expanded_controller_ad_image_description">Slika koja se prikazuje dok Cast prijemnik reprodukuje oglas</string>
+    <string name="cast_expanded_controller_ad_in_progress">Prikazivanje oglasa je u toku…</string>
+    <string name="cast_expanded_controller_background_image">Omot albuma</string>
+    <string name="cast_expanded_controller_live_head_description">Aktuelni položaj je u vrhu strima uživo</string>
+    <string name="cast_expanded_controller_live_stream_indicator">Strim uživo</string>
+    <string name="cast_expanded_controller_loading">Učitava se…</string>
+    <string name="cast_expanded_controller_skip_ad_label">Preskočite oglas</string>
+    <string name="cast_expanded_controller_skip_ad_text">Možete da preskočite oglas za %1$d…</string>
+    <string name="cast_forward">Prosledi</string>
+    <string name="cast_forward_10">Premotaj deset sekundi unapred</string>
+    <string name="cast_forward_30">Premotaj trideset sekundi unapred</string>
+    <string name="cast_intro_overlay_button_text">@android:string/ok</string>
+    <string name="cast_live_label">UŽIVO</string>
+    <string name="cast_mute">Isključi zvuk</string>
+    <string name="cast_notification_connected_message">Povezano je sa %1$s</string>
+    <string name="cast_notification_connecting_message">Povezivanje sa %1$s</string>
+    <string name="cast_notification_default_channel_name">Cast</string>
+    <string name="cast_notification_disconnect">Prekini vezu</string>
+    <string name="cast_pause">Pauzirajte</string>
+    <string name="cast_play">Pusti</string>
+    <string name="cast_rewind">Taster za premotavanje unazad</string>
+    <string name="cast_rewind_10">Premotaj deset sekundi unazad</string>
+    <string name="cast_rewind_30">Premotaj trideset sekundi unazad</string>
+    <string name="cast_seek_bar">Kontrola za traženje pri reprodukciji</string>
+    <string name="cast_skip_next">Preskoči na sledeću stavku</string>
+    <string name="cast_skip_prev">Preskoči na prethodnu stavku</string>
+    <string name="cast_stop">Taster za zaustavljanje</string>
+    <string name="cast_stop_live_stream">Zaustavi strim uživo</string>
+    <string name="cast_tracks_chooser_dialog_audio">Zvuk</string>
+    <string name="cast_tracks_chooser_dialog_cancel">Otkaži</string>
+    <string name="cast_tracks_chooser_dialog_closed_captions">Opcionalni titl</string>
+    <string name="cast_tracks_chooser_dialog_default_track_name">%1$d. pesma</string>
+    <string name="cast_tracks_chooser_dialog_none">Ništa</string>
+    <string name="cast_tracks_chooser_dialog_ok">Potvrdi</string>
+    <string name="cast_tracks_chooser_dialog_subtitles">Titlovi</string>
+    <string name="cast_unmute">Uključi zvuk</string>
+    <string msgid="2523291102206661146" name="common_google_play_services_enable_button">Omogući</string>
+    <string msgid="227660514972886228" name="common_google_play_services_enable_text">%1$s neće funkcionisati ako ne omogućite Google Play usluge.</string>
+    <string msgid="5122002158466380389" name="common_google_play_services_enable_title">Omogućite Google Play usluge</string>
+    <string msgid="7153882981874058840" name="common_google_play_services_install_button">Instaliraj</string>
+    <string name="common_google_play_services_install_text">%1$s ne može da se pokrene bez Google Play usluga, koje nisu instalirane na uređaju.</string>
+    <string msgid="7215213145546190223" name="common_google_play_services_install_title">Preuzmite Google Play usluge</string>
+    <string name="common_google_play_services_notification_channel_name">Dostupnost Google Play usluga</string>
+    <string name="common_google_play_services_notification_ticker">Greška Google Play usluga</string>
+    <string name="common_google_play_services_unknown_issue">%1$s ima problema sa Google Play uslugama. Probajte ponovo.</string>
+    <string name="common_google_play_services_unsupported_text">%1$s ne može da se pokrene bez Google Play usluga, koje uređaj ne podržava.</string>
+    <string msgid="6556509956452265614" name="common_google_play_services_update_button">Ažuriraj</string>
+    <string msgid="9053896323427875356" name="common_google_play_services_update_text">%1$s ne može da se pokrene ako ne ažurirate Google Play usluge.</string>
+    <string msgid="6006316683626838685" name="common_google_play_services_update_title">Ažurirajte Google Play usluge</string>
+    <string name="common_google_play_services_updating_text">%1$s ne može da se pokrene bez Google Play usluga, koje se trenutno ažuriraju.</string>
+    <string name="common_google_play_services_wear_update_text">Potrebna je nova verzija Google Play usluga. Uskoro će se ažurirati.</string>
+    <string name="common_open_on_phone">Otvori na telefonu</string>
+    <string name="common_signin_button_text">Prijavi me</string>
+    <string name="common_signin_button_text_long">Prijavi me na Google</string>
+    <string msgid="9119039724000326934" name="ic_media_route_learn_more_accessibility">"Saznajte kako da prebacujete"</string>
+    <string name="media_notification_channel_name">Prebacivanje</string>
+    <string msgid="2939063992730535343" name="mr_button_content_description">"Prebacite"</string>
+    <string msgid="6073720094880410356" name="mr_cast_button_connected">"Prebacite. Povezan je"</string>
+    <string msgid="6629927151350192407" name="mr_cast_button_connecting">"Prebacite. Povezuje se"</string>
+    <string msgid="8071109333469380363" name="mr_cast_button_disconnected">"Prebacite. Veza je prekinuta"</string>
+    <string msgid="2175930138959078155" name="mr_cast_dialog_title_view_placeholder">"Nema dostupnih informacija"</string>
+    <string msgid="4257319068277776035" name="mr_chooser_looking_for_devices">"Traže se uređaji…"</string>
+    <string msgid="6114250663023140921" name="mr_chooser_searching">"Traže se uređaji"</string>
+    <string msgid="1419936397646839840" name="mr_chooser_title">"Prebacite na"</string>
+    <string msgid="3799500840179081429" name="mr_chooser_wifi_learn_more"><a href="https://support.google.com/chromecast/?p=trouble-finding-devices">"Saznajte više"</a></string>
+    <string msgid="2998902945608081567" name="mr_chooser_wifi_warning_description_car">"Uverite se da je drugi uređaj povezan na istu WiFi mrežu kao ovaj automobil"</string>
+    <string msgid="2555886884770958244" name="mr_chooser_wifi_warning_description_phone">"Uverite se da je drugi uređaj povezan na istu WiFi mrežu kao ovaj telefon"</string>
+    <string msgid="6038748488793588164" name="mr_chooser_wifi_warning_description_tablet">"Uverite se da je drugi uređaj povezan na istu WiFi mrežu kao ovaj tablet"</string>
+    <string msgid="5845921667085074878" name="mr_chooser_wifi_warning_description_tv">"Uverite se da je drugi uređaj povezan na istu WiFi mrežu kao ovaj tv"</string>
+    <string msgid="3459891599800041449" name="mr_chooser_wifi_warning_description_unknown">"Uverite se da je drugi uređaj povezan na istu WiFi mrežu kao ovaj uređaj"</string>
+    <string msgid="5255021372884233706" name="mr_chooser_wifi_warning_description_watch">"Uverite se da je drugi uređaj povezan na istu WiFi mrežu kao ovaj sat"</string>
+    <string msgid="5213435473397442608" name="mr_chooser_zero_routes_found_title">"Nije dostupan nijedan uređaj"</string>
+    <string msgid="3330502667672708728" name="mr_controller_album_art">"Omot albuma"</string>
+    <string msgid="9171231064758955152" name="mr_controller_casting_screen">"Prebacuje se ekran"</string>
+    <string msgid="5684434439232634509" name="mr_controller_close_description">"Zatvori"</string>
+    <string msgid="2585048604188129749" name="mr_controller_collapse_group">"Skupi"</string>
+    <string msgid="7812275474138309497" name="mr_controller_disconnect">"Prekini vezu"</string>
+    <string msgid="4521419834052044261" name="mr_controller_expand_group">"Proširi"</string>
+    <string msgid="855271725131981086" name="mr_controller_no_info_available">"Nema dostupnih informacija"</string>
+    <string msgid="5495452265246139458" name="mr_controller_no_media_selected">"Nema izabranih medija"</string>
+    <string msgid="747801650871398383" name="mr_controller_pause">"Pauziraj"</string>
+    <string msgid="1253345086594430054" name="mr_controller_play">"Pusti"</string>
+    <string msgid="5497722768305745508" name="mr_controller_stop">"Zaustavi"</string>
+    <string msgid="804210341192624074" name="mr_controller_stop_casting">"Zaustavi prebacivanje"</string>
+    <string msgid="2955862765169128170" name="mr_controller_volume_slider">"Klizač za jačinu zvuka"</string>
+    <string msgid="4115858704575247342" name="mr_dialog_default_group_name">"Grupa"</string>
+    <string msgid="4307018456678388936" name="mr_dialog_groupable_header">"Dodajte uređaj"</string>
+    <string msgid="6068257520605505468" name="mr_dialog_transferable_header">"Puštajte u grupi"</string>
+    <string msgid="7449553026175453403" name="mr_system_route_name">"Sistem"</string>
+    <string msgid="4088331695424166162" name="mr_user_route_category_name">"Uređaji"</string>
+    <string msgid="6264217191555673260" name="search_menu_title">"Pretražite"</string>
+    <string msgid="6277540029070332960" name="status_bar_notification_info_overflow">"999+"</string>
+</resources>

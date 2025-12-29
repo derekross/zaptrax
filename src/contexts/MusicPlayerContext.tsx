@@ -16,6 +16,7 @@ interface MusicPlayerState {
   currentIndex: number;
   isLoading: boolean;
   error: string | null;
+  isCasting: boolean;
 }
 
 type MusicPlayerAction =
@@ -32,7 +33,8 @@ type MusicPlayerAction =
   | { type: 'PREVIOUS_TRACK' }
   | { type: 'SET_LOADING'; payload: boolean }
   | { type: 'SET_ERROR'; payload: string | null }
-  | { type: 'CLEAR_ERROR' };
+  | { type: 'CLEAR_ERROR' }
+  | { type: 'SET_CASTING'; payload: boolean };
 
 const initialState: MusicPlayerState = {
   currentTrack: null,
@@ -44,6 +46,7 @@ const initialState: MusicPlayerState = {
   currentIndex: -1,
   isLoading: false,
   error: null,
+  isCasting: false,
 };
 
 function musicPlayerReducer(state: MusicPlayerState, action: MusicPlayerAction): MusicPlayerState {
@@ -108,6 +111,8 @@ function musicPlayerReducer(state: MusicPlayerState, action: MusicPlayerAction):
       return { ...state, error: action.payload, isLoading: false };
     case 'CLEAR_ERROR':
       return { ...state, error: null };
+    case 'SET_CASTING':
+      return { ...state, isCasting: action.payload };
     default:
       return state;
   }
@@ -124,6 +129,7 @@ interface MusicPlayerContextType {
   setVolume: (volume: number) => void;
   nextTrack: () => void;
   previousTrack: () => void;
+  setCasting: (isCasting: boolean) => void;
 }
 
 const MusicPlayerContext = createContext<MusicPlayerContextType | undefined>(undefined);
@@ -193,6 +199,14 @@ export function MusicPlayerProvider({ children }: { children: React.ReactNode })
 
   const playTrackByIndex = (index: number) => {
     dispatch({ type: 'PLAY_TRACK_BY_INDEX', payload: index });
+  };
+
+  const setCasting = (isCasting: boolean) => {
+    dispatch({ type: 'SET_CASTING', payload: isCasting });
+    // When starting to cast, pause local audio
+    if (isCasting && audioRef.current) {
+      audioRef.current.pause();
+    }
   };
 
   // Audio event handlers (keep this useEffect for other event listeners)
@@ -286,6 +300,13 @@ export function MusicPlayerProvider({ children }: { children: React.ReactNode })
     const audio = audioRef.current;
     if (!audio) return;
 
+    // Don't control local audio when casting
+    if (state.isCasting) {
+      console.log('MusicPlayer - Casting active, keeping local audio paused');
+      audio.pause();
+      return;
+    }
+
     console.log('MusicPlayer - isPlaying state changed to:', state.isPlaying);
 
     if (state.isPlaying) {
@@ -306,7 +327,7 @@ export function MusicPlayerProvider({ children }: { children: React.ReactNode })
       console.log('MusicPlayer - Pausing audio');
       audio.pause();
     }
-  }, [state.isPlaying]);
+  }, [state.isPlaying, state.isCasting]);
 
   // New useEffect to trigger NIP-38 update (keep this useEffect)
   useEffect(() => {
@@ -400,6 +421,7 @@ export function MusicPlayerProvider({ children }: { children: React.ReactNode })
     setVolume,
     nextTrack,
     previousTrack,
+    setCasting,
   };
 
   return (

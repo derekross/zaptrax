@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:ns1="urn:oasis:names:tc:xliff:document:1.2">
+    <string msgid="5976598919945601918" name="abc_action_bar_home_description">"Navighează la ecranul de pornire"</string>
+    <string msgid="8388173803310557296" name="abc_action_bar_up_description">"Navighează în sus"</string>
+    <string msgid="3937310113216875497" name="abc_action_menu_overflow_description">"Mai multe opțiuni"</string>
+    <string msgid="4692188335987374352" name="abc_action_mode_done">"Gata"</string>
+    <string msgid="1189761859438369441" name="abc_activity_chooser_view_see_all">"Afișează tot"</string>
+    <string msgid="2165779757652331008" name="abc_activitychooserview_choose_application">"Alege o aplicație"</string>
+    <string msgid="4215997306490295099" name="abc_capital_off">"DEZACTIVAT"</string>
+    <string msgid="884982626291842264" name="abc_capital_on">"ACTIVAT"</string>
+    <string msgid="8833365367933412986" name="abc_menu_alt_shortcut_label">"Alt+"</string>
+    <string msgid="2223301931652355242" name="abc_menu_ctrl_shortcut_label">"Ctrl+"</string>
+    <string msgid="838001238306846836" name="abc_menu_delete_shortcut_label">"delete"</string>
+    <string msgid="7986526966204849475" name="abc_menu_enter_shortcut_label">"enter"</string>
+    <string msgid="375214403600139847" name="abc_menu_function_shortcut_label">"Function+"</string>
+    <string msgid="4192209724446364286" name="abc_menu_meta_shortcut_label">"Meta+"</string>
+    <string msgid="4741552369836443843" name="abc_menu_shift_shortcut_label">"Shift+"</string>
+    <string msgid="5473865519181928982" name="abc_menu_space_shortcut_label">"space"</string>
+    <string msgid="6180552449598693998" name="abc_menu_sym_shortcut_label">"Sym+"</string>
+    <string msgid="5520303668377388990" name="abc_prepend_shortcut_label">"Meniu+"</string>
+    <string msgid="7208076849092622260" name="abc_search_hint">"Caută…"</string>
+    <string msgid="3741173234950517107" name="abc_searchview_description_clear">"Șterge interogarea"</string>
+    <string msgid="693312494995508443" name="abc_searchview_description_query">"Termen de căutare"</string>
+    <string msgid="3417662926640357176" name="abc_searchview_description_search">"Caută"</string>
+    <string msgid="1486535517437947103" name="abc_searchview_description_submit">"Trimite interogarea"</string>
+    <string msgid="2293578557972875415" name="abc_searchview_description_voice">"Căutare vocală"</string>
+    <string msgid="8875138169939072951" name="abc_shareactionprovider_share_with">"Trimite la"</string>
+    <string msgid="9055268688411532828" name="abc_shareactionprovider_share_with_application">"Trimite folosind <ns1:g id="APPLICATION_NAME">%s</ns1:g>"</string>
+    <string msgid="1656852541809559762" name="abc_toolbar_collapse_description">"Restrânge"</string>
+    <string msgid="881409763997275156" name="call_notification_answer_action">"Răspunde"</string>
+    <string msgid="8793775615905189152" name="call_notification_answer_video_action">"Video"</string>
+    <string msgid="3229508546291798546" name="call_notification_decline_action">"Respinge"</string>
+    <string msgid="2659457946726154263" name="call_notification_hang_up_action">"Închide"</string>
+    <string msgid="6107532579223922871" name="call_notification_incoming_text">"Apel primit"</string>
+    <string msgid="8623827134497363134" name="call_notification_ongoing_text">"Apel în desfășurare"</string>
+    <string msgid="59049573811482460" name="call_notification_screening_text">"Se filtrează un apel primit"</string>
+    <string name="cast_ad_label">Anunț</string>
+    <string name="cast_casting_to_device">Se proiectează pe %1$s</string>
+    <string name="cast_closed_captions">Subtitrări</string>
+    <string name="cast_closed_captions_unavailable">Subtitrările nu sunt disponibile</string>
+    <string name="cast_connecting_to_device">Se conectează la %1$s</string>
+    <string name="cast_disconnect">Deconectează-te</string>
+    <string name="cast_dynamic_group_name_format">%1$s + %2$d</string>
+    <string name="cast_expanded_controller_ad_image_description">Imagine afișată în timp ce receiverul Cast redă un anunț</string>
+    <string name="cast_expanded_controller_ad_in_progress">Anunț în desfășurare…</string>
+    <string name="cast_expanded_controller_background_image">Grafica albumului</string>
+    <string name="cast_expanded_controller_live_head_description">Poziția curentă este la începutul streamului live</string>
+    <string name="cast_expanded_controller_live_stream_indicator">Flux live</string>
+    <string name="cast_expanded_controller_loading">Se încarcă…</string>
+    <string name="cast_expanded_controller_skip_ad_label">Închide anunțul</string>
+    <string name="cast_expanded_controller_skip_ad_text">Poți închide anunțul peste %1$d…</string>
+    <string name="cast_forward">Derulează înainte</string>
+    <string name="cast_forward_10">Derulează înainte 10 secunde</string>
+    <string name="cast_forward_30">Derulează înainte 30 de secunde</string>
+    <string name="cast_intro_overlay_button_text">@android:string/ok</string>
+    <string name="cast_live_label">LIVE</string>
+    <string name="cast_mute">Dezactivează sunetul</string>
+    <string name="cast_notification_connected_message">Conectat la %1$s</string>
+    <string name="cast_notification_connecting_message">Se conectează la %1$s</string>
+    <string name="cast_notification_default_channel_name">Cast</string>
+    <string name="cast_notification_disconnect">Deconectează</string>
+    <string name="cast_pause">Întrerupe</string>
+    <string name="cast_play">Redă</string>
+    <string name="cast_rewind">Derulează înapoi</string>
+    <string name="cast_rewind_10">Derulează înapoi 10 secunde</string>
+    <string name="cast_rewind_30">Derulează înapoi 30 de secunde</string>
+    <string name="cast_seek_bar">Comandă de căutare pentru redare</string>
+    <string name="cast_skip_next">Treci la elementul următor</string>
+    <string name="cast_skip_prev">Treci la elementul anterior</string>
+    <string name="cast_stop">Oprește</string>
+    <string name="cast_stop_live_stream">Oprește fluxul live</string>
+    <string name="cast_tracks_chooser_dialog_audio">Conținut audio</string>
+    <string name="cast_tracks_chooser_dialog_cancel">Anulează</string>
+    <string name="cast_tracks_chooser_dialog_closed_captions">Subtitrări</string>
+    <string name="cast_tracks_chooser_dialog_default_track_name">Înregistrarea audio %1$d</string>
+    <string name="cast_tracks_chooser_dialog_none">Niciuna</string>
+    <string name="cast_tracks_chooser_dialog_ok">OK</string>
+    <string name="cast_tracks_chooser_dialog_subtitles">Subtitrări</string>
+    <string name="cast_unmute">Activează sunetul</string>
+    <string msgid="2523291102206661146" name="common_google_play_services_enable_button">Activează</string>
+    <string msgid="227660514972886228" name="common_google_play_services_enable_text">%1$s nu va funcționa decât dacă activezi serviciile Google Play.</string>
+    <string msgid="5122002158466380389" name="common_google_play_services_enable_title">Activează serviciile Google Play</string>
+    <string msgid="7153882981874058840" name="common_google_play_services_install_button">Instalează</string>
+    <string name="common_google_play_services_install_text">%1$s nu va rula fără serviciile Google Play, care lipsesc de pe dispozitivul tău.</string>
+    <string msgid="7215213145546190223" name="common_google_play_services_install_title">Descarcă serviciile Google Play</string>
+    <string name="common_google_play_services_notification_channel_name">Disponibilitatea serviciilor Google Play</string>
+    <string name="common_google_play_services_notification_ticker">Eroare a serviciilor Google Play</string>
+    <string name="common_google_play_services_unknown_issue">%1$s întâmpină probleme privind serviciile Google Play. Încearcă din nou.</string>
+    <string name="common_google_play_services_unsupported_text">%1$s nu va rula fără serviciile Google Play, care nu sunt acceptate de dispozitivul tău.</string>
+    <string msgid="6556509956452265614" name="common_google_play_services_update_button">Actualizează</string>
+    <string msgid="9053896323427875356" name="common_google_play_services_update_text">%1$s nu va rula decât dacă actualizezi serviciile Google Play.</string>
+    <string msgid="6006316683626838685" name="common_google_play_services_update_title">Actualizează serviciile Google Play</string>
+    <string name="common_google_play_services_updating_text">%1$s nu va rula fără serviciile Google Play, care momentan se actualizează.</string>
+    <string name="common_google_play_services_wear_update_text">Este necesară o nouă versiune a serviciilor Google Play. Se vor actualiza automat în curând.</string>
+    <string name="common_open_on_phone">Deschide pe telefon</string>
+    <string name="common_signin_button_text">Conectează-te</string>
+    <string name="common_signin_button_text_long">Conectează-te cu Google</string>
+    <string msgid="9119039724000326934" name="ic_media_route_learn_more_accessibility">"Află cum să proiectezi"</string>
+    <string name="media_notification_channel_name">Proiectați</string>
+    <string msgid="2939063992730535343" name="mr_button_content_description">"Proiectează"</string>
+    <string msgid="6073720094880410356" name="mr_cast_button_connected">"Proiectează. S-a conectat"</string>
+    <string msgid="6629927151350192407" name="mr_cast_button_connecting">"Proiectează. Se conectează"</string>
+    <string msgid="8071109333469380363" name="mr_cast_button_disconnected">"Proiectează. S-a deconectat"</string>
+    <string msgid="2175930138959078155" name="mr_cast_dialog_title_view_placeholder">"Nu sunt informații disponibile"</string>
+    <string msgid="4257319068277776035" name="mr_chooser_looking_for_devices">"Se caută dispozitive…"</string>
+    <string msgid="6114250663023140921" name="mr_chooser_searching">"Se caută dispozitive"</string>
+    <string msgid="1419936397646839840" name="mr_chooser_title">"Proiectează pe"</string>
+    <string msgid="3799500840179081429" name="mr_chooser_wifi_learn_more"><a href="https://support.google.com/chromecast/?p=trouble-finding-devices">"Află mai multe"</a></string>
+    <string msgid="2998902945608081567" name="mr_chooser_wifi_warning_description_car">"Verifică dacă celălalt dispozitiv este în aceeași rețea Wi-Fi ca această mașină"</string>
+    <string msgid="2555886884770958244" name="mr_chooser_wifi_warning_description_phone">"Verifică dacă celălalt dispozitiv este în aceeași rețea Wi-Fi ca acest telefon"</string>
+    <string msgid="6038748488793588164" name="mr_chooser_wifi_warning_description_tablet">"Verifică dacă celălalt dispozitiv este în aceeași rețea Wi-Fi ca această tabletă"</string>
+    <string msgid="5845921667085074878" name="mr_chooser_wifi_warning_description_tv">"Verifică dacă celălalt dispozitiv este în aceeași rețea Wi-Fi ca acest televizor"</string>
+    <string msgid="3459891599800041449" name="mr_chooser_wifi_warning_description_unknown">"Verifică dacă celălalt dispozitiv este în aceeași rețea Wi-Fi ca acest dispozitiv"</string>
+    <string msgid="5255021372884233706" name="mr_chooser_wifi_warning_description_watch">"Verifică dacă celălalt dispozitiv este în aceeași rețea Wi-Fi ca acest ceas"</string>
+    <string msgid="5213435473397442608" name="mr_chooser_zero_routes_found_title">"Nu sunt disponibile dispozitive"</string>
+    <string msgid="3330502667672708728" name="mr_controller_album_art">"Grafica albumului"</string>
+    <string msgid="9171231064758955152" name="mr_controller_casting_screen">"Se proiectează ecranul"</string>
+    <string msgid="5684434439232634509" name="mr_controller_close_description">"Închide"</string>
+    <string msgid="2585048604188129749" name="mr_controller_collapse_group">"Restrânge"</string>
+    <string msgid="7812275474138309497" name="mr_controller_disconnect">"Deconectează"</string>
+    <string msgid="4521419834052044261" name="mr_controller_expand_group">"Extinde"</string>
+    <string msgid="855271725131981086" name="mr_controller_no_info_available">"Nu sunt disponibile informații"</string>
+    <string msgid="5495452265246139458" name="mr_controller_no_media_selected">"Niciun conținut media selectat"</string>
+    <string msgid="747801650871398383" name="mr_controller_pause">"Întrerupe"</string>
+    <string msgid="1253345086594430054" name="mr_controller_play">"Redă"</string>
+    <string msgid="5497722768305745508" name="mr_controller_stop">"Oprește"</string>
+    <string msgid="804210341192624074" name="mr_controller_stop_casting">"Nu mai proiecta"</string>
+    <string msgid="2955862765169128170" name="mr_controller_volume_slider">"Glisor pentru volum"</string>
+    <string msgid="4115858704575247342" name="mr_dialog_default_group_name">"Grup"</string>
+    <string msgid="4307018456678388936" name="mr_dialog_groupable_header">"Adaugă un dispozitiv"</string>
+    <string msgid="6068257520605505468" name="mr_dialog_transferable_header">"Redă într-un grup"</string>
+    <string msgid="7449553026175453403" name="mr_system_route_name">"Sistem"</string>
+    <string msgid="4088331695424166162" name="mr_user_route_category_name">"Dispozitive"</string>
+    <string msgid="6264217191555673260" name="search_menu_title">"Caută"</string>
+    <string msgid="6277540029070332960" name="status_bar_notification_info_overflow">"999+"</string>
+</resources>

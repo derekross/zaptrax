@@ -1,7 +1,7 @@
 {
   "name": "zaptrax",
   "private": true,
-  "version": "0.1.10",
+  "version": "0.2.1",
   "type": "module",
   "scripts": {
     "dev": "npm i && vite",
@@ -21,6 +21,7 @@
     "@capacitor/core": "^8.0.0",
     "@capacitor/ios": "^8.0.0",
     "@capacitor/status-bar": "^8.0.0",
+    "@gameleap/capacitor-chromecast": "file:plugins/capacitor-chromecast",
     "@hookform/resolvers": "^3.9.0",
     "@jofr/capacitor-media-session": "^4.0.0",
     "@nostrify/nostrify": "npm:@jsr/nostrify__nostrify@^0.46.1",

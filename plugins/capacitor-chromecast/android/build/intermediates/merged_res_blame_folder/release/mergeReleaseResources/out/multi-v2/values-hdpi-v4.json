@@ -1,0 +1,36 @@
+{
+    "logs": [
+        {
+            "outputFile": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-mergeReleaseResources-33:/values-hdpi-v4/values-hdpi-v4.xml",
+            "map": [
+                {
+                    "source": "/home/raven/.gradle/caches/8.14.3/transforms/fe2aed0df5da3b6366b8ddf7380eabcc/transformed/appcompat-1.7.1/res/values-hdpi-v4/values-hdpi-v4.xml",
+                    "from": {
+                        "startLines": "2",
+                        "startColumns": "4",
+                        "startOffsets": "55",
+                        "endLines": "6",
+                        "endColumns": "13",
+                        "endOffsets": "327"
+                    }
+                }
+            ]
+        },
+        {
+            "outputFile": "com.gameleap.plugins.chromecast.gameleap-capacitor-chromecast-release-35:/values-hdpi-v4/values-hdpi-v4.xml",
+            "map": [
+                {
+                    "source": "/home/raven/.gradle/caches/8.14.3/transforms/fe2aed0df5da3b6366b8ddf7380eabcc/transformed/appcompat-1.7.1/res/values-hdpi-v4/values-hdpi-v4.xml",
+                    "from": {
+                        "startLines": "2",
+                        "startColumns": "4",
+                        "startOffsets": "55",
+                        "endLines": "6",
+                        "endColumns": "13",
+                        "endOffsets": "327"
+                    }
+                }
+            ]
+        }
+    ]
+}

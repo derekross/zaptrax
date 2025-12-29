@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:ns1="urn:oasis:names:tc:xliff:document:1.2">
+    <string msgid="5976598919945601918" name="abc_action_bar_home_description">"घराकडे नेव्हिगेट करा"</string>
+    <string msgid="8388173803310557296" name="abc_action_bar_up_description">"वर नेव्‍हिगेट करा"</string>
+    <string msgid="3937310113216875497" name="abc_action_menu_overflow_description">"आणखी पर्याय"</string>
+    <string msgid="4692188335987374352" name="abc_action_mode_done">"पूर्ण झाले"</string>
+    <string msgid="1189761859438369441" name="abc_activity_chooser_view_see_all">"सर्व पहा"</string>
+    <string msgid="2165779757652331008" name="abc_activitychooserview_choose_application">"अ‍ॅप निवडा"</string>
+    <string msgid="4215997306490295099" name="abc_capital_off">"बंद"</string>
+    <string msgid="884982626291842264" name="abc_capital_on">"सुरू"</string>
+    <string msgid="8833365367933412986" name="abc_menu_alt_shortcut_label">"Alt+"</string>
+    <string msgid="2223301931652355242" name="abc_menu_ctrl_shortcut_label">"Ctrl+"</string>
+    <string msgid="838001238306846836" name="abc_menu_delete_shortcut_label">"हटवा"</string>
+    <string msgid="7986526966204849475" name="abc_menu_enter_shortcut_label">"एंटर करा"</string>
+    <string msgid="375214403600139847" name="abc_menu_function_shortcut_label">"Function+"</string>
+    <string msgid="4192209724446364286" name="abc_menu_meta_shortcut_label">"Meta+"</string>
+    <string msgid="4741552369836443843" name="abc_menu_shift_shortcut_label">"Shift+"</string>
+    <string msgid="5473865519181928982" name="abc_menu_space_shortcut_label">"space"</string>
+    <string msgid="6180552449598693998" name="abc_menu_sym_shortcut_label">"Sym+"</string>
+    <string msgid="5520303668377388990" name="abc_prepend_shortcut_label">"मेनू+"</string>
+    <string msgid="7208076849092622260" name="abc_search_hint">"शोधा…"</string>
+    <string msgid="3741173234950517107" name="abc_searchview_description_clear">"क्‍वेरी साफ करा"</string>
+    <string msgid="693312494995508443" name="abc_searchview_description_query">"शोध क्वेरी"</string>
+    <string msgid="3417662926640357176" name="abc_searchview_description_search">"शोधा"</string>
+    <string msgid="1486535517437947103" name="abc_searchview_description_submit">"क्वेरी सबमिट करा"</string>
+    <string msgid="2293578557972875415" name="abc_searchview_description_voice">"व्हॉइस शोध"</string>
+    <string msgid="8875138169939072951" name="abc_shareactionprovider_share_with">"यांच्यासोबत शेअर करा"</string>
+    <string msgid="9055268688411532828" name="abc_shareactionprovider_share_with_application">"<ns1:g id="APPLICATION_NAME">%s</ns1:g> सह शेअर करा"</string>
+    <string msgid="1656852541809559762" name="abc_toolbar_collapse_description">"कोलॅप्स करा"</string>
+    <string msgid="881409763997275156" name="call_notification_answer_action">"उत्तर द्या"</string>
+    <string msgid="8793775615905189152" name="call_notification_answer_video_action">"व्हिडिओ"</string>
+    <string msgid="3229508546291798546" name="call_notification_decline_action">"नकार द्या"</string>
+    <string msgid="2659457946726154263" name="call_notification_hang_up_action">"कॉल बंद करा"</string>
+    <string msgid="6107532579223922871" name="call_notification_incoming_text">"इनकमिंग कॉल"</string>
+    <string msgid="8623827134497363134" name="call_notification_ongoing_text">"सुरू असलेला कॉल"</string>
+    <string msgid="59049573811482460" name="call_notification_screening_text">"इनकमिंग कॉल स्क्रीन करत आहे"</string>
+    <string name="cast_ad_label">जाहिरात</string>
+    <string name="cast_casting_to_device">%1$s वर कास्ट करत आहे</string>
+    <string name="cast_closed_captions">बंद मथळे</string>
+    <string name="cast_closed_captions_unavailable">उपशीर्षक अनुपलब्ध आहेत</string>
+    <string name="cast_connecting_to_device">%1$sशी कनेक्ट करत आहे</string>
+    <string name="cast_disconnect">डिस्कनेक्ट करा</string>
+    <string name="cast_dynamic_group_name_format">%1$s + %2$d</string>
+    <string name="cast_expanded_controller_ad_image_description">कास्ट मिळवणारा जाहिरात प्ले करतो तेव्हा इमेज प्रदर्शित केली जाते</string>
+    <string name="cast_expanded_controller_ad_in_progress">जाहिरात प्रगतीपथावर आहे...</string>
+    <string name="cast_expanded_controller_background_image">अल्बम कला</string>
+    <string name="cast_expanded_controller_live_head_description">वर्तमान स्थिती लाइव्ह स्ट्रीमच्या शीर्षस्थानी आहे</string>
+    <string name="cast_expanded_controller_live_stream_indicator">लाइव्ह स्ट्रीम</string>
+    <string name="cast_expanded_controller_loading">लोड करत आहे...</string>
+    <string name="cast_expanded_controller_skip_ad_label">जाहिरात वगळा</string>
+    <string name="cast_expanded_controller_skip_ad_text">तुम्ही जाहिरात %1$d मध्ये वगळू शकता…</string>
+    <string name="cast_forward">पुढे करा</string>
+    <string name="cast_forward_10">दहा सेकंदांपर्यंत पुढे करा</string>
+    <string name="cast_forward_30">तीस सेकंदांपर्यंत पुढे करा</string>
+    <string name="cast_intro_overlay_button_text">@android:string/ok</string>
+    <string name="cast_live_label">लाइव्ह</string>
+    <string name="cast_mute">म्यूट करा</string>
+    <string name="cast_notification_connected_message">%1$s शी कनेक्ट केले</string>
+    <string name="cast_notification_connecting_message">%1$s शी कनेक्ट करत आहे</string>
+    <string name="cast_notification_default_channel_name">कास्‍ट करा</string>
+    <string name="cast_notification_disconnect">डिस्कनेक्ट करा</string>
+    <string name="cast_pause">विराम द्या</string>
+    <string name="cast_play">प्ले करा</string>
+    <string name="cast_rewind">मागे न्या</string>
+    <string name="cast_rewind_10">दहा सेकंदांपर्यंत मागे न्या</string>
+    <string name="cast_rewind_30">तीस सेकंदांपर्यंत मागे न्या</string>
+    <string name="cast_seek_bar">प्लेबॅक नियंत्रण शोधते</string>
+    <string name="cast_skip_next">पुढील आयटमवर जा</string>
+    <string name="cast_skip_prev">मागील आयटमवर जा</string>
+    <string name="cast_stop">थांबा</string>
+    <string name="cast_stop_live_stream">लाइव्ह स्ट्रीम थांबवा</string>
+    <string name="cast_tracks_chooser_dialog_audio">ऑडिओ</string>
+    <string name="cast_tracks_chooser_dialog_cancel">रद्द करा</string>
+    <string name="cast_tracks_chooser_dialog_closed_captions">बंद केलेले मथळे</string>
+    <string name="cast_tracks_chooser_dialog_default_track_name">%1$d चा मागोवा घ्या</string>
+    <string name="cast_tracks_chooser_dialog_none">काहीही नाही</string>
+    <string name="cast_tracks_chooser_dialog_ok">ठीक आहे</string>
+    <string name="cast_tracks_chooser_dialog_subtitles">उपशीर्षके</string>
+    <string name="cast_unmute">अनम्यूट करा</string>
+    <string msgid="2523291102206661146" name="common_google_play_services_enable_button">सुरू करा</string>
+    <string msgid="227660514972886228" name="common_google_play_services_enable_text">तुम्ही Google Play सेवा सक्षम केल्याशिवाय %1$s हा अ‍ॅप कार्य करणार नाही.</string>
+    <string msgid="5122002158466380389" name="common_google_play_services_enable_title">Google Play सेवा सुरू करा</string>
+    <string msgid="7153882981874058840" name="common_google_play_services_install_button">स्‍थापित करा</string>
+    <string name="common_google_play_services_install_text">Google Play सेवा आपल्या डिव्हाइसवर उपलब्ध नाही, त्याशिवाय %1$s चालणार नाही.</string>
+    <string msgid="7215213145546190223" name="common_google_play_services_install_title">Google Play सेवा मिळवा</string>
+    <string name="common_google_play_services_notification_channel_name">Google Play सेवा उपलब्धता</string>
+    <string name="common_google_play_services_notification_ticker">Google Play सेवा एरर</string>
+    <string name="common_google_play_services_unknown_issue">%1$s ला Google Play सेवांमध्ये समस्या येत आहे. कृपया पुन्हा प्रयत्न करा.</string>
+    <string name="common_google_play_services_unsupported_text">तुमचे डिव्हाइस सपोर्ट करत नसलेल्या, Google Play सेवांशिवाय %1$s चालणार नाही.</string>
+    <string msgid="6556509956452265614" name="common_google_play_services_update_button">अपडेट करा</string>
+    <string msgid="9053896323427875356" name="common_google_play_services_update_text">तुम्ही Google Play सेवा अपडेट करेपर्यंत %1$s चालणार नाही.</string>
+    <string msgid="6006316683626838685" name="common_google_play_services_update_title">Google Play सेवा अपडेट करा</string>
+    <string name="common_google_play_services_updating_text">सध्‍या अपडेट होत असलेल्‍या, Google Play सेवांशिवाय %1$s चालणार नाही.</string>
+    <string name="common_google_play_services_wear_update_text">Google Play सेवांच्या नवीन आवृत्तीची आवश्यकता आहे. हे स्वत:ला लवकरच अपडेट करेल.</string>
+    <string name="common_open_on_phone">फोनवर उघडा</string>
+    <string name="common_signin_button_text">साइन इन करा</string>
+    <string name="common_signin_button_text_long">Google सह साइन इन करा</string>
+    <string msgid="9119039724000326934" name="ic_media_route_learn_more_accessibility">"कास्ट कसे करावे हे जाणून घ्या"</string>
+    <string name="media_notification_channel_name">Cast</string>
+    <string msgid="2939063992730535343" name="mr_button_content_description">"कास्‍ट करा"</string>
+    <string msgid="6073720094880410356" name="mr_cast_button_connected">"कास्‍ट करा. कनेक्ट केले आहे"</string>
+    <string msgid="6629927151350192407" name="mr_cast_button_connecting">"कास्‍ट करा. कनेक्ट करत आहे"</string>
+    <string msgid="8071109333469380363" name="mr_cast_button_disconnected">"कास्‍ट करा. डिस्कनेक्ट केले आहे"</string>
+    <string msgid="2175930138959078155" name="mr_cast_dialog_title_view_placeholder">"कोणतीही माहिती उपलब्ध नाही"</string>
+    <string msgid="4257319068277776035" name="mr_chooser_looking_for_devices">"डिव्हाइस शोधत आहे…"</string>
+    <string msgid="6114250663023140921" name="mr_chooser_searching">"डिव्हाइस शोधत आहे"</string>
+    <string msgid="1419936397646839840" name="mr_chooser_title">"यावर कास्ट करा"</string>
+    <string msgid="3799500840179081429" name="mr_chooser_wifi_learn_more"><a href="https://support.google.com/chromecast/?p=trouble-finding-devices">"अधिक जाणून घ्या"</a></string>
+    <string msgid="2998902945608081567" name="mr_chooser_wifi_warning_description_car">"दुसरे डिव्हाइस ही कार आहे त्याच वाय-फाय नेटवर्कवर असल्याची खात्री करा"</string>
+    <string msgid="2555886884770958244" name="mr_chooser_wifi_warning_description_phone">"दुसरे डिव्हाइस हा फोन आहे त्याच वाय-फाय नेटवर्कवर असल्याची खात्री करा"</string>
+    <string msgid="6038748488793588164" name="mr_chooser_wifi_warning_description_tablet">"दुसरे डिव्हाइस हा टॅबलेट आहे त्याच वाय-फाय नेटवर्कवर असल्याची खात्री करा"</string>
+    <string msgid="5845921667085074878" name="mr_chooser_wifi_warning_description_tv">"दुसरे डिव्हाइस हा टीव्ही आहे त्याच वाय-फाय नेटवर्कवर असल्याची खात्री करा"</string>
+    <string msgid="3459891599800041449" name="mr_chooser_wifi_warning_description_unknown">"दुसरे डिव्हाइस हे डिव्हाइस आहे त्याच वाय-फाय नेटवर्कवर असल्याची खात्री करा"</string>
+    <string msgid="5255021372884233706" name="mr_chooser_wifi_warning_description_watch">"दुसरे डिव्हाइस हे वॉच आहे त्याच वाय-फाय नेटवर्कवर असल्याची खात्री करा"</string>
+    <string msgid="5213435473397442608" name="mr_chooser_zero_routes_found_title">"कोणतीही डिव्हाइस उपलब्ध नाहीत"</string>
+    <string msgid="3330502667672708728" name="mr_controller_album_art">"अल्बम कला"</string>
+    <string msgid="9171231064758955152" name="mr_controller_casting_screen">"स्क्रीन कास्‍ट करत आहे"</string>
+    <string msgid="5684434439232634509" name="mr_controller_close_description">"बंद"</string>
+    <string msgid="2585048604188129749" name="mr_controller_collapse_group">"कोलॅप्स"</string>
+    <string msgid="7812275474138309497" name="mr_controller_disconnect">"‍डिस्कनेक्ट करा"</string>
+    <string msgid="4521419834052044261" name="mr_controller_expand_group">"विस्तार करा"</string>
+    <string msgid="855271725131981086" name="mr_controller_no_info_available">"कोणतीही माहिती उपलब्ध नाही"</string>
+    <string msgid="5495452265246139458" name="mr_controller_no_media_selected">"मीडिया निवडला नाही"</string>
+    <string msgid="747801650871398383" name="mr_controller_pause">"थांबवा"</string>
+    <string msgid="1253345086594430054" name="mr_controller_play">"खेळा"</string>
+    <string msgid="5497722768305745508" name="mr_controller_stop">"थांबा"</string>
+    <string msgid="804210341192624074" name="mr_controller_stop_casting">"कास्ट करणे थांबवा"</string>
+    <string msgid="2955862765169128170" name="mr_controller_volume_slider">"व्हॉल्यूम स्लायडर"</string>
+    <string msgid="4115858704575247342" name="mr_dialog_default_group_name">"गट"</string>
+    <string msgid="4307018456678388936" name="mr_dialog_groupable_header">"डिव्हाइस जोडा"</string>
+    <string msgid="6068257520605505468" name="mr_dialog_transferable_header">"गटावर प्ले करा"</string>
+    <string msgid="7449553026175453403" name="mr_system_route_name">"सिस्टम"</string>
+    <string msgid="4088331695424166162" name="mr_user_route_category_name">"डिव्हाइस"</string>
+    <string msgid="6264217191555673260" name="search_menu_title">"शोध"</string>
+    <string msgid="6277540029070332960" name="status_bar_notification_info_overflow">"९९९+"</string>
+</resources>

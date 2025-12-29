@@ -17,6 +17,7 @@ import {
   ChevronUp,
   ChevronDown,
   Plus,
+  Cast,
 } from 'lucide-react';
 import { useMusicPlayer } from '@/contexts/MusicPlayerContext';
 import { useLikeTrack, useLikedSongs } from '@/hooks/useNostrMusic';
@@ -25,6 +26,7 @@ import { CommentDialog } from './CommentDialog';
 import { ZapDialog } from './ZapDialog';
 import { AddToPlaylistDialog } from './AddToPlaylistDialog';
 import { parseRSSEpisodeValueBlock } from '@/lib/rssParser';
+import { useChromecast } from '@/hooks/useChromecast';
 import type { ValueBlock } from '@/lib/podcastindex';
 
 export function MusicPlayer() {
@@ -35,11 +37,13 @@ export function MusicPlayer() {
     setVolume,
     nextTrack,
     previousTrack,
-    playTrackByIndex
+    playTrackByIndex,
+    setCasting
   } = useMusicPlayer();
   const { user } = useCurrentUser();
   const { mutate: likeTrack, isPending: likePending } = useLikeTrack();
   const { data: likedSongs } = useLikedSongs();
+  const { isNative, isAvailable: castAvailable, isCasting, castMedia, castPlay, castPause, stopCasting, requestSession } = useChromecast();
   const location = useLocation();
   const prevPathnameRef = useRef(location.pathname);
   const [isExpanded, setIsExpanded] = useState(false);
@@ -273,6 +277,69 @@ export function MusicPlayer() {
     setAddToPlaylistOpen(true);
   };
 
+  const handleCast = async () => {
+    if (!currentTrack) return;
+
+    if (isCasting) {
+      // Stop casting and resume local playback
+      setCasting(false);
+      await stopCasting();
+    } else {
+      // Start casting - this will pause local audio
+      setCasting(true);
+      // Cast the current track
+      const success = await castMedia(currentTrack.mediaUrl);
+      if (!success) {
+        // If casting failed, revert
+        setCasting(false);
+      }
+    }
+  };
+
+  // Custom toggle that handles both local and cast playback
+  const handleTogglePlayPause = () => {
+    if (state.isCasting) {
+      // Only control Chromecast when casting
+      if (isPlaying) {
+        castPause();
+      } else {
+        castPlay();
+      }
+    }
+    // Toggle UI state (local audio won't play when isCasting is true)
+    togglePlayPause();
+  };
+
+  // Handle next track - if casting, load the new track on Chromecast
+  const handleNextTrack = async () => {
+    nextTrack();
+    // If casting, we need to load the next track on Chromecast after state updates
+    if (state.isCasting && state.currentIndex < state.queue.length - 1) {
+      const nextTrackItem = state.queue[state.currentIndex + 1];
+      if (nextTrackItem) {
+        // Small delay to let state update
+        setTimeout(() => {
+          castMedia(nextTrackItem.mediaUrl);
+        }, 100);
+      }
+    }
+  };
+
+  // Handle previous track - if casting, load the previous track on Chromecast
+  const handlePreviousTrack = async () => {
+    previousTrack();
+    // If casting, we need to load the previous track on Chromecast after state updates
+    if (state.isCasting && state.currentIndex > 0) {
+      const prevTrackItem = state.queue[state.currentIndex - 1];
+      if (prevTrackItem) {
+        // Small delay to let state update
+        setTimeout(() => {
+          castMedia(prevTrackItem.mediaUrl);
+        }, 100);
+      }
+    }
+  };
+
   // Mini player (default, mobile)
   const miniPlayer = (
     <Card className="fixed bottom-0 left-0 right-0 z-50 rounded-none border-t border-gray-800 bg-black pb-[env(safe-area-inset-bottom)] sm:hidden">
@@ -348,7 +415,7 @@ export function MusicPlayer() {
 
             <Button
               size="icon"
-              onClick={togglePlayPause}
+              onClick={handleTogglePlayPause}
               disabled={state.isLoading}
               className="h-10 w-10 rounded-full bg-foreground text-background hover:bg-foreground/90"
             >
@@ -527,7 +594,7 @@ export function MusicPlayer() {
           <Button
             size="icon"
             variant="ghost"
-            onClick={previousTrack}
+            onClick={handlePreviousTrack}
             disabled={state.currentIndex <= 0}
             className="rounded-full hover:bg-muted transition-all duration-300"
             style={{
@@ -545,7 +612,7 @@ export function MusicPlayer() {
 
           <Button
             size="icon"
-            onClick={togglePlayPause}
+            onClick={handleTogglePlayPause}
             disabled={state.isLoading}
             className="rounded-full bg-foreground text-background hover:bg-foreground/90 shadow-lg transition-all duration-300"
             style={{
@@ -574,7 +641,7 @@ export function MusicPlayer() {
           <Button
             size="icon"
             variant="ghost"
-            onClick={nextTrack}
+            onClick={handleNextTrack}
             disabled={state.currentIndex >= state.queue.length - 1}
             className="rounded-full hover:bg-muted transition-all duration-300"
             style={{
@@ -703,6 +770,28 @@ export function MusicPlayer() {
               maxWidth: showQueue ? 'min(40vw, 12rem)' : 'min(60vw, 20rem)',
             }}
           />
+
+          {/* Cast Button - only show on native platforms when available */}
+          {isNative && castAvailable && (
+            <Button
+              size="icon"
+              variant="ghost"
+              onClick={handleCast}
+              className={`rounded-full hover:bg-muted transition-all duration-300 ${isCasting ? 'text-primary' : ''}`}
+              style={{
+                width: showQueue ? 'min(8vw, 2.5rem)' : 'min(10vw, 2.75rem)',
+                height: showQueue ? 'min(8vw, 2.5rem)' : 'min(10vw, 2.75rem)',
+              }}
+              aria-label={isCasting ? 'Casting' : 'Cast to device'}
+            >
+              <Cast
+                style={{
+                  width: showQueue ? 'min(4vw, 1rem)' : 'min(5vw, 1.25rem)',
+                  height: showQueue ? 'min(4vw, 1rem)' : 'min(5vw, 1.25rem)',
+                }}
+              />
+            </Button>
+          )}
         </div>
       </div>
 
@@ -754,7 +843,7 @@ export function MusicPlayer() {
               <Button
                 size="icon"
                 variant="ghost"
-                onClick={previousTrack}
+                onClick={handlePreviousTrack}
                 disabled={state.currentIndex <= 0}
                 className="h-8 w-8 rounded-full hover:bg-muted"
               >
@@ -763,7 +852,7 @@ export function MusicPlayer() {
 
               <Button
                 size="icon"
-                onClick={togglePlayPause}
+                onClick={handleTogglePlayPause}
                 disabled={state.isLoading}
                 className="h-10 w-10 rounded-full bg-foreground text-background hover:bg-foreground/90"
               >
@@ -777,7 +866,7 @@ export function MusicPlayer() {
               <Button
                 size="icon"
                 variant="ghost"
-                onClick={nextTrack}
+                onClick={handleNextTrack}
                 disabled={state.currentIndex >= state.queue.length - 1}
                 className="h-8 w-8 rounded-full hover:bg-muted"
               >
@@ -859,6 +948,19 @@ export function MusicPlayer() {
                 className="w-20"
               />
             </div>
+
+            {/* Cast Button - only show on native platforms when available */}
+            {isNative && castAvailable && (
+              <Button
+                size="icon"
+                variant="ghost"
+                onClick={handleCast}
+                className={`h-8 w-8 rounded-full hover:bg-muted ${isCasting ? 'text-primary' : ''}`}
+                aria-label={isCasting ? 'Casting' : 'Cast to device'}
+              >
+                <Cast className="h-4 w-4" />
+              </Button>
+            )}
 
             {/* Expand Button */}
             <Button
@@ -965,7 +1067,7 @@ export function MusicPlayer() {
               <Button
                 size="icon"
                 variant="ghost"
-                onClick={previousTrack}
+                onClick={handlePreviousTrack}
                 disabled={state.currentIndex <= 0}
                 className="rounded-full hover:bg-muted h-12 w-12"
               >
@@ -974,7 +1076,7 @@ export function MusicPlayer() {
 
               <Button
                 size="icon"
-                onClick={togglePlayPause}
+                onClick={handleTogglePlayPause}
                 disabled={state.isLoading}
                 className="rounded-full bg-foreground text-background hover:bg-foreground/90 shadow-lg h-16 w-16"
               >
@@ -988,7 +1090,7 @@ export function MusicPlayer() {
               <Button
                 size="icon"
                 variant="ghost"
-                onClick={nextTrack}
+                onClick={handleNextTrack}
                 disabled={state.currentIndex >= state.queue.length - 1}
                 className="rounded-full hover:bg-muted h-12 w-12"
               >
@@ -1052,6 +1154,19 @@ export function MusicPlayer() {
                 onValueChange={handleVolumeChange}
                 className="w-32"
               />
+
+              {/* Cast Button - only show on native platforms when available */}
+              {isNative && castAvailable && (
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  onClick={handleCast}
+                  className={`h-10 w-10 rounded-full hover:bg-muted ${isCasting ? 'text-primary' : ''}`}
+                  aria-label={isCasting ? 'Casting' : 'Cast to device'}
+                >
+                  <Cast className="h-5 w-5" />
+                </Button>
+              )}
             </div>
 
             {/* Queue Info */}
