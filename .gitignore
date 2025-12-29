@@ -46,6 +46,10 @@ android/build/
 android/.gradle/
 android/local.properties
 
+# Capacitor plugins
+plugins/*/android/build/
+plugins/*/android/.gradle/
+
 # Capacitor iOS
 ios/App/Pods/
 ios/App/App.xcworkspace/xcuserdata/

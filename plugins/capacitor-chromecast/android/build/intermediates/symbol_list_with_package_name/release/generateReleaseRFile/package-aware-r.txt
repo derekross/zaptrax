@@ -1,2 +1,0 @@
-com.gameleap.plugins.chromecast
-string app_id
