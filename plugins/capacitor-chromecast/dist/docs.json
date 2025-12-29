@@ -1,0 +1,104 @@
+{
+  "api": {
+    "name": "ChromecastPlugin",
+    "slug": "chromecastplugin",
+    "docs": "",
+    "tags": [],
+    "methods": [
+      {
+        "name": "initialize",
+        "signature": "() => Promise<void>",
+        "parameters": [],
+        "returns": "Promise<void>",
+        "tags": [],
+        "docs": "",
+        "complexTypes": [],
+        "slug": "initialize"
+      },
+      {
+        "name": "requestSession",
+        "signature": "() => Promise<void>",
+        "parameters": [],
+        "returns": "Promise<void>",
+        "tags": [],
+        "docs": "",
+        "complexTypes": [],
+        "slug": "requestsession"
+      },
+      {
+        "name": "launchMedia",
+        "signature": "(mediaUrl: string) => Promise<boolean>",
+        "parameters": [
+          {
+            "name": "mediaUrl",
+            "docs": "",
+            "type": "string"
+          }
+        ],
+        "returns": "Promise<boolean>",
+        "tags": [],
+        "docs": "",
+        "complexTypes": [],
+        "slug": "launchmedia"
+      },
+      {
+        "name": "addListener",
+        "signature": "(eventName: string, listenerFunc: ListenerCallback) => Promise<PluginListenerHandle> & PluginListenerHandle",
+        "parameters": [
+          {
+            "name": "eventName",
+            "docs": "",
+            "type": "string"
+          },
+          {
+            "name": "listenerFunc",
+            "docs": "",
+            "type": "ListenerCallback"
+          }
+        ],
+        "returns": "Promise<PluginListenerHandle> & PluginListenerHandle",
+        "tags": [],
+        "docs": "",
+        "complexTypes": [
+          "PluginListenerHandle",
+          "ListenerCallback"
+        ],
+        "slug": "addlistenerstring"
+      }
+    ],
+    "properties": []
+  },
+  "interfaces": [
+    {
+      "name": "PluginListenerHandle",
+      "slug": "pluginlistenerhandle",
+      "docs": "",
+      "tags": [],
+      "methods": [],
+      "properties": [
+        {
+          "name": "remove",
+          "tags": [],
+          "docs": "",
+          "complexTypes": [],
+          "type": "() => Promise<void>"
+        }
+      ]
+    }
+  ],
+  "enums": [],
+  "typeAliases": [
+    {
+      "name": "ListenerCallback",
+      "slug": "listenercallback",
+      "docs": "",
+      "types": [
+        {
+          "text": "(err: any, ...args: any[]): void",
+          "complexTypes": []
+        }
+      ]
+    }
+  ],
+  "pluginConfigs": []
+}
