@@ -15,6 +15,7 @@ import { NostrTrackPage } from "./pages/NostrTrackPage";
 import { NostrPlaylistPage } from "./pages/NostrPlaylistPage";
 import { MusicPlayer } from "./components/music/MusicPlayer";
 import NotFound from "./pages/NotFound";
+import { PrivacyPolicy } from "./pages/PrivacyPolicy";
 import { Layout } from "./components/Layout";
 import { MusicPlaylists } from "./components/music/MusicPlaylists";
 import { MusicLikedSongs } from "./components/music/MusicLikedSongs";
@@ -49,6 +50,7 @@ export function AppRouter() {
                 <Route path="album/:albumId" element={<AlbumPage />} />
                 <Route path="track/:naddr" element={<NostrTrackPage />} />
                 <Route path="feed/:feedId" element={<PodcastIndexFeedPage />} />
+                <Route path="privacy" element={<PrivacyPolicy />} />
                 <Route path="*" element={<NotFound />} />
               </Route>
             </Routes>
