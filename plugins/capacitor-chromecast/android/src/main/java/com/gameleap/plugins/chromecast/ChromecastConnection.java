@@ -23,6 +23,8 @@ import com.google.android.gms.cast.framework.CastState;
 import com.google.android.gms.cast.framework.CastStateListener;
 import com.google.android.gms.cast.framework.SessionManager;
 import com.google.android.gms.cast.framework.SessionManagerListener;
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GoogleApiAvailability;
 
 import org.apache.cordova.CallbackContext;
 import org.json.JSONObject;
@@ -47,6 +49,11 @@ public class ChromecastConnection {
     /** Initialize lifetime variable. */
     private String appId;
 
+    /** Flag to track if Cast/GMS is available. */
+    private boolean castAvailable = false;
+    /** Cached CastContext to avoid repeated initialization attempts. */
+    private CastContext cachedCastContext = null;
+
     /**
      * Constructor.
      * @param act the current context
@@ -63,15 +70,50 @@ public class ChromecastConnection {
                 listener = connectionListener;
                 media = new ChromecastSession(activity, listener);
 
+                // Check if Google Play Services is available before initializing Cast
+                if (!isGooglePlayServicesAvailable()) {
+                    android.util.Log.i("ChromecastConnection", "Google Play Services not available, Cast disabled");
+                    castAvailable = false;
+                    return;
+                }
+
                 // Set the initial appId
                 CastOptionsProvider.setAppId(appId);
 
                 // This is the first call to getContext which will start up the
                 // CastContext and prep it for searching for a session to rejoin
                 // Also adds the receiver update callback
-                getContext().addCastStateListener(listener);
+                try {
+                    CastContext ctx = getContext();
+                    if (ctx != null) {
+                        ctx.addCastStateListener(listener);
+                        castAvailable = true;
+                    }
+                } catch (Exception e) {
+                    android.util.Log.e("ChromecastConnection", "Failed to initialize Cast: " + e.getMessage());
+                    castAvailable = false;
+                } catch (Throwable t) {
+                    android.util.Log.e("ChromecastConnection", "Cast framework error: " + t.getMessage());
+                    castAvailable = false;
+                }
             }
         });
+    }
+
+    /**
+     * Check if Google Play Services is available on this device.
+     * @return true if GMS is available, false otherwise
+     */
+    private boolean isGooglePlayServicesAvailable() {
+        try {
+            GoogleApiAvailability apiAvailability = GoogleApiAvailability.getInstance();
+            int resultCode = apiAvailability.isGooglePlayServicesAvailable(activity);
+            return resultCode == ConnectionResult.SUCCESS;
+        } catch (Exception e) {
+            return false;
+        } catch (Throwable t) {
+            return false;
+        }
     }
 
     /**
@@ -90,6 +132,13 @@ public class ChromecastConnection {
     public void initialize(final String applicationId, final PluginCall pluginCall) {
         activity.runOnUiThread(new Runnable() {
             public void run() {
+                // Check if Cast is available (GMS must be present)
+                if (!castAvailable) {
+                    android.util.Log.i("ChromecastConnection", "Cast not available during initialize - GMS may be missing");
+                    pluginCall.reject("Google Play Services not available - Cast disabled");
+                    return;
+                }
+
                 // If the app Id changed
                 if (applicationId == null || !applicationId.equals(appId)) {
                     // If app Id is valid
@@ -137,15 +186,46 @@ public class ChromecastConnection {
     }
 
     private CastContext getContext() {
-        return CastContext.getSharedInstance(activity);
+        if (!castAvailable && cachedCastContext == null) {
+            // If we know Cast isn't available, don't try again
+            if (!isGooglePlayServicesAvailable()) {
+                return null;
+            }
+        }
+        if (cachedCastContext != null) {
+            return cachedCastContext;
+        }
+        try {
+            cachedCastContext = CastContext.getSharedInstance(activity);
+            castAvailable = true;
+            return cachedCastContext;
+        } catch (Exception e) {
+            android.util.Log.e("ChromecastConnection", "getContext failed: " + e.getMessage());
+            castAvailable = false;
+            return null;
+        } catch (Throwable t) {
+            android.util.Log.e("ChromecastConnection", "getContext error: " + t.getMessage());
+            castAvailable = false;
+            return null;
+        }
     }
 
     private SessionManager getSessionManager() {
-        return getContext().getSessionManager();
+        CastContext ctx = getContext();
+        return ctx != null ? ctx.getSessionManager() : null;
+    }
+
+    /**
+     * Check if Cast is available on this device.
+     * @return true if Cast is available
+     */
+    public boolean isCastAvailable() {
+        return castAvailable;
     }
 
     private CastSession getSession() {
-        return getSessionManager().getCurrentCastSession();
+        SessionManager sm = getSessionManager();
+        return sm != null ? sm.getCurrentCastSession() : null;
     }
 
     /**

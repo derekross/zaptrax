@@ -199,8 +199,17 @@ public class Chromecast extends Plugin {
             Log.e("tag", "Error initializing Chromecast connection: " + e.getMessage());
             noChromecastError = "Could not initialize chromecast: " + e.getMessage();
             e.printStackTrace();
+            pluginCall.reject(noChromecastError);
+            return false;
+        } catch (Throwable t) {
+            Log.e("tag", "Cast framework error: " + t.getMessage());
+            noChromecastError = "Cast framework not available: " + t.getMessage();
+            t.printStackTrace();
+            pluginCall.reject(noChromecastError);
+            return false;
         }
 
+        // Initialize connection - availability will be checked asynchronously on UI thread
         connection.initialize(appId, pluginCall);
         return true;
     }
