@@ -19,8 +19,8 @@ export function RemoteLoginSuccess() {
       return () => clearTimeout(timer);
     }
 
-    // Check up to 10 times (5 seconds total) for the session to become active
-    if (checkCount < 10) {
+    // Check up to 20 times (10 seconds total) for the session to become active
+    if (checkCount < 20) {
       const timer = setTimeout(() => {
         setCheckCount(prev => prev + 1);
       }, 500);
