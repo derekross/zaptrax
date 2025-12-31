@@ -24,9 +24,9 @@ const NostrProvider: React.FC<NostrProviderProps> = (props) => {
   // This ensures we don't miss content from different relays
   const multiRelayUrls = useRef<string[]>([
     'wss://relay.primal.net',
-    'wss://relay.nostr.band',
     'wss://relay.damus.io',
-    'wss://ditto.pub/relay'
+    'wss://nos.lol',
+    'wss://relay.ditto.pub'
   ]);
 
   // Update refs when config changes

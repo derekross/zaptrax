@@ -40,8 +40,8 @@ const defaultConfig: AppConfig = {
 };
 
 const presetRelays = [
-  { url: 'wss://ditto.pub/relay', name: 'Ditto' },
-  { url: 'wss://relay.nostr.band', name: 'Nostr.Band' },
+  { url: 'wss://relay.ditto.pub', name: 'Ditto' },
+  { url: 'wss://nos.lol', name: 'nos.lol' },
   { url: 'wss://relay.damus.io', name: 'Damus' },
   { url: 'wss://relay.primal.net', name: 'Primal' },
 ];
