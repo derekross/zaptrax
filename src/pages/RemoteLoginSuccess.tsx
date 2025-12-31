@@ -1,17 +1,36 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useCurrentUser } from '@/hooks/useCurrentUser';
+import { useNostrLogin } from '@nostrify/react/login';
 import { Loader2, CheckCircle, XCircle } from 'lucide-react';
+
+// Storage key used by @nostrify/react for logins
+const LOGINS_STORAGE_KEY = 'nostrify:logins';
 
 export function RemoteLoginSuccess() {
   const navigate = useNavigate();
-  const { user } = useCurrentUser();
+  const { logins } = useNostrLogin();
   const [checkCount, setCheckCount] = useState(0);
   const [status, setStatus] = useState<'checking' | 'success' | 'timeout'>('checking');
 
+  // Check localStorage directly as a fallback
+  const checkLocalStorage = useCallback(() => {
+    try {
+      const stored = localStorage.getItem(LOGINS_STORAGE_KEY);
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        return Array.isArray(parsed) && parsed.length > 0;
+      }
+    } catch {
+      // Ignore parse errors
+    }
+    return false;
+  }, []);
+
+  // Check if logged in via React state or localStorage
+  const isLoggedIn = logins.length > 0 || checkLocalStorage();
+
   useEffect(() => {
-    // If user is logged in, redirect to home
-    if (user) {
+    if (isLoggedIn) {
       setStatus('success');
       const timer = setTimeout(() => {
         navigate('/', { replace: true });
@@ -26,10 +45,29 @@ export function RemoteLoginSuccess() {
       }, 500);
       return () => clearTimeout(timer);
     } else {
-      // Timeout - session not detected
       setStatus('timeout');
     }
-  }, [user, checkCount, navigate]);
+  }, [isLoggedIn, checkCount, navigate, checkLocalStorage]);
+
+  // Listen for storage events (in case login is added from another context)
+  useEffect(() => {
+    const handleStorage = (e: StorageEvent) => {
+      if (e.key === LOGINS_STORAGE_KEY && e.newValue) {
+        try {
+          const parsed = JSON.parse(e.newValue);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            setStatus('success');
+            setTimeout(() => navigate('/', { replace: true }), 1500);
+          }
+        } catch {
+          // Ignore parse errors
+        }
+      }
+    };
+
+    window.addEventListener('storage', handleStorage);
+    return () => window.removeEventListener('storage', handleStorage);
+  }, [navigate]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-black p-4">
