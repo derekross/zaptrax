@@ -3,12 +3,6 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/components/ui/tooltip';
-import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
@@ -24,10 +18,8 @@ import {
   Share2,
   Trash2,
   Copy,
-  Heart,
   MessageCircle,
   ListPlus,
-  ExternalLink,
   Clock,
 } from 'lucide-react';
 import { useNostr } from '@nostrify/react';
@@ -38,7 +30,6 @@ import { useMusicPlayer } from '@/contexts/MusicPlayerContext';
 import { genUserName } from '@/lib/genUserName';
 import { nip19 } from 'nostr-tools';
 import { wavlakeAPI } from '@/lib/wavlake';
-import type { WavlakeTrack } from '@/lib/wavlake';
 import { wavlakeToUnified } from '@/lib/unifiedTrack';
 import type { UnifiedTrack } from '@/lib/unifiedTrack';
 import { EditPlaylistDialog } from '@/components/music/EditPlaylistDialog';
@@ -242,7 +233,7 @@ export function PlaylistPage() {
     return allPlaylistTracks.some(track => track.id === state.currentTrack?.id) && state.isPlaying;
   };
 
-  const handlePlayTrack = (track: WavlakeTrack) => {
+  const handlePlayTrack = (track: UnifiedTrack) => {
     if (allPlaylistTracks.length > 0) {
       playTrack(track, allPlaylistTracks);
     }
@@ -358,7 +349,7 @@ export function PlaylistPage() {
 
   const { title, description, trackCount } = getPlaylistInfo();
   const displayName = metadata?.name ?? genUserName(playlist.pubkey);
-  const profileImage = metadata?.picture;
+  const _profileImage = metadata?.picture;
   const isOwner = user?.pubkey === playlist.pubkey;
 
   // Get first track's album art for playlist cover

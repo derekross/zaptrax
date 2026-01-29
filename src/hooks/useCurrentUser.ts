@@ -1,10 +1,13 @@
-import { type NLoginBunker, type NLoginType, NUser, useNostrLogin } from '@nostrify/react/login';
+import { type NLoginType, NUser, useNostrLogin } from '@nostrify/react/login';
 import { useNostr } from '@nostrify/react';
 import { NConnectSigner, NSecSigner } from '@nostrify/nostrify';
 import { nip19 } from 'nostr-tools';
 import { useCallback, useMemo } from 'react';
 
 import { useAuthor } from './useAuthor.ts';
+
+// Extract the bunker login type from the union
+type NLoginBunker = Extract<NLoginType, { type: 'bunker' }>;
 
 export function useCurrentUser() {
   const { nostr } = useNostr();
@@ -52,8 +55,11 @@ export function useCurrentUser() {
 
 /** Custom bunker login handler that correctly uses bunkerPubkey for NConnectSigner */
 function fromBunkerLogin(login: NLoginBunker, pool: Parameters<typeof NUser.fromBunkerLogin>[1]): NUser {
-  const clientSk = nip19.decode(login.data.clientNsec);
-  const clientSigner = new NSecSigner(clientSk.data);
+  const decoded = nip19.decode(login.data.clientNsec);
+  if (decoded.type !== 'nsec') {
+    throw new Error('Invalid client nsec');
+  }
+  const clientSigner = new NSecSigner(decoded.data);
 
   return new NUser(
     login.type,

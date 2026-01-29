@@ -1,5 +1,5 @@
 import JSZip from 'jszip';
-import { WavlakeTrack, WavlakeAlbum } from '@/lib/wavlake';
+import type { WavlakeAlbum } from '@/lib/wavlake';
 
 export interface DownloadProgress {
   current: number;

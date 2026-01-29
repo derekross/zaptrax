@@ -95,19 +95,22 @@ describe('useWebLN', () => {
     expect(paymentResponse).toEqual(paymentResult);
   });
 
-  it('throws error when trying to send payment without enabling', async () => {
+  it('sends payment successfully after auto-enabling WebLN', async () => {
     (window as unknown as { webln: typeof mockWebLNProvider }).webln = mockWebLNProvider;
+    const paymentResult = { preimage: 'auto-enabled-preimage' };
+    mockWebLNProvider.enable.mockResolvedValue(undefined);
+    mockWebLNProvider.sendPayment.mockResolvedValue(paymentResult);
 
     const { result } = renderHook(() => useWebLN());
 
+    let response;
     await act(async () => {
-      try {
-        await result.current.sendPayment('lnbc123...');
-        expect.fail('Should have thrown an error');
-      } catch (error) {
-        expect(error).toBeInstanceOf(Error);
-        expect((error as Error).message).toBe('WebLN not enabled');
-      }
+      // sendPayment auto-enables WebLN if not enabled, so this should succeed
+      response = await result.current.sendPayment('lnbc123...');
     });
+
+    expect(response).toEqual(paymentResult);
+    // After auto-enabling, isEnabled should be true
+    expect(result.current.isEnabled).toBe(true);
   });
 });

@@ -7,7 +7,6 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { usePodcastIndexFeedEpisodes, usePodcastIndexFeed } from '@/hooks/usePodcastIndex';
 import { useMusicPlayer } from '@/contexts/MusicPlayerContext';
 import { podcastIndexEpisodeToUnified } from '@/lib/unifiedTrack';
-import { cn } from '@/lib/utils';
 
 export function PodcastIndexFeedPage() {
   const { feedId } = useParams<{ feedId: string }>();
@@ -146,7 +145,7 @@ export function PodcastIndexFeedPage() {
 
         <div className="space-y-2">
           {episodes.map((episode, index) => {
-            const unifiedTrack = unifiedTracks[index];
+            const _unifiedTrack = unifiedTracks[index];
             const duration = episode.duration;
             const minutes = Math.floor(duration / 60);
             const seconds = duration % 60;

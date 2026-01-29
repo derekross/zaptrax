@@ -1,4 +1,4 @@
-import { useEffect, useCallback, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { Capacitor, registerPlugin } from '@capacitor/core';
 import { useMusicPlayer } from '@/contexts/MusicPlayerContext';
 
@@ -182,7 +182,7 @@ export function useAndroidAuto() {
           position: state.currentTime,
           speed: 1.0,
         });
-      } catch (error) {
+      } catch {
         // Silently fail position updates
       }
     };

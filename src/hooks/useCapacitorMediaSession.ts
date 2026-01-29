@@ -141,7 +141,7 @@ export function useCapacitorMediaSession() {
           position: state.currentTime,
           playbackRate: 1,
         });
-      } catch (error) {
+      } catch {
         // Position state updates can fail silently - don't spam logs
       }
     };

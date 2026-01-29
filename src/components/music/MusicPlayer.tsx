@@ -43,7 +43,7 @@ export function MusicPlayer() {
   const { user } = useCurrentUser();
   const { mutate: likeTrack, isPending: likePending } = useLikeTrack();
   const { data: likedSongs } = useLikedSongs();
-  const { isNative, isAvailable: castAvailable, isCasting, castMedia, castPlay, castPause, stopCasting, requestSession } = useChromecast();
+  const { isNative, isAvailable: castAvailable, isCasting, castMedia, castPlay, castPause, stopCasting } = useChromecast();
   const location = useLocation();
   const prevPathnameRef = useRef(location.pathname);
   const [isExpanded, setIsExpanded] = useState(false);

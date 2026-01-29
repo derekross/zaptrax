@@ -27,6 +27,7 @@ type MusicPlayerAction =
   | { type: 'SET_DURATION'; payload: number }
   | { type: 'SET_VOLUME'; payload: number }
   | { type: 'SET_QUEUE'; payload: UnifiedTrack[] }
+  | { type: 'ADD_TO_QUEUE'; payload: UnifiedTrack }
   | { type: 'SET_CURRENT_INDEX'; payload: number }
   | { type: 'PLAY_TRACK_BY_INDEX'; payload: number }
   | { type: 'NEXT_TRACK' }
@@ -70,6 +71,8 @@ function musicPlayerReducer(state: MusicPlayerState, action: MusicPlayerAction):
       return { ...state, volume: action.payload };
     case 'SET_QUEUE':
       return { ...state, queue: action.payload };
+    case 'ADD_TO_QUEUE':
+      return { ...state, queue: [...state.queue, action.payload] };
     case 'SET_CURRENT_INDEX':
       return { ...state, currentIndex: action.payload };
     case 'PLAY_TRACK_BY_INDEX':
@@ -130,6 +133,7 @@ interface MusicPlayerContextType {
   nextTrack: () => void;
   previousTrack: () => void;
   setCasting: (isCasting: boolean) => void;
+  addToQueue: (track: UnifiedTrack | WavlakeTrack) => void;
 }
 
 const MusicPlayerContext = createContext<MusicPlayerContextType | undefined>(undefined);
@@ -207,6 +211,11 @@ export function MusicPlayerProvider({ children }: { children: React.ReactNode })
     if (isCasting && audioRef.current) {
       audioRef.current.pause();
     }
+  };
+
+  const addToQueue = (track: UnifiedTrack | WavlakeTrack) => {
+    const unifiedTrack = 'source' in track ? track : wavlakeToUnified(track);
+    dispatch({ type: 'ADD_TO_QUEUE', payload: unifiedTrack });
   };
 
   // Audio event handlers (keep this useEffect for other event listeners)
@@ -423,6 +432,7 @@ export function MusicPlayerProvider({ children }: { children: React.ReactNode })
     nextTrack,
     previousTrack,
     setCasting,
+    addToQueue,
   };
 
   return (

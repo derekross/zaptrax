@@ -45,7 +45,7 @@ export function ZapDialog({ open, onOpenChange, track, rssValueBlock: passedRssV
   const [isLoading, setIsLoading] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<'webln' | 'external'>('webln');
   const [fetchedRssValueBlock, setFetchedRssValueBlock] = useState<ValueBlock | null>(null);
-  const [loadingValueBlock, setLoadingValueBlock] = useState(false);
+  const [_loadingValueBlock, setLoadingValueBlock] = useState(false);
   const { toast } = useToast();
   const webln = useWebLN();
 

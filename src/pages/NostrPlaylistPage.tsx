@@ -11,8 +11,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Play, Pause, ListMusic, MoreHorizontal, Share2, Copy, Clock } from 'lucide-react';
 import { useMusicPlayer } from '@/contexts/MusicPlayerContext';
-import { useNostrMusicPlaylist, getNostrTrackNaddr } from '@/hooks/useNostrMusicTracks';
-import { parseNostrMusicTrack } from '@/lib/unifiedTrack';
+import { useNostrMusicPlaylist } from '@/hooks/useNostrMusicTracks';
 import { useToast } from '@/hooks/useToast';
 import { useAuthor } from '@/hooks/useAuthor';
 

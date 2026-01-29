@@ -8,7 +8,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Play, Pause, MoreHorizontal, Heart, Clock, Plus, MessageCircle, Zap } from 'lucide-react';
+import { Play, Pause, MoreHorizontal, Heart, Plus, MessageCircle, Zap } from 'lucide-react';
 import { useMusicPlayer } from '@/contexts/MusicPlayerContext';
 import { cn } from '@/lib/utils';
 import type { WavlakeTrack } from '@/lib/wavlake';
