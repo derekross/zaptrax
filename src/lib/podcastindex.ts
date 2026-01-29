@@ -196,10 +196,10 @@ export class PodcastIndexAPI {
     return data.items || [];
   }
 
-  async getFeedEpisodes(feedId: number): Promise<PodcastIndexEpisodesResponse> {
+  async getFeedEpisodes(feedId: number, max: number = 1000): Promise<PodcastIndexEpisodesResponse> {
     const headers = await this.getAuthHeaders();
     const response = await fetch(
-      `${this.baseUrl}/episodes/byfeedid?id=${feedId}&pretty`,
+      `${this.baseUrl}/episodes/byfeedid?id=${feedId}&max=${max}&pretty`,
       { headers }
     );
     if (!response.ok) {
@@ -222,3 +222,29 @@ export class PodcastIndexAPI {
 }
 
 export const podcastIndexAPI = new PodcastIndexAPI();
+
+// Helper to check if an episode is audio (not video)
+export function isAudioEpisode(episode: PodcastIndexEpisode): boolean {
+  const enclosureType = episode.enclosureType?.toLowerCase() || '';
+  
+  // Check if it's a video type
+  const videoTypes = ['video/', 'video/mp4', 'video/webm', 'video/ogg', 'video/quicktime', 'video/x-m4v'];
+  const isVideo = videoTypes.some(type => enclosureType.startsWith(type) || enclosureType.includes(type));
+  
+  // Also check the URL for video extensions
+  const videoExtensions = ['.mp4', '.webm', '.mov', '.m4v', '.avi', '.mkv'];
+  const url = episode.enclosureUrl?.toLowerCase() || '';
+  const hasVideoExtension = videoExtensions.some(ext => url.endsWith(ext));
+  
+  return !isVideo && !hasVideoExtension;
+}
+
+// Helper to check if an episode is video
+export function isVideoEpisode(episode: PodcastIndexEpisode): boolean {
+  return !isAudioEpisode(episode);
+}
+
+// Count video episodes in a list
+export function countVideoEpisodes(episodes: PodcastIndexEpisode[]): number {
+  return episodes.filter(isVideoEpisode).length;
+}

@@ -2,11 +2,12 @@ import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Play, Radio, ArrowLeft } from 'lucide-react';
+import { Play, Radio, ArrowLeft, Video } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { usePodcastIndexFeedEpisodes, usePodcastIndexFeed } from '@/hooks/usePodcastIndex';
 import { useMusicPlayer } from '@/contexts/MusicPlayerContext';
 import { podcastIndexEpisodeToUnified } from '@/lib/unifiedTrack';
+import { isAudioEpisode, countVideoEpisodes } from '@/lib/podcastindex';
 
 export function PodcastIndexFeedPage() {
   const { feedId } = useParams<{ feedId: string }>();
@@ -73,7 +74,10 @@ export function PodcastIndexFeedPage() {
   }
 
   const feed = feedData.items[0]; // Get feed info from first episode
-  const episodes = feedData.items;
+  const allEpisodes = feedData.items;
+  const videoCount = countVideoEpisodes(allEpisodes);
+  // Filter out video episodes - only show audio content
+  const episodes = allEpisodes.filter(isAudioEpisode);
   const unifiedTracks = episodes.map(ep => podcastIndexEpisodeToUnified(ep, feedInfo?.feed));
 
   const handlePlayAll = () => {
@@ -141,7 +145,25 @@ export function PodcastIndexFeedPage() {
 
       {/* Episodes List */}
       <div className="px-6 py-8">
-        <h2 className="text-2xl font-bold mb-6">Episodes</h2>
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-2xl font-bold">Episodes ({episodes.length})</h2>
+        </div>
+
+        {/* Video content notice */}
+        {videoCount > 0 && (
+          <div className="mb-4 p-3 bg-gray-900 border border-gray-800 rounded-lg flex items-center gap-3">
+            <Video className="h-5 w-5 text-yellow-500 flex-shrink-0" />
+            <p className="text-sm text-gray-400">
+              {videoCount} video episode{videoCount > 1 ? 's' : ''} hidden. ZapTrax currently supports audio-only content.
+            </p>
+          </div>
+        )}
+
+        {episodes.length === 0 && (
+          <div className="text-center py-12">
+            <p className="text-gray-400">This feed only contains video content which is not supported yet.</p>
+          </div>
+        )}
 
         <div className="space-y-2">
           {episodes.map((episode, index) => {
