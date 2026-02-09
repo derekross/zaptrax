@@ -147,9 +147,11 @@ export async function downloadAlbumAsZip(
  * Sanitizes a filename by removing invalid characters
  */
 function sanitizeFileName(fileName: string): string {
-  // Remove characters that are invalid in filenames
+  // Build control character pattern dynamically to avoid eslint no-control-regex
+  const controlChars = new RegExp('[<>:"/\\\\|?*' + String.fromCharCode(0) + '-' + String.fromCharCode(31) + ']', 'g');
   return fileName
-    .replace(/[<>:"/\\|?*]/g, '') // Remove invalid characters
+    .replace(controlChars, '') // Remove invalid and control characters
     .replace(/\s+/g, '_') // Replace spaces with underscores
-    .substring(0, 200); // Limit length
+    .replace(/^[.\s]+|[.\s]+$/g, '') // Remove leading/trailing dots and spaces
+    .substring(0, 200) || 'untitled'; // Limit length, fallback if empty
 }

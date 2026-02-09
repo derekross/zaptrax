@@ -123,16 +123,13 @@ export function useSocialFeed(feedType: 'following' | 'global') {
         ];
       }
 
-      // Execute all queries
-      const allEvents: NostrEvent[] = [];
-      for (const filter of filters) {
-        try {
-          const events = await nostr.query([filter], { signal });
-          allEvents.push(...events);
-        } catch (error) {
-          console.error('Failed to fetch events for filter:', filter, error);
-        }
-      }
+      // Execute all queries in parallel for better performance
+      const results = await Promise.allSettled(
+        filters.map(filter => nostr.query([filter], { signal }))
+      );
+      const allEvents: NostrEvent[] = results
+        .filter((r): r is PromiseFulfilledResult<NostrEvent[]> => r.status === 'fulfilled')
+        .flatMap(r => r.value);
 
       // Filter and process events
       const musicEvents = allEvents.filter(event => {
@@ -202,8 +199,6 @@ export function useSocialFeed(feedType: 'following' | 'global') {
       const nextCursor = pageEvents.length > 0 && pageEvents.length >= Math.min(EVENTS_PER_PAGE, 5)
         ? pageEvents[pageEvents.length - 1].created_at
         : undefined;
-
-
 
       return {
         events: pageEvents,

@@ -7,6 +7,20 @@ import type { WavlakeTrack } from '@/lib/wavlake';
 import type { UnifiedTrack } from '@/lib/unifiedTrack';
 import { wavlakeToUnified } from '@/lib/unifiedTrack';
 
+/** Shared helper: resolve per-user latest reactions, returning only likes. */
+function resolveLatestLikes(events: NostrEvent[]): NostrEvent[] {
+  const userReactions = new Map<string, NostrEvent>();
+  for (const event of events) {
+    const existing = userReactions.get(event.pubkey);
+    if (!existing || event.created_at > existing.created_at) {
+      userReactions.set(event.pubkey, event);
+    }
+  }
+  return Array.from(userReactions.values()).filter(event =>
+    event.content === '+' || event.content === '❤️' || event.content === ''
+  );
+}
+
 // Hook to get user's playlists (NIP-51 lists)
 export function useUserPlaylists(pubkey?: string) {
   const { nostr } = useNostr();
@@ -72,7 +86,7 @@ export function useLikedSongs(pubkey?: string) {
       return events.sort((a, b) => b.created_at - a.created_at)[0] || null;
     },
     enabled: !!targetPubkey,
-    staleTime: 2 * 1000, // 2 seconds for faster like updates
+    staleTime: 10 * 1000, // 10 seconds (invalidated on like/unlike)
   });
 }
 
@@ -85,22 +99,26 @@ export function useTrackReactions(trackUrl: string) {
     queryFn: async (c) => {
       const signal = AbortSignal.any([c.signal, AbortSignal.timeout(3000)]);
 
-      // Query both reactions and deletion events
-      const [reactionEvents, deletionEvents] = await Promise.all([
-        nostr.query([
-          {
-            kinds: [7], // Reactions
-            '#r': [trackUrl],
+      const reactionEvents = await nostr.query([
+        {
+          kinds: [7], // Reactions
+          '#r': [trackUrl],
+          limit: 100,
+        }
+      ], { signal });
+
+      // Get unique authors to scope deletion queries
+      const authors = [...new Set(reactionEvents.map(e => e.pubkey))];
+
+      // Only query deletions from authors who have reactions (scoped query)
+      const deletionEvents = authors.length > 0
+        ? await nostr.query([{
+            kinds: [5],
+            authors,
+            '#k': ['7'],
             limit: 100,
-          }
-        ], { signal }),
-        nostr.query([
-          {
-            kinds: [5], // Deletion requests
-            limit: 100,
-          }
-        ], { signal })
-      ]);
+          }], { signal })
+        : [];
 
       // Create a set of deleted event IDs
       const deletedEventIds = new Set(
@@ -111,35 +129,9 @@ export function useTrackReactions(trackUrl: string) {
         )
       );
 
-      // Filter out deleted reactions
+      // Filter out deleted reactions and resolve per-user latest reaction
       const events = reactionEvents.filter(event => !deletedEventIds.has(event.id));
-
-      // Separate likes and unlikes
-      const likes = events.filter(event =>
-        event.content === '+' || event.content === '❤️' || event.content === ''
-      );
-
-      const unlikes = events.filter(event =>
-        event.content === '-'
-      );
-
-      // For each user, find their most recent reaction
-      const userReactions = new Map<string, NostrEvent>();
-
-      // Process all reactions (likes and unlikes) to find the latest for each user
-      [...likes, ...unlikes].forEach(event => {
-        const existing = userReactions.get(event.pubkey);
-        if (!existing || event.created_at > existing.created_at) {
-          userReactions.set(event.pubkey, event);
-        }
-      });
-
-      // Filter to only include users whose latest reaction is a like
-      const finalLikes = Array.from(userReactions.values()).filter(event =>
-        event.content === '+' || event.content === '❤️' || event.content === ''
-      );
-
-
+      const finalLikes = resolveLatestLikes(events);
 
       return {
         likes: finalLikes,
@@ -159,22 +151,25 @@ export function useArtistReactions(artistNpub: string) {
     queryFn: async (c) => {
       const signal = AbortSignal.any([c.signal, AbortSignal.timeout(3000)]);
 
-      // Query both reactions and deletion events
-      const [reactionEvents, deletionEvents] = await Promise.all([
-        nostr.query([
-          {
-            kinds: [7], // Reactions
-            '#p': [artistNpub],
+      const reactionEvents = await nostr.query([
+        {
+          kinds: [7], // Reactions
+          '#p': [artistNpub],
+          limit: 100,
+        }
+      ], { signal });
+
+      // Get unique authors to scope deletion queries
+      const authors = [...new Set(reactionEvents.map(e => e.pubkey))];
+
+      const deletionEvents = authors.length > 0
+        ? await nostr.query([{
+            kinds: [5],
+            authors,
+            '#k': ['7'],
             limit: 100,
-          }
-        ], { signal }),
-        nostr.query([
-          {
-            kinds: [5], // Deletion requests
-            limit: 100,
-          }
-        ], { signal })
-      ]);
+          }], { signal })
+        : [];
 
       // Create a set of deleted event IDs
       const deletedEventIds = new Set(
@@ -185,42 +180,15 @@ export function useArtistReactions(artistNpub: string) {
         )
       );
 
-      // Filter out deleted reactions
       const events = reactionEvents.filter(event => !deletedEventIds.has(event.id));
-
-      // Separate likes and unlikes
-      const likes = events.filter(event =>
-        event.content === '+' || event.content === '❤️' || event.content === ''
-      );
-
-      const unlikes = events.filter(event =>
-        event.content === '-'
-      );
-
-      // For each user, find their most recent reaction
-      const userReactions = new Map<string, NostrEvent>();
-
-      // Process all reactions (likes and unlikes) to find the latest for each user
-      [...likes, ...unlikes].forEach(event => {
-        const existing = userReactions.get(event.pubkey);
-        if (!existing || event.created_at > existing.created_at) {
-          userReactions.set(event.pubkey, event);
-        }
-      });
-
-      // Filter to only include users whose latest reaction is a like
-      const finalLikes = Array.from(userReactions.values()).filter(event =>
-        event.content === '+' || event.content === '❤️' || event.content === ''
-      );
-
-
+      const finalLikes = resolveLatestLikes(events);
 
       return {
         likes: finalLikes,
         likeCount: finalLikes.length,
       };
     },
-    staleTime: 1 * 1000, // 1 second for debugging
+    staleTime: 10 * 1000, // 10 seconds
   });
 }
 
@@ -242,7 +210,7 @@ export function useTrackComments(trackUrl: string) {
 
       return events.sort((a, b) => b.created_at - a.created_at);
     },
-    staleTime: 1 * 1000, // 1 second for debugging
+    staleTime: 30 * 1000, // 30 seconds
   });
 }
 
@@ -591,14 +559,6 @@ export function useUpdateNowPlaying() {
       const content = `${track.title} - ${track.artist}`;
       const expiration = Math.floor(Date.now() / 1000) + track.duration;
 
-      console.log('Publishing music status:', {
-        kind: 30315,
-        content,
-        trackUrl,
-        expiration,
-        duration: track.duration,
-      });
-
       createEvent({
         kind: 30315, // User Status
         content,
@@ -828,12 +788,10 @@ export function useRemoveFromPlaylist() {
         !['r', 'track-title', 'track-artist', 'track-image', 'track-source', 'track-feed-id', 'track-media-url', 'track-url', 'track-duration'].includes(tag[0])
       );
 
-      const newTags = updatedTags;
-
       createEvent({
         kind: 30003,
         content: playlistEvent.content,
-        tags: newTags,
+        tags: updatedTags,
       });
     },
     onSuccess: () => {
@@ -931,22 +889,25 @@ export function useNoteReactions(noteId: string) {
 
       const signal = AbortSignal.any([c.signal, AbortSignal.timeout(3000)]);
 
-      // Query both reactions and deletion events
-      const [reactionEvents, deletionEvents] = await Promise.all([
-        nostr.query([
-          {
-            kinds: [7], // Reactions
-            '#e': [noteId],
+      const reactionEvents = await nostr.query([
+        {
+          kinds: [7], // Reactions
+          '#e': [noteId],
+          limit: 100,
+        }
+      ], { signal });
+
+      // Get unique authors to scope deletion queries
+      const authors = [...new Set(reactionEvents.map(e => e.pubkey))];
+
+      const deletionEvents = authors.length > 0
+        ? await nostr.query([{
+            kinds: [5],
+            authors,
+            '#k': ['7'],
             limit: 100,
-          }
-        ], { signal }),
-        nostr.query([
-          {
-            kinds: [5], // Deletion requests
-            limit: 100,
-          }
-        ], { signal })
-      ]);
+          }], { signal })
+        : [];
 
       // Create a set of deleted event IDs
       const deletedEventIds = new Set(
@@ -957,35 +918,8 @@ export function useNoteReactions(noteId: string) {
         )
       );
 
-      // Filter out deleted reactions
       const events = reactionEvents.filter(event => !deletedEventIds.has(event.id));
-
-      // Separate likes and unlikes
-      const likes = events.filter(event =>
-        event.content === '+' || event.content === '❤️' || event.content === ''
-      );
-
-      const unlikes = events.filter(event =>
-        event.content === '-'
-      );
-
-      // For each user, find their most recent reaction
-      const userReactions = new Map<string, NostrEvent>();
-
-      // Process all reactions (likes and unlikes) to find the latest for each user
-      [...likes, ...unlikes].forEach(event => {
-        const existing = userReactions.get(event.pubkey);
-        if (!existing || event.created_at > existing.created_at) {
-          userReactions.set(event.pubkey, event);
-        }
-      });
-
-      // Filter to only include users whose latest reaction is a like
-      const finalLikes = Array.from(userReactions.values()).filter(event =>
-        event.content === '+' || event.content === '❤️' || event.content === ''
-      );
-
-
+      const finalLikes = resolveLatestLikes(events);
 
       return {
         likes: finalLikes,
@@ -993,9 +927,8 @@ export function useNoteReactions(noteId: string) {
       };
     },
     enabled: !!noteId,
-    staleTime: 0, // Always consider data stale
+    staleTime: 5 * 1000, // 5 seconds
     refetchOnWindowFocus: true,
-    refetchInterval: 5000, // Refetch every 5 seconds
   });
 }
 

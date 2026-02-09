@@ -122,14 +122,8 @@ export class PodcastIndexAPI {
     this.apiKey = import.meta.env.VITE_PODCASTINDEX_API_KEY;
     this.apiSecret = import.meta.env.VITE_PODCASTINDEX_API_SECRET;
 
-    // Debug: Log if credentials are loaded
-    if (this.apiKey && this.apiSecret) {
-      console.log('PodcastIndex credentials loaded successfully');
-    } else {
-      console.error('PodcastIndex credentials missing:', {
-        hasKey: !!this.apiKey,
-        hasSecret: !!this.apiSecret,
-      });
+    if (!this.apiKey || !this.apiSecret) {
+      console.warn('PodcastIndex credentials not configured');
     }
   }
 
@@ -141,12 +135,6 @@ export class PodcastIndexAPI {
 
     const apiHeaderTime = Math.floor(Date.now() / 1000);
     const hash4Header = await this.sha1(`${this.apiKey}${this.apiSecret}${apiHeaderTime}`);
-
-    console.log('PodcastIndex Auth Debug:', {
-      apiKey: this.apiKey.substring(0, 5) + '...',
-      timestamp: apiHeaderTime,
-      hashPreview: hash4Header.substring(0, 10) + '...',
-    });
 
     return {
       'X-Auth-Date': apiHeaderTime.toString(),
@@ -168,18 +156,10 @@ export class PodcastIndexAPI {
     const headers = await this.getAuthHeaders();
     const url = `${this.baseUrl}/search/music/byterm?q=${encodeURIComponent(term)}&pretty`;
 
-    console.log('PodcastIndex Search Request:', { url, headers });
-
     const response = await fetch(url, { headers });
 
     if (!response.ok) {
-      const errorText = await response.text();
-      console.error('PodcastIndex API Error:', {
-        status: response.status,
-        statusText: response.statusText,
-        body: errorText,
-      });
-      throw new Error(`PodcastIndex search failed: ${response.status} ${response.statusText} - ${errorText}`);
+      throw new Error(`PodcastIndex search failed: ${response.status} ${response.statusText}`);
     }
 
     return response.json();
@@ -192,7 +172,6 @@ export class PodcastIndexAPI {
       throw new Error(`Failed to fetch top 100 music: ${response.statusText}`);
     }
     const data = await response.json();
-    console.log('PodcastIndex Top 100 Response:', data);
     return data.items || [];
   }
 

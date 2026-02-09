@@ -141,8 +141,13 @@ export async function parseLightningAddress(address: string): Promise<string> {
     throw new Error('Invalid lightning address format');
   }
 
+  // Validate domain to prevent SSRF
+  if (!/^[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)*\.[a-z]{2,}$/i.test(domain)) {
+    throw new Error('Invalid domain in lightning address');
+  }
+
   // Well-known LNURL endpoint
-  const url = `https://${domain}/.well-known/lnurlp/${username}`;
+  const url = `https://${domain}/.well-known/lnurlp/${encodeURIComponent(username)}`;
   return url;
 }
 

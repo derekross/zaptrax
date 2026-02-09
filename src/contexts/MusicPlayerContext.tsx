@@ -150,16 +150,6 @@ export function MusicPlayerProvider({ children }: { children: React.ReactNode })
     const unifiedTrack = 'source' in track ? track : wavlakeToUnified(track);
     const unifiedQueue = queue?.map(t => 'source' in t ? t : wavlakeToUnified(t)) || [unifiedTrack];
 
-    console.log('MusicPlayer - playTrack called with:', unifiedTrack);
-    console.log('MusicPlayer - track properties:', {
-      id: unifiedTrack.id,
-      title: unifiedTrack.title,
-      albumArtUrl: unifiedTrack.albumArtUrl,
-      mediaUrl: unifiedTrack.mediaUrl,
-      artist: unifiedTrack.artist,
-      source: unifiedTrack.source
-    });
-
     dispatch({ type: 'SET_TRACK', payload: unifiedTrack });
 
     dispatch({ type: 'SET_QUEUE', payload: unifiedQueue });
@@ -224,11 +214,9 @@ export function MusicPlayerProvider({ children }: { children: React.ReactNode })
     if (!audio) return;
 
     const handleLoadStart = () => {
-      console.log('Audio load started');
       dispatch({ type: 'SET_LOADING', payload: true });
     };
     const handleCanPlay = () => {
-      console.log('Audio can play');
       dispatch({ type: 'SET_LOADING', payload: false });
       // Don't auto-play locally when casting
       if (state.isPlaying && !state.isCasting) {
@@ -244,7 +232,6 @@ export function MusicPlayerProvider({ children }: { children: React.ReactNode })
       }
     };
     const handleLoadedMetadata = () => {
-      console.log('Audio metadata loaded, duration:', audio.duration);
       dispatch({ type: 'SET_DURATION', payload: audio.duration });
     };
     const handleTimeUpdate = () => {
@@ -254,7 +241,6 @@ export function MusicPlayerProvider({ children }: { children: React.ReactNode })
       nextTrack();
     };
     const handleError = () => {
-      console.error('Audio error occurred:', audio.error);
       dispatch({ type: 'SET_ERROR', payload: 'Failed to load audio' });
     };
 
@@ -283,21 +269,13 @@ export function MusicPlayerProvider({ children }: { children: React.ReactNode })
     let mediaUrl = state.currentTrack.mediaUrl;
     if (!mediaUrl) return; // Ensure mediaUrl is defined
 
-    console.log('MusicPlayer - Original mediaUrl:', mediaUrl);
-
     // If the mediaUrl contains op3.dev, extract the direct CloudFront URL
     if (mediaUrl.includes('op3.dev')) {
-      // Extract the URL after the op3.dev path
       const urlMatch = mediaUrl.match(/https:\/\/op3\.dev\/[^/]+\/(https:\/\/.*)/);
       if (urlMatch) {
         mediaUrl = urlMatch[1];
-        console.log('MusicPlayer - Extracted CloudFront URL:', mediaUrl);
-      } else {
-        console.log('MusicPlayer - Failed to extract URL from op3.dev');
       }
     }
-
-    console.log('MusicPlayer - Setting audio src to:', mediaUrl);
     audio.src = mediaUrl;
     audio.load();
 
@@ -312,15 +290,11 @@ export function MusicPlayerProvider({ children }: { children: React.ReactNode })
 
     // Don't control local audio when casting
     if (state.isCasting) {
-      console.log('MusicPlayer - Casting active, keeping local audio paused');
       audio.pause();
       return;
     }
 
-    console.log('MusicPlayer - isPlaying state changed to:', state.isPlaying);
-
     if (state.isPlaying) {
-      console.log('MusicPlayer - Attempting to play audio');
       const playPromise = audio.play();
       if (playPromise !== undefined) {
         playPromise.catch((error) => {
@@ -334,7 +308,6 @@ export function MusicPlayerProvider({ children }: { children: React.ReactNode })
         });
       }
     } else {
-      console.log('MusicPlayer - Pausing audio');
       audio.pause();
     }
   }, [state.isPlaying, state.isCasting]);
@@ -417,8 +390,6 @@ export function MusicPlayerProvider({ children }: { children: React.ReactNode })
       updateNowPlaying({ track: trackData, trackUrl });
     }
   }, [user, state.currentTrack, state.isPlaying, state.duration, updateNowPlaying]);
-
-
 
   const value: MusicPlayerContextType = {
     state,

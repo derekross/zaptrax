@@ -23,9 +23,8 @@ export function SearchPage() {
     }
   };
 
-  const handleUserSelect = (result: NostrSearchResult) => {
+  const handleUserSelect = (_result: NostrSearchResult) => {
     // Navigation is handled in the MusicSearch component
-    console.log('User selected:', result);
   };
 
   const handleAddToPlaylist = (track: WavlakeTrack) => {

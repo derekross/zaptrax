@@ -45,63 +45,48 @@ export function useListeningHistory() {
         return hasTrackReference || hasWavlakeInContent;
       });
 
-      // Create history items from each status update event
-      const historyItemPromises = trackEvents.map(async (event) => {
-        const trackUrls: string[] = [];
-
+      // Extract unique track IDs from events, deduplicate early
+      const trackIdToEvent = new Map<string, NostrEvent>();
+      for (const event of trackEvents.sort((a, b) => b.created_at - a.created_at)) {
         // Get URLs from r tags
-        event.tags.forEach(tag => {
+        for (const tag of event.tags) {
           if (tag[0] === 'r' && tag[1]?.includes('wavlake.com/track/')) {
-            trackUrls.push(tag[1]);
-          }
-        });
-
-        // Extract URLs from content using regex
-        const urlMatches = event.content.match(/https?:\/\/wavlake\.com\/track\/[^\s]+/g);
-        if (urlMatches) {
-          trackUrls.push(...urlMatches);
-        }
-
-        // Process the first track URL found in this event
-        if (trackUrls.length > 0) {
-          const trackId = trackUrls[0].split('/track/')[1]?.split(/[?#]/)[0];
-          if (trackId) {
-            try {
-              const trackData = await wavlakeAPI.getTrack(trackId);
-              const track = Array.isArray(trackData) ? trackData[0] : trackData;
-
-              if (track) {
-                return {
-                  track,
-                  event,
-                  timestamp: event.created_at,
-                } as ListeningHistoryItem;
-              }
-            } catch (error) {
-              console.error('Failed to fetch track:', trackId, error);
+            const trackId = tag[1].split('/track/')[1]?.split(/[?#]/)[0];
+            if (trackId && !trackIdToEvent.has(trackId)) {
+              trackIdToEvent.set(trackId, event);
             }
           }
         }
-        return null;
-      });
-
-      const allHistoryItems = (await Promise.all(historyItemPromises))
-        .filter((item): item is ListeningHistoryItem => item !== null);
-
-      // Sort by timestamp (most recent first)
-      const sortedItems = allHistoryItems.sort((a, b) => b.timestamp - a.timestamp);
-
-      // Keep only the most recent play of each unique track (by track ID)
-      const uniqueTrackMap = new Map<string, ListeningHistoryItem>();
-      for (const item of sortedItems) {
-        if (!uniqueTrackMap.has(item.track.id)) {
-          uniqueTrackMap.set(item.track.id, item);
+        // Extract URLs from content
+        const urlMatches = event.content.match(/https?:\/\/wavlake\.com\/track\/[^\s]+/g);
+        if (urlMatches) {
+          for (const url of urlMatches) {
+            const trackId = url.split('/track/')[1]?.split(/[?#]/)[0];
+            if (trackId && !trackIdToEvent.has(trackId)) {
+              trackIdToEvent.set(trackId, event);
+            }
+          }
         }
+        // Stop early once we have enough unique tracks
+        if (trackIdToEvent.size >= 6) break;
       }
 
-      // Since we only have one music status update at most, return that single track
-      // The UI will fall back to showing top tracks if history is insufficient
-      return Array.from(uniqueTrackMap.values()).slice(0, 6);
+      // Fetch only the unique tracks we need (max 6 parallel requests)
+      const entries = Array.from(trackIdToEvent.entries()).slice(0, 6);
+      const results = await Promise.allSettled(
+        entries.map(async ([trackId, event]) => {
+          const trackData = await wavlakeAPI.getTrack(trackId);
+          const track = Array.isArray(trackData) ? trackData[0] : trackData;
+          if (!track) return null;
+          return { track, event, timestamp: event.created_at } as ListeningHistoryItem;
+        })
+      );
+
+      return results
+        .filter((r): r is PromiseFulfilledResult<ListeningHistoryItem> =>
+          r.status === 'fulfilled' && r.value !== null
+        )
+        .map(r => r.value);
     },
     enabled: !!user?.pubkey,
     staleTime: 5 * 60 * 1000, // 5 minutes

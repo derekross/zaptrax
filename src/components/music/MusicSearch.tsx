@@ -96,17 +96,8 @@ export function MusicSearch({
 
     try {
       dispatch({ type: 'SET_LOADING', payload: true });
-      console.log('MusicSearch - Fetching full track for:', result);
       const trackData = await wavlakeAPI.getTrack(result.id);
       const fullTrack = Array.isArray(trackData) ? trackData[0] : trackData;
-      console.log('MusicSearch - Full track data:', fullTrack);
-      console.log('MusicSearch - Full track properties:', {
-        id: fullTrack.id,
-        title: fullTrack.title,
-        albumArtUrl: fullTrack.albumArtUrl,
-        mediaUrl: fullTrack.mediaUrl,
-        artist: fullTrack.artist
-      });
 
       // Normalize the track data to ensure it has all required properties
       const normalizedTrack: WavlakeTrack = {
@@ -126,8 +117,6 @@ export function MusicSearch({
         order: fullTrack.order || 0,
         url: (fullTrack as ExtendedWavlakeTrack).url || (result as ExtendedWavlakeSearchResult).url || `https://wavlake.com/track/${fullTrack.id}`
       };
-
-      console.log('MusicSearch - Normalized track:', normalizedTrack);
 
       // Get all track results to create a queue for navigation
       const trackResults = groupedResults.tracks;
@@ -166,7 +155,6 @@ export function MusicSearch({
 
       // Filter out any failed fetches and play with queue
       const validTracks = trackQueue.filter(track => track !== null) as WavlakeTrack[];
-      console.log('MusicSearch - Queue created with', validTracks.length, 'tracks');
       playTrack(normalizedTrack, validTracks);
     } catch (e) {
       console.error('Failed to fetch full track details:', e);

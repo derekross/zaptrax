@@ -1,29 +1,26 @@
 import type { ValueBlock, ValueRecipient } from './podcastindex';
 
 /**
- * Use a CORS proxy to fetch RSS feeds that don't have CORS headers
+ * Use a CORS proxy to fetch RSS feeds that don't have CORS headers.
+ * Note: This routes through a third-party proxy for CORS workaround only.
  */
 function getCorsProxiedUrl(feedUrl: string): string {
-  // Use corsproxy.io which has better CORS header support
   return `https://corsproxy.io/?${encodeURIComponent(feedUrl)}`;
 }
 
-/**
- * Parse podcast:value block from RSS feed XML
- */
-export async function parseRSSValueBlock(feedUrl: string): Promise<ValueBlock | null> {
+/** Fetch RSS feed XML with CORS proxy fallback. */
+async function fetchRSSFeed(feedUrl: string): Promise<Document | null> {
   try {
-    // Try direct fetch first (will usually fail due to CORS, that's expected)
+    // Try direct fetch first (will usually fail due to CORS)
     let response = await fetch(feedUrl).catch(() => null);
 
-    // If direct fetch fails, try with CORS proxy (normal fallback)
+    // If direct fetch fails, try with CORS proxy fallback
     if (!response || !response.ok) {
       const proxiedUrl = getCorsProxiedUrl(feedUrl);
       response = await fetch(proxiedUrl);
     }
 
     if (!response.ok) {
-      console.error('Failed to fetch RSS feed:', response.statusText);
       return null;
     }
 
@@ -34,194 +31,97 @@ export async function parseRSSValueBlock(feedUrl: string): Promise<ValueBlock | 
     // Check for parsing errors
     const parseError = xmlDoc.querySelector('parsererror');
     if (parseError) {
-      console.error('XML parsing error:', parseError.textContent);
       return null;
     }
 
-    // Look for podcast:value element (can be at channel or item level)
-    // Need to use namespace-aware selector or getElementsByTagName
-    let valueElements = xmlDoc.getElementsByTagNameNS('https://podcastindex.org/namespace/1.0', 'value');
-
-    // Fallback to non-namespaced query if namespace query returns nothing
-    if (valueElements.length === 0) {
-      valueElements = xmlDoc.getElementsByTagName('value');
-    }
-
-    if (valueElements.length === 0) {
-      return null;
-    }
-
-    // Use the first value element (typically at channel level)
-    const valueElement = valueElements[0];
-
-    const type = valueElement.getAttribute('type') || 'lightning';
-    const method = valueElement.getAttribute('method') || 'keysend';
-
-    // Parse recipients - use namespace-aware query
-    let recipientElements = valueElement.getElementsByTagNameNS('https://podcastindex.org/namespace/1.0', 'valueRecipient');
-
-    // Fallback to non-namespaced query
-    if (recipientElements.length === 0) {
-      recipientElements = valueElement.getElementsByTagName('valueRecipient');
-    }
-
-    const recipients: ValueRecipient[] = [];
-    Array.from(recipientElements).forEach((recipient) => {
-
-      const name = recipient.getAttribute('name') || undefined;
-      const type = recipient.getAttribute('type') as 'node' | 'address';
-      const address = recipient.getAttribute('address');
-      const split = parseInt(recipient.getAttribute('split') || '0');
-      const customKey = recipient.getAttribute('customKey') || undefined;
-      const customValue = recipient.getAttribute('customValue') || undefined;
-      const fee = recipient.getAttribute('fee') === 'true';
-
-      if (address && split > 0) {
-        recipients.push({
-          name,
-          type,
-          address,
-          customKey,
-          customValue,
-          split,
-          fee,
-        });
-      }
-    });
-
-    if (recipients.length === 0) {
-      return null;
-    }
-
-    // Get suggested amount if present
-    const suggested = valueElement.getAttribute('suggested');
-
-    return {
-      type: type as 'lightning',
-      method: method as 'keysend' | 'amp',
-      suggested: suggested ? parseInt(suggested) : undefined,
-      recipients,
-    };
-  } catch (error) {
-    console.error('Error parsing RSS feed:', error);
+    return xmlDoc;
+  } catch {
     return null;
   }
 }
 
+/** Extract a ValueBlock from a given XML element. */
+function extractValueBlock(parent: Element | Document): ValueBlock | null {
+  const NS = 'https://podcastindex.org/namespace/1.0';
+
+  let valueElements = parent.getElementsByTagNameNS(NS, 'value');
+  if (valueElements.length === 0) {
+    valueElements = parent.getElementsByTagName('value');
+  }
+  if (valueElements.length === 0) {
+    return null;
+  }
+
+  const valueElement = valueElements[0];
+  const type = valueElement.getAttribute('type') || 'lightning';
+  const method = valueElement.getAttribute('method') || 'keysend';
+
+  let recipientElements = valueElement.getElementsByTagNameNS(NS, 'valueRecipient');
+  if (recipientElements.length === 0) {
+    recipientElements = valueElement.getElementsByTagName('valueRecipient');
+  }
+
+  const recipients: ValueRecipient[] = [];
+  for (const recipient of Array.from(recipientElements)) {
+    const name = recipient.getAttribute('name') || undefined;
+    const recipientType = recipient.getAttribute('type') as 'node' | 'address';
+    const address = recipient.getAttribute('address');
+    const split = parseInt(recipient.getAttribute('split') || '0');
+    const customKey = recipient.getAttribute('customKey') || undefined;
+    const customValue = recipient.getAttribute('customValue') || undefined;
+    const fee = recipient.getAttribute('fee') === 'true';
+
+    if (address && split > 0) {
+      recipients.push({ name, type: recipientType, address, customKey, customValue, split, fee });
+    }
+  }
+
+  if (recipients.length === 0) {
+    return null;
+  }
+
+  const suggested = valueElement.getAttribute('suggested');
+
+  return {
+    type: type as 'lightning',
+    method: method as 'keysend' | 'amp',
+    suggested: suggested ? parseInt(suggested) : undefined,
+    recipients,
+  };
+}
+
 /**
- * Parse podcast:value block for a specific episode (item-level override)
+ * Parse podcast:value block from RSS feed XML (channel-level).
+ */
+export async function parseRSSValueBlock(feedUrl: string): Promise<ValueBlock | null> {
+  const xmlDoc = await fetchRSSFeed(feedUrl);
+  if (!xmlDoc) return null;
+  return extractValueBlock(xmlDoc);
+}
+
+/**
+ * Parse podcast:value block for a specific episode (item-level override).
+ * Falls back to channel-level value block if no episode-level block is found.
  */
 export async function parseRSSEpisodeValueBlock(
   feedUrl: string,
   episodeGuid: string
 ): Promise<ValueBlock | null> {
-  try {
-    // Try direct fetch first (will usually fail due to CORS, that's expected)
-    let response = await fetch(feedUrl).catch(() => null);
+  const xmlDoc = await fetchRSSFeed(feedUrl);
+  if (!xmlDoc) return null;
 
-    // If direct fetch fails, try with CORS proxy (normal fallback)
-    if (!response || !response.ok) {
-      const proxiedUrl = getCorsProxiedUrl(feedUrl);
-      response = await fetch(proxiedUrl);
+  // Find the item with matching guid
+  const items = xmlDoc.querySelectorAll('item');
+  for (const item of Array.from(items)) {
+    const guid = item.querySelector('guid');
+    if (guid?.textContent === episodeGuid) {
+      // Try item-level value block first
+      const itemValue = extractValueBlock(item);
+      if (itemValue) return itemValue;
+      break;
     }
-
-    if (!response.ok) {
-      console.error('Failed to fetch RSS feed:', response.statusText);
-      return null;
-    }
-
-    const xmlText = await response.text();
-    const parser = new DOMParser();
-    const xmlDoc = parser.parseFromString(xmlText, 'text/xml');
-
-    // Check for parsing errors
-    const parseError = xmlDoc.querySelector('parsererror');
-    if (parseError) {
-      console.error('XML parsing error:', parseError.textContent);
-      return null;
-    }
-
-    // Find the item with matching guid
-    const items = xmlDoc.querySelectorAll('item');
-    let targetItem: Element | null = null;
-
-    for (const item of Array.from(items)) {
-      const guid = item.querySelector('guid');
-      if (guid?.textContent === episodeGuid) {
-        targetItem = item;
-        break;
-      }
-    }
-
-    if (!targetItem) {
-      // Episode not found, fall back to channel-level value
-      return parseRSSValueBlock(feedUrl);
-    }
-
-    // Look for podcast:value element in this specific item - use namespace-aware query
-    let valueElements = targetItem.getElementsByTagNameNS('https://podcastindex.org/namespace/1.0', 'value');
-
-    // Fallback to non-namespaced query
-    if (valueElements.length === 0) {
-      valueElements = targetItem.getElementsByTagName('value');
-    }
-
-    if (valueElements.length === 0) {
-      // No item-level value, fall back to channel-level
-      return parseRSSValueBlock(feedUrl);
-    }
-
-    const valueElement = valueElements[0];
-    const type = valueElement.getAttribute('type') || 'lightning';
-    const method = valueElement.getAttribute('method') || 'keysend';
-
-    // Parse recipients - use namespace-aware query
-    let recipientElements = valueElement.getElementsByTagNameNS('https://podcastindex.org/namespace/1.0', 'valueRecipient');
-
-    // Fallback to non-namespaced query
-    if (recipientElements.length === 0) {
-      recipientElements = valueElement.getElementsByTagName('valueRecipient');
-    }
-
-    const recipients: ValueRecipient[] = [];
-    Array.from(recipientElements).forEach((recipient) => {
-      const name = recipient.getAttribute('name') || undefined;
-      const type = recipient.getAttribute('type') as 'node' | 'address';
-      const address = recipient.getAttribute('address');
-      const split = parseInt(recipient.getAttribute('split') || '0');
-      const customKey = recipient.getAttribute('customKey') || undefined;
-      const customValue = recipient.getAttribute('customValue') || undefined;
-      const fee = recipient.getAttribute('fee') === 'true';
-
-      if (address && split > 0) {
-        recipients.push({
-          name,
-          type,
-          address,
-          customKey,
-          customValue,
-          split,
-          fee,
-        });
-      }
-    });
-
-    if (recipients.length === 0) {
-      // No valid recipients in item-level value, fall back to channel-level
-      return parseRSSValueBlock(feedUrl);
-    }
-
-    // Get suggested amount if present
-    const suggested = valueElement.getAttribute('suggested');
-
-    return {
-      type: type as 'lightning',
-      method: method as 'keysend' | 'amp',
-      suggested: suggested ? parseInt(suggested) : undefined,
-      recipients,
-    };
-  } catch (error) {
-    console.error('Error parsing RSS episode value:', error);
-    return null;
   }
+
+  // Fall back to channel-level value block (no re-fetch needed)
+  return extractValueBlock(xmlDoc);
 }

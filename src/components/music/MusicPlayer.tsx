@@ -334,7 +334,6 @@ export function MusicPlayer() {
       const nextTrackItem = state.queue[nextIndex];
       if (nextTrackItem) {
         const directUrl = getDirectMediaUrl(nextTrackItem.mediaUrl);
-        console.log('[Cast] Next track URL:', directUrl);
         await castMedia(directUrl);
       }
     }
@@ -352,7 +351,6 @@ export function MusicPlayer() {
       const prevTrackItem = state.queue[prevIndex];
       if (prevTrackItem) {
         const directUrl = getDirectMediaUrl(prevTrackItem.mediaUrl);
-        console.log('[Cast] Previous track URL:', directUrl);
         await castMedia(directUrl);
       }
     }

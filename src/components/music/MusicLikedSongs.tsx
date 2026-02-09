@@ -129,15 +129,6 @@ export function MusicLikedSongs() {
 
   const isLoadingTracks = trackQueries.some(query => query.isLoading);
 
-  // Debug: Log failed queries
-  const failedQueries = trackQueries.filter(query => query.isError);
-  if (failedQueries.length > 0) {
-    console.log('Failed to load tracks:', failedQueries.map((q) => ({
-      url: trackUrls[trackQueries.indexOf(q)],
-      error: q.error
-    })));
-  }
-
   const handleTrackClick = (track: UnifiedTrack) => {
     if (likedTracks) {
       playTrack(track, likedTracks);

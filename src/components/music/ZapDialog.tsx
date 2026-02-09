@@ -45,7 +45,6 @@ export function ZapDialog({ open, onOpenChange, track, rssValueBlock: passedRssV
   const [isLoading, setIsLoading] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<'webln' | 'external'>('webln');
   const [fetchedRssValueBlock, setFetchedRssValueBlock] = useState<ValueBlock | null>(null);
-  const [_loadingValueBlock, setLoadingValueBlock] = useState(false);
   const { toast } = useToast();
   const webln = useWebLN();
 
@@ -86,15 +85,11 @@ export function ZapDialog({ open, onOpenChange, track, rssValueBlock: passedRssV
         return;
       }
 
-      setLoadingValueBlock(true);
       try {
         const valueBlock = await parseRSSEpisodeValueBlock(track.feedUrl, track.episodeGuid);
         setFetchedRssValueBlock(valueBlock);
-      } catch (error) {
-        console.error('Failed to parse RSS value block:', error);
+      } catch {
         setFetchedRssValueBlock(null);
-      } finally {
-        setLoadingValueBlock(false);
       }
     }
 

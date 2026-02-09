@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -93,17 +93,6 @@ export function MusicHome() {
 
   // Fetch PodcastIndex top 100 music
   const { data: podcastIndexTop100, isLoading: isPodcastIndexLoading, error: podcastIndexError } = usePodcastIndexTop100();
-
-  // Debug: Log PodcastIndex state
-  React.useEffect(() => {
-    console.log('PodcastIndex Top 100 State:', {
-      isLoading: isPodcastIndexLoading,
-      hasData: !!podcastIndexTop100,
-      dataLength: podcastIndexTop100?.length,
-      error: podcastIndexError,
-    });
-  }, [podcastIndexTop100, isPodcastIndexLoading, podcastIndexError]);
-
 
   const handleTrackPlay = (track: WavlakeTrack) => {
     if (topTracks) {

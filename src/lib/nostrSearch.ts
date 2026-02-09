@@ -46,7 +46,12 @@ export async function resolveNip05(identifier: string): Promise<string | null> {
     const [localPart, domain] = identifier.split('@');
     if (!localPart || !domain) return null;
 
-    const url = `https://${domain}/.well-known/nostr.json?name=${localPart}`;
+    // Validate domain to prevent SSRF (no IP addresses, no ports, no path traversal)
+    if (!/^[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)*\.[a-z]{2,}$/i.test(domain)) {
+      return null;
+    }
+
+    const url = `https://${domain}/.well-known/nostr.json?name=${encodeURIComponent(localPart)}`;
 
     const response = await fetch(url, {
       method: 'GET',
