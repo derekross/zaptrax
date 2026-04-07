@@ -3,10 +3,16 @@ name: Zaptrax
 summary: Nostr music client for discovering and sharing tracks
 description: Zaptrax is a Nostr-powered music discovery and sharing platform. Listen to music from Wavlake and Podcast Index, create playlists, and share tracks with the Nostr community. Features background playback, media controls, and NIP-46 remote signer support.
 repository: https://github.com/derekross/zaptrax
-homepage: https://zaptrax.app
+website: https://zaptrax.app
 icon: ./public/zaptrax.png
-tags: nostr music audio streaming wavlake podcasts freedom-tech
+tags:
+  - nostr
+  - music
+  - audio
+  - streaming
+  - wavlake
+  - podcasts
+  - freedom-tech
 license: MIT
 builder: npub18ams6ewn5aj2n3wt2qawzglx9mr4nzksxhvrdc4gzrecw7n5tvjqctp424
-assets:
-  - ./android/app/build/outputs/apk/release/app-release.apk
+release_source: ./android/app/build/outputs/apk/release/app-release.apk
