@@ -32,6 +32,42 @@ export interface LNURLPayCallbackResponse {
   routes?: unknown[];
 }
 
+/**
+ * Validate that an LNURL endpoint is safe to fetch: https only
+ * (tor hidden services excepted, where http is the norm).
+ */
+function assertSafeLNURLEndpoint(url: string): void {
+  let parsed: URL;
+  try {
+    parsed = new URL(url);
+  } catch {
+    throw new Error('Invalid LNURL endpoint URL');
+  }
+
+  const isOnion = parsed.hostname.endsWith('.onion');
+  if (parsed.protocol !== 'https:' && !(parsed.protocol === 'http:' && isOnion)) {
+    throw new Error('LNURL endpoint must use https');
+  }
+}
+
+/**
+ * Extract the amount (in millisatoshis) encoded in a bolt11 invoice's
+ * human-readable part. Returns null for amountless or unparseable invoices.
+ */
+export function getInvoiceAmountMsats(invoice: string): number | null {
+  const match = /^ln(bcrt|tbs|bc|tb)(\d*)([munp]?)1/.exec(invoice.trim().toLowerCase());
+  if (!match || !match[2]) return null;
+
+  const value = BigInt(match[2]);
+  switch (match[3]) {
+    case 'm': return Number(value * 100_000_000n); // 1e-3 BTC
+    case 'u': return Number(value * 100_000n); // 1e-6 BTC
+    case 'n': return Number(value * 100n); // 1e-9 BTC
+    case 'p': return Number(value / 10n); // 1e-12 BTC
+    default: return Number(value * 100_000_000_000n); // whole BTC
+  }
+}
+
 export async function decodeLNURL(lnurl: string): Promise<string> {
   // If it's already a URL, return it as-is
   if (lnurl.startsWith('http')) {
@@ -72,6 +108,8 @@ export async function fetchLNURLPayInfo(lnurlOrUrl: string): Promise<LNURLPayRes
     }
   }
 
+  assertSafeLNURLEndpoint(url);
+
   const response = await fetch(url);
   if (!response.ok) {
     const text = await response.text();
@@ -99,6 +137,8 @@ export async function requestLNURLPayInvoice(
   amountMsats: number,
   comment?: string
 ): Promise<LNURLPayCallbackResponse> {
+  assertSafeLNURLEndpoint(callbackUrl);
+
   const url = new URL(callbackUrl);
   url.searchParams.set('amount', amountMsats.toString());
 
@@ -125,6 +165,15 @@ export async function requestLNURLPayInvoice(
 
   if (!data.pr) {
     throw new Error('No payment request in response');
+  }
+
+  // Verify the returned invoice is for the amount we requested so a
+  // malicious LNURL server can't substitute an arbitrary-amount invoice
+  const invoiceAmount = getInvoiceAmountMsats(data.pr);
+  if (invoiceAmount !== amountMsats) {
+    throw new Error(
+      `Invoice amount mismatch: requested ${amountMsats} msats but invoice is for ${invoiceAmount ?? 'an unspecified amount of'} msats`
+    );
   }
 
   return data as LNURLPayCallbackResponse;
@@ -186,10 +235,11 @@ export function calculateSplits(
   // Calculate total split percentage
   const totalSplit = recipients.reduce((sum, r) => sum + r.split, 0);
 
-  // If splits don't add up to 100, normalize them
+  // If splits don't add up to 100, normalize them.
+  // A malformed value block where every split is 0 falls back to equal shares.
   const normalizedRecipients = recipients.map(r => ({
     ...r,
-    split: (r.split / totalSplit) * 100
+    split: totalSplit > 0 ? (r.split / totalSplit) * 100 : 100 / recipients.length
   }));
 
   // Calculate amounts for each recipient

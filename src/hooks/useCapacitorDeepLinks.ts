@@ -32,7 +32,7 @@ export function useCapacitorDeepLinks() {
     };
 
     // Listen for app URL open events
-    App.addListener('appUrlOpen', handleAppUrlOpen);
+    const listenerPromise = App.addListener('appUrlOpen', handleAppUrlOpen);
 
     // Check if app was opened with a URL (cold start)
     App.getLaunchUrl().then((result) => {
@@ -43,7 +43,9 @@ export function useCapacitorDeepLinks() {
     });
 
     return () => {
-      App.removeAllListeners();
+      // Remove only this hook's listener — removeAllListeners() would
+      // clobber every other App plugin listener in the app
+      listenerPromise.then(listener => listener.remove());
     };
   }, [navigate]);
 }

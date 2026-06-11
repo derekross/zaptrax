@@ -22,8 +22,6 @@ if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('/sw.js')
       .then((registration) => {
-        console.log('SW registered: ', registration);
-
         // Check for updates less frequently (every 5 minutes instead of 30 seconds)
         setInterval(() => {
           registration.update();
@@ -48,7 +46,7 @@ if ('serviceWorker' in navigator) {
         });
       })
       .catch((registrationError) => {
-        console.log('SW registration failed: ', registrationError);
+        console.error('SW registration failed: ', registrationError);
       });
 
     // Listen for service worker controlling the page

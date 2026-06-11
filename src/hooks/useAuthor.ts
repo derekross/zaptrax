@@ -18,7 +18,9 @@ export function useAuthor(pubkey: string | undefined) {
       );
 
       if (!event) {
-        throw new Error('No event found');
+        // A pubkey with no kind-0 profile is a normal result, not an error —
+        // throwing here would trigger 3 retries per profile-less author
+        return {};
       }
 
       try {
@@ -28,6 +30,7 @@ export function useAuthor(pubkey: string | undefined) {
         return { event };
       }
     },
-    retry: 3,
+    staleTime: 5 * 60 * 1000, // profiles change rarely
+    retry: 1,
   });
 }

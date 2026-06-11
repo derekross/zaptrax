@@ -30,7 +30,7 @@ import { useMusicPlayer } from '@/contexts/MusicPlayerContext';
 import { useCreatePlaylist, useUserPlaylists } from '@/hooks/useNostrMusic';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { useToast } from '@/hooks/useToast';
-import { downloadAlbumAsZip, type DownloadProgress } from '@/lib/albumDownload';
+import { type DownloadProgress } from '@/lib/albumDownload';
 
 export function AlbumPage() {
   const { albumId } = useParams<{ albumId: string }>();
@@ -249,6 +249,8 @@ export function AlbumPage() {
     setDownloadProgress({ current: 0, total: tracks.length + 1 });
 
     try {
+      // Lazy-load so jszip stays out of the initial bundle
+      const { downloadAlbumAsZip } = await import('@/lib/albumDownload');
       await downloadAlbumAsZip(album, (progress) => {
         setDownloadProgress(progress);
       });

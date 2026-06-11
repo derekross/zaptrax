@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useReducer, useRef, useEffect } from 'react';
+import React, { createContext, useContext, useReducer, useRef, useEffect, useCallback, useMemo } from 'react';
 import { nip19 } from 'nostr-tools';
 import type { WavlakeTrack } from '@/lib/wavlake';
 import type { UnifiedTrack } from '@/lib/unifiedTrack';
@@ -113,7 +113,7 @@ function musicPlayerReducer(state: MusicPlayerState, action: MusicPlayerAction):
     case 'SET_ERROR':
       return { ...state, error: action.payload, isLoading: false };
     case 'CLEAR_ERROR':
-      return { ...state, error: null };
+      return state.error === null ? state : { ...state, error: null };
     case 'SET_CASTING':
       return { ...state, isCasting: action.payload };
     default:
@@ -138,6 +138,15 @@ interface MusicPlayerContextType {
 
 const MusicPlayerContext = createContext<MusicPlayerContextType | undefined>(undefined);
 
+/** Only http(s) URLs may be loaded into the audio element. */
+function isHttpUrl(url: string): boolean {
+  try {
+    return ['http:', 'https:'].includes(new URL(url).protocol);
+  } catch {
+    return false;
+  }
+}
+
 export function MusicPlayerProvider({ children }: { children: React.ReactNode }) {
   const [state, dispatch] = useReducer(musicPlayerReducer, initialState);
   const audioRef = useRef<HTMLAudioElement>(null);
@@ -145,21 +154,27 @@ export function MusicPlayerProvider({ children }: { children: React.ReactNode })
   const { user } = useCurrentUser();
   const lastPublishedTrackRef = useRef<string | null>(null);
 
-  const playTrack = (track: UnifiedTrack | WavlakeTrack, queue?: (UnifiedTrack | WavlakeTrack)[]) => {
+  const playTrack = useCallback((track: UnifiedTrack | WavlakeTrack, queue?: (UnifiedTrack | WavlakeTrack)[]) => {
     // Convert WavlakeTrack to UnifiedTrack if needed
     const unifiedTrack = 'source' in track ? track : wavlakeToUnified(track);
-    const unifiedQueue = queue?.map(t => 'source' in t ? t : wavlakeToUnified(t)) || [unifiedTrack];
+    let unifiedQueue = queue?.map(t => 'source' in t ? t : wavlakeToUnified(t)) || [unifiedTrack];
+
+    // If the played track isn't in the provided queue, append it so
+    // currentIndex never goes to -1 (which breaks prev/next navigation)
+    let index = unifiedQueue.findIndex(t => t.id === unifiedTrack.id);
+    if (index === -1) {
+      unifiedQueue = [...unifiedQueue, unifiedTrack];
+      index = unifiedQueue.length - 1;
+    }
 
     dispatch({ type: 'SET_TRACK', payload: unifiedTrack });
-
     dispatch({ type: 'SET_QUEUE', payload: unifiedQueue });
-    const index = unifiedQueue.findIndex(t => t.id === unifiedTrack.id);
     dispatch({ type: 'SET_CURRENT_INDEX', payload: index });
 
     dispatch({ type: 'PLAY' }); // Ensure isPlaying state is updated
-  };
+  }, []);
 
-  const togglePlayPause = () => {
+  const togglePlayPause = useCallback(() => {
     if (state.currentTrack) {
       if (state.isPlaying) {
         dispatch({ type: 'PAUSE' });
@@ -167,46 +182,50 @@ export function MusicPlayerProvider({ children }: { children: React.ReactNode })
         dispatch({ type: 'PLAY' });
       }
     }
-  };
+  }, [state.currentTrack, state.isPlaying]);
 
-  const seekTo = (time: number) => {
+  const seekTo = useCallback((time: number) => {
     if (audioRef.current) {
       audioRef.current.currentTime = time;
       dispatch({ type: 'SET_CURRENT_TIME', payload: time });
     }
-  };
+  }, []);
 
-  const setVolume = (volume: number) => {
+  const setVolume = useCallback((volume: number) => {
     if (audioRef.current) {
       audioRef.current.volume = volume;
       dispatch({ type: 'SET_VOLUME', payload: volume });
     }
-  };
+  }, []);
 
-  const nextTrack = () => {
+  const nextTrack = useCallback(() => {
     dispatch({ type: 'NEXT_TRACK' });
-  };
+  }, []);
 
-  const previousTrack = () => {
+  const previousTrack = useCallback(() => {
     dispatch({ type: 'PREVIOUS_TRACK' });
-  };
+  }, []);
 
-  const playTrackByIndex = (index: number) => {
+  const playTrackByIndex = useCallback((index: number) => {
     dispatch({ type: 'PLAY_TRACK_BY_INDEX', payload: index });
-  };
+  }, []);
 
-  const setCasting = (isCasting: boolean) => {
+  const setCasting = useCallback((isCasting: boolean) => {
     dispatch({ type: 'SET_CASTING', payload: isCasting });
     // When starting to cast, pause local audio
     if (isCasting && audioRef.current) {
       audioRef.current.pause();
     }
-  };
+  }, []);
 
-  const addToQueue = (track: UnifiedTrack | WavlakeTrack) => {
+  const addToQueue = useCallback((track: UnifiedTrack | WavlakeTrack) => {
     const unifiedTrack = 'source' in track ? track : wavlakeToUnified(track);
     dispatch({ type: 'ADD_TO_QUEUE', payload: unifiedTrack });
-  };
+  }, []);
+
+  // Latest state for event handlers that shouldn't re-bind on every change
+  const stateRef = useRef(state);
+  stateRef.current = state;
 
   // Audio event handlers (keep this useEffect for other event listeners)
   useEffect(() => {
@@ -219,8 +238,11 @@ export function MusicPlayerProvider({ children }: { children: React.ReactNode })
     const handleCanPlay = () => {
       dispatch({ type: 'SET_LOADING', payload: false });
       // Don't auto-play locally when casting
-      if (state.isPlaying && !state.isCasting) {
+      if (stateRef.current.isPlaying && !stateRef.current.isCasting) {
         audio.play().catch((error) => {
+          // A new load() interrupting a pending play() is expected on
+          // rapid track switches — don't treat it as a playback failure
+          if (error.name === 'AbortError') return;
           console.error('Audio play failed on canplay:', error);
           if (error.name === 'NotAllowedError') {
             dispatch({ type: 'SET_ERROR', payload: 'Autoplay prevented. Please click play to start.' });
@@ -237,8 +259,17 @@ export function MusicPlayerProvider({ children }: { children: React.ReactNode })
     const handleTimeUpdate = () => {
       dispatch({ type: 'SET_CURRENT_TIME', payload: audio.currentTime });
     };
+    const handlePlaying = () => {
+      dispatch({ type: 'CLEAR_ERROR' });
+    };
     const handleEnded = () => {
-      nextTrack();
+      const { currentIndex, queue } = stateRef.current;
+      if (currentIndex >= queue.length - 1) {
+        // End of queue: stop, so the UI doesn't stay stuck on "playing"
+        dispatch({ type: 'PAUSE' });
+      } else {
+        dispatch({ type: 'NEXT_TRACK' });
+      }
     };
     const handleError = () => {
       dispatch({ type: 'SET_ERROR', payload: 'Failed to load audio' });
@@ -248,6 +279,7 @@ export function MusicPlayerProvider({ children }: { children: React.ReactNode })
     audio.addEventListener('canplay', handleCanPlay);
     audio.addEventListener('loadedmetadata', handleLoadedMetadata);
     audio.addEventListener('timeupdate', handleTimeUpdate);
+    audio.addEventListener('playing', handlePlaying);
     audio.addEventListener('ended', handleEnded);
     audio.addEventListener('error', handleError);
 
@@ -256,10 +288,11 @@ export function MusicPlayerProvider({ children }: { children: React.ReactNode })
       audio.removeEventListener('canplay', handleCanPlay);
       audio.removeEventListener('loadedmetadata', handleLoadedMetadata);
       audio.removeEventListener('timeupdate', handleTimeUpdate);
+      audio.removeEventListener('playing', handlePlaying);
       audio.removeEventListener('ended', handleEnded);
       audio.removeEventListener('error', handleError);
     };
-  }, [state.isPlaying, state.isCasting]);
+  }, []);
 
   // Update audio source when track changes
   useEffect(() => {
@@ -276,6 +309,14 @@ export function MusicPlayerProvider({ children }: { children: React.ReactNode })
         mediaUrl = urlMatch[1];
       }
     }
+
+    // Track URLs come from untrusted sources (Nostr events, RSS feeds) —
+    // never load non-http(s) schemes into the audio element
+    if (!isHttpUrl(mediaUrl)) {
+      dispatch({ type: 'SET_ERROR', payload: 'Invalid track URL' });
+      return;
+    }
+
     audio.src = mediaUrl;
     audio.load();
 
@@ -298,6 +339,8 @@ export function MusicPlayerProvider({ children }: { children: React.ReactNode })
       const playPromise = audio.play();
       if (playPromise !== undefined) {
         playPromise.catch((error) => {
+          // Interrupted by a new load() during track switch — not a failure
+          if (error.name === 'AbortError') return;
           console.error('Audio play failed:', error);
           if (error.name === 'NotAllowedError') {
             dispatch({ type: 'SET_ERROR', payload: 'Autoplay prevented. Please click play to start.' });
@@ -391,7 +434,7 @@ export function MusicPlayerProvider({ children }: { children: React.ReactNode })
     }
   }, [user, state.currentTrack, state.isPlaying, state.duration, updateNowPlaying]);
 
-  const value: MusicPlayerContextType = {
+  const value: MusicPlayerContextType = useMemo(() => ({
     state,
     dispatch,
     audioRef,
@@ -404,7 +447,7 @@ export function MusicPlayerProvider({ children }: { children: React.ReactNode })
     previousTrack,
     setCasting,
     addToQueue,
-  };
+  }), [state, playTrack, playTrackByIndex, togglePlayPause, seekTo, setVolume, nextTrack, previousTrack, setCasting, addToQueue]);
 
   return (
     <MusicPlayerContext.Provider value={value}>

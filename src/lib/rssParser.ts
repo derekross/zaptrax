@@ -66,7 +66,7 @@ function extractValueBlock(parent: Element | Document): ValueBlock | null {
     const name = recipient.getAttribute('name') || undefined;
     const recipientType = recipient.getAttribute('type') as 'node' | 'address';
     const address = recipient.getAttribute('address');
-    const split = parseInt(recipient.getAttribute('split') || '0');
+    const split = parseInt(recipient.getAttribute('split') || '0', 10);
     const customKey = recipient.getAttribute('customKey') || undefined;
     const customValue = recipient.getAttribute('customValue') || undefined;
     const fee = recipient.getAttribute('fee') === 'true';
@@ -85,7 +85,7 @@ function extractValueBlock(parent: Element | Document): ValueBlock | null {
   return {
     type: type as 'lightning',
     method: method as 'keysend' | 'amp',
-    suggested: suggested ? parseInt(suggested) : undefined,
+    suggested: suggested ? parseInt(suggested, 10) : undefined,
     recipients,
   };
 }

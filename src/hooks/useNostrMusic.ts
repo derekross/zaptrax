@@ -250,7 +250,7 @@ export function useNoteComments(noteId: string) {
 
 // Hook to create a playlist
 export function useCreatePlaylist() {
-  const { mutate: createEvent } = useNostrPublish();
+  const { mutateAsync: createEvent } = useNostrPublish();
   const queryClient = useQueryClient();
   const { user } = useCurrentUser();
 
@@ -301,7 +301,7 @@ export function useCreatePlaylist() {
         });
       }
 
-      createEvent({
+      await createEvent({
         kind: 30003, // Bookmark sets
         content: '',
         tags,
@@ -319,7 +319,7 @@ export function useCreatePlaylist() {
 
 // Hook to add track to playlist
 export function useAddToPlaylist() {
-  const { mutate: createEvent } = useNostrPublish();
+  const { mutateAsync: createEvent } = useNostrPublish();
   const queryClient = useQueryClient();
   const { user } = useCurrentUser();
 
@@ -374,7 +374,7 @@ export function useAddToPlaylist() {
         ...newTrackTags,
       ];
 
-      createEvent({
+      await createEvent({
         kind: 30003,
         content: playlistEvent.content,
         tags: newTags,
@@ -391,7 +391,7 @@ export function useAddToPlaylist() {
 // Hook to like/unlike a track (add to/remove from Liked Songs and create reaction)
 export function useLikeTrack() {
   const { nostr } = useNostr();
-  const { mutate: createEvent } = useNostrPublish();
+  const { mutateAsync: createEvent } = useNostrPublish();
   const queryClient = useQueryClient();
   const { user } = useCurrentUser();
 
@@ -445,19 +445,31 @@ export function useLikeTrack() {
           ...updatedTags.filter(tag => !['d', 'title', 'description', 't'].includes(tag[0])),
         ];
 
-        createEvent({
+        await createEvent({
           kind: 30003, // Bookmark sets
           content: '',
           tags,
         });
 
-        // Find and delete the existing like reaction (NIP-09)
+        // Find and delete the existing like reaction (NIP-09),
+        // falling back to a relay query when the cache is cold
         const trackReactions = queryClient.getQueryData<{ likes: NostrEvent[] }>(['track-reactions', trackUrl]);
+        let userLikeReaction = trackReactions?.likes.find(like => like.pubkey === user.pubkey);
 
-        const userLikeReaction = trackReactions?.likes.find(like => like.pubkey === user?.pubkey);
+        if (!userLikeReaction) {
+          const reactions = await nostr.query([
+            {
+              kinds: [7],
+              authors: [user.pubkey],
+              '#r': [trackUrl],
+              limit: 10,
+            }
+          ], { signal: AbortSignal.timeout(3000) });
+          userLikeReaction = resolveLatestLikes(reactions)[0];
+        }
 
         if (userLikeReaction) {
-          createEvent({
+          await createEvent({
             kind: 5, // Event Deletion Request
             content: 'Unlike track',
             tags: [
@@ -497,14 +509,14 @@ export function useLikeTrack() {
           ...newTrackTags,
         ];
 
-        createEvent({
+        await createEvent({
           kind: 30003, // Bookmark sets
           content: '',
           tags,
         });
 
         // Create positive reaction
-        createEvent({
+        await createEvent({
           kind: 7, // Reaction
           content: '+', // Standard like content as per NIP-25
           tags: [
@@ -527,12 +539,12 @@ export function useLikeTrack() {
 
 // Hook to like an artist
 export function useLikeArtist() {
-  const { mutate: createEvent } = useNostrPublish();
+  const { mutateAsync: createEvent } = useNostrPublish();
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async ({ artistNpub }: { artistNpub: string }) => {
-      createEvent({
+      await createEvent({
         kind: 7, // Reaction
         content: '+', // Standard like content as per NIP-25
         tags: [
@@ -549,7 +561,7 @@ export function useLikeArtist() {
 
 // Hook to update now playing status
 export function useUpdateNowPlaying() {
-  const { mutate: createEvent } = useNostrPublish();
+  const { mutateAsync: createEvent } = useNostrPublish();
 
   return useMutation({
     mutationFn: async ({ track, trackUrl }: {
@@ -559,7 +571,7 @@ export function useUpdateNowPlaying() {
       const content = `${track.title} - ${track.artist}`;
       const expiration = Math.floor(Date.now() / 1000) + track.duration;
 
-      createEvent({
+      await createEvent({
         kind: 30315, // User Status
         content,
         tags: [
@@ -574,7 +586,7 @@ export function useUpdateNowPlaying() {
 
 // Hook to comment on a track
 export function useCommentOnTrack() {
-  const { mutate: createEvent } = useNostrPublish();
+  const { mutateAsync: createEvent } = useNostrPublish();
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -582,7 +594,7 @@ export function useCommentOnTrack() {
       content: string;
       trackUrl: string;
     }) => {
-      createEvent({
+      await createEvent({
         kind: 1, // Text note
         content,
         tags: [
@@ -634,7 +646,7 @@ export function usePlaylistComments(playlistEvent: NostrEvent | null) {
 
 // Hook to comment on a playlist
 export function useCommentOnPlaylist() {
-  const { mutate: createEvent } = useNostrPublish();
+  const { mutateAsync: createEvent } = useNostrPublish();
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -651,7 +663,7 @@ export function useCommentOnPlaylist() {
       // Create the address reference for the playlist
       const addressRef = `30003:${playlistEvent.pubkey}:${dTag}`;
 
-      createEvent({
+      await createEvent({
         kind: 1111, // Comment
         content,
         tags: [
@@ -676,7 +688,7 @@ export function useCommentOnPlaylist() {
 
 // Hook to edit a playlist
 export function useEditPlaylist() {
-  const { mutate: createEvent } = useNostrPublish();
+  const { mutateAsync: createEvent } = useNostrPublish();
   const queryClient = useQueryClient();
   const { user } = useCurrentUser();
 
@@ -708,14 +720,19 @@ export function useEditPlaylist() {
         tags.push(['description', description]);
       }
 
-      // Add track URLs as 'r' tags
+      // Add track URLs as 'r' tags, carrying over each track's metadata
+      // tags from the original event so edits don't wipe track info
       if (tracks) {
+        const metadataTagNames = ['track-title', 'track-artist', 'track-image', 'track-source', 'track-feed-id', 'track-media-url', 'track-url', 'track-duration'];
         tracks.forEach(trackUrl => {
           tags.push(['r', trackUrl]);
+          playlistEvent.tags
+            .filter(tag => metadataTagNames.includes(tag[0]) && tag[1] === trackUrl)
+            .forEach(tag => tags.push([...tag]));
         });
       }
 
-      createEvent({
+      await createEvent({
         kind: 30003, // Bookmark sets
         content: '',
         tags,
@@ -733,7 +750,7 @@ export function useEditPlaylist() {
 
 // Hook to delete a playlist
 export function useDeletePlaylist() {
-  const { mutate: createEvent } = useNostrPublish();
+  const { mutateAsync: createEvent } = useNostrPublish();
   const queryClient = useQueryClient();
   const { user } = useCurrentUser();
 
@@ -746,7 +763,7 @@ export function useDeletePlaylist() {
       }
 
       // Create a deletion event (kind 5)
-      createEvent({
+      await createEvent({
         kind: 5, // Deletion
         content: 'Deleted playlist',
         tags: [
@@ -765,7 +782,7 @@ export function useDeletePlaylist() {
 
 // Hook to remove track from playlist
 export function useRemoveFromPlaylist() {
-  const { mutate: createEvent } = useNostrPublish();
+  const { mutateAsync: createEvent } = useNostrPublish();
   const queryClient = useQueryClient();
   const { user } = useCurrentUser();
 
@@ -788,7 +805,7 @@ export function useRemoveFromPlaylist() {
         !['r', 'track-title', 'track-artist', 'track-image', 'track-source', 'track-feed-id', 'track-media-url', 'track-url', 'track-duration'].includes(tag[0])
       );
 
-      createEvent({
+      await createEvent({
         kind: 30003,
         content: playlistEvent.content,
         tags: updatedTags,
@@ -804,18 +821,29 @@ export function useRemoveFromPlaylist() {
 
 // Hook to remove track from liked songs
 export function useRemoveFromLikedSongs() {
-  const { mutate: createEvent } = useNostrPublish();
+  const { nostr } = useNostr();
+  const { mutateAsync: createEvent } = useNostrPublish();
   const queryClient = useQueryClient();
   const { user } = useCurrentUser();
 
   return useMutation({
     mutationFn: async ({ trackUrl }: { trackUrl: string }) => {
-      // Get existing liked songs
-      const likedSongsEvents = await queryClient.fetchQuery({
-        queryKey: ['liked-songs', user?.pubkey],
-      });
+      if (!user?.pubkey) throw new Error('User not logged in');
 
-      const existingLikedSongs = likedSongsEvents as NostrEvent | null;
+      // Get existing liked songs from cache, falling back to relays
+      let existingLikedSongs = queryClient.getQueryData<NostrEvent | null>(['liked-songs', user.pubkey]);
+      if (!existingLikedSongs) {
+        const signal = AbortSignal.timeout(3000);
+        const events = await nostr.query([
+          {
+            kinds: [30003],
+            authors: [user.pubkey],
+            '#d': ['liked-songs'],
+          }
+        ], { signal });
+        existingLikedSongs = events.sort((a, b) => b.created_at - a.created_at)[0] || null;
+      }
+
       if (!existingLikedSongs) {
         throw new Error('No liked songs found');
       }
@@ -845,21 +873,32 @@ export function useRemoveFromLikedSongs() {
         ...updatedTags.filter(tag => !['d', 'title', 'description', 't'].includes(tag[0])),
       ];
 
-      createEvent({
+      await createEvent({
         kind: 30003, // Bookmark sets
         content: '',
         tags,
       });
 
-      // Find and delete the existing like reaction (NIP-09)
-      const trackReactions = await queryClient.fetchQuery({
-        queryKey: ['track-reactions', trackUrl],
-      });
+      // Find and delete the existing like reaction (NIP-09),
+      // falling back to a relay query when the cache is cold
+      const trackReactions = queryClient.getQueryData<{ likes: NostrEvent[] }>(['track-reactions', trackUrl]);
+      let userLikeReaction = trackReactions?.likes.find(like => like.pubkey === user.pubkey);
 
-      const userLikeReaction = (trackReactions as { likes: NostrEvent[] })?.likes.find(like => like.pubkey === user?.pubkey);
+      if (!userLikeReaction) {
+        const signal = AbortSignal.timeout(3000);
+        const reactions = await nostr.query([
+          {
+            kinds: [7],
+            authors: [user.pubkey],
+            '#r': [trackUrl],
+            limit: 10,
+          }
+        ], { signal });
+        userLikeReaction = resolveLatestLikes(reactions)[0];
+      }
 
       if (userLikeReaction) {
-        createEvent({
+        await createEvent({
           kind: 5, // Event Deletion Request
           content: 'Unlike track',
           tags: [
@@ -927,14 +966,15 @@ export function useNoteReactions(noteId: string) {
       };
     },
     enabled: !!noteId,
-    staleTime: 5 * 1000, // 5 seconds
-    refetchOnWindowFocus: true,
+    // Reactions are fetched per feed item; keep them fresh for a minute so
+    // a feed of N items doesn't re-fire N queries on every focus/render
+    staleTime: 60 * 1000,
   });
 }
 
 // Hook to like/unlike a note
 export function useLikeNote() {
-  const { mutate: createEvent } = useNostrPublish();
+  const { mutateAsync: createEvent } = useNostrPublish();
   const queryClient = useQueryClient();
   const { user } = useCurrentUser();
 
@@ -951,7 +991,7 @@ export function useLikeNote() {
 
         if (userLikeReaction) {
           // Create a deletion request for the like reaction (NIP-09)
-          createEvent({
+          await createEvent({
             kind: 5, // Event Deletion Request
             content: 'Unlike',
             tags: [
@@ -962,7 +1002,7 @@ export function useLikeNote() {
         }
       } else {
         // Like: Create a positive reaction (NIP-25)
-        createEvent({
+        await createEvent({
           kind: 7, // Reaction
           content: '+', // Standard like content as per NIP-25
           tags: [

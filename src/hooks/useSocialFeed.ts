@@ -123,13 +123,13 @@ export function useSocialFeed(feedType: 'following' | 'global') {
         ];
       }
 
-      // Execute all queries in parallel for better performance
-      const results = await Promise.allSettled(
-        filters.map(filter => nostr.query([filter], { signal }))
-      );
-      const allEvents: NostrEvent[] = results
-        .filter((r): r is PromiseFulfilledResult<NostrEvent[]> => r.status === 'fulfilled')
-        .flatMap(r => r.value);
+      // Send all filters in a single REQ to minimize relay load and rate limiting
+      let allEvents: NostrEvent[] = [];
+      try {
+        allEvents = await nostr.query(filters, { signal });
+      } catch {
+        allEvents = [];
+      }
 
       // Filter and process events
       const musicEvents = allEvents.filter(event => {
@@ -208,8 +208,9 @@ export function useSocialFeed(feedType: 'following' | 'global') {
     initialPageParam: undefined,
     getNextPageParam: (lastPage) => lastPage.nextCursor,
     enabled: feedType === 'global' || (feedType === 'following' && !!user?.pubkey),
-    staleTime: 30 * 1000, // 30 seconds
-    refetchInterval: 60 * 1000, // Refetch every minute
+    staleTime: 60 * 1000, // 1 minute
+    refetchInterval: 2 * 60 * 1000, // Refetch every 2 minutes
+    refetchIntervalInBackground: false,
   });
 }
 

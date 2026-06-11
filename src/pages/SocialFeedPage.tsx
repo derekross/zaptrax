@@ -24,7 +24,9 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useSocialFeed } from '@/hooks/useSocialFeed';
+import { useWavlakeTrack } from '@/hooks/useWavlake';
 import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { useAuthor } from '@/hooks/useAuthor';
@@ -323,35 +325,30 @@ interface PlaylistCommentReferenceProps {
   playlistIdentifier: string;
 }
 
-function PlaylistCommentReference({ playlistAddress, playlistPubkey, playlistIdentifier }: PlaylistCommentReferenceProps) {
-  const [playlist, setPlaylist] = useState<NostrEvent | null>(null);
-  const [loading, setLoading] = useState(true);
+function PlaylistCommentReference({ playlistPubkey, playlistIdentifier }: PlaylistCommentReferenceProps) {
   const { nostr } = useNostr();
   const navigate = useNavigate();
 
-  React.useEffect(() => {
-    const loadPlaylist = async () => {
-      try {
-        const events = await nostr.query([
-          {
-            kinds: [30003],
-            authors: [playlistPubkey],
-            '#d': [playlistIdentifier],
-            limit: 1,
-          }
-        ]);
+  // Cached query so the same playlist referenced by multiple comments
+  // is only fetched once, with a timeout so slow relays can't hang it
+  const { data, isLoading: loading } = useQuery({
+    queryKey: ['playlist', playlistPubkey, playlistIdentifier],
+    queryFn: async (c) => {
+      const signal = AbortSignal.any([c.signal, AbortSignal.timeout(3000)]);
+      const events = await nostr.query([
+        {
+          kinds: [30003],
+          authors: [playlistPubkey],
+          '#d': [playlistIdentifier],
+          limit: 1,
+        }
+      ], { signal });
 
-        const latestPlaylist = events.sort((a, b) => b.created_at - a.created_at)[0];
-        setPlaylist(latestPlaylist || null);
-      } catch (error) {
-        console.error('Failed to load playlist:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadPlaylist();
-  }, [playlistAddress, playlistPubkey, playlistIdentifier, nostr]);
+      return events.sort((a, b) => b.created_at - a.created_at)[0] || null;
+    },
+    staleTime: 60 * 1000,
+  });
+  const playlist = data ?? null;
 
   const handlePlaylistClick = () => {
     if (playlist) {
@@ -723,29 +720,15 @@ interface TrackReferenceProps {
 }
 
 function TrackReference({ trackUrl, onAddToPlaylist, onComment, onZap }: TrackReferenceProps) {
-  const [track, setTrack] = useState<WavlakeTrack | null>(null);
-  const [loading, setLoading] = useState(true);
   const { playTrack } = useMusicPlayer();
   const { user } = useCurrentUser();
 
-  React.useEffect(() => {
-    const loadTrack = async () => {
-      try {
-        const trackId = trackUrl.split('/track/')[1];
-        if (trackId) {
-          const trackData = await wavlakeAPI.getTrack(trackId);
-          const fullTrack = Array.isArray(trackData) ? trackData[0] : trackData;
-          setTrack(fullTrack);
-        }
-      } catch (error) {
-        console.error('Failed to load track:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadTrack();
-  }, [trackUrl]);
+  // Cached query: the same track referenced across multiple feed items
+  // resolves to a single Wavlake API request
+  const trackId = trackUrl.split('/track/')[1];
+  const { data: trackData, isLoading: loading } = useWavlakeTrack(trackId);
+  const track: WavlakeTrack | null =
+    (Array.isArray(trackData) ? trackData[0] : trackData) ?? null;
 
   if (loading) {
     return (
@@ -848,55 +831,46 @@ interface PlaylistReferenceProps {
 }
 
 function PlaylistReference({ title, trackCount, trackUrls, onAddToPlaylist, onComment, onZap }: PlaylistReferenceProps) {
-  const [firstTrack, setFirstTrack] = useState<WavlakeTrack | null>(null);
-  const [loading, setLoading] = useState(true);
   const { playTrack } = useMusicPlayer();
   const { user } = useCurrentUser();
+  const queryClient = useQueryClient();
 
-  React.useEffect(() => {
-    const loadFirstTrack = async () => {
-      try {
-        if (trackUrls.length > 0) {
-          const firstTrackUrl = trackUrls[0];
-          const trackId = firstTrackUrl.split('/track/')[1];
-          if (trackId) {
-            const trackData = await wavlakeAPI.getTrack(trackId);
-            const fullTrack = Array.isArray(trackData) ? trackData[0] : trackData;
-            setFirstTrack(fullTrack);
-          }
-        }
-      } catch (error) {
-        console.error('Failed to load first track:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadFirstTrack();
-  }, [trackUrls]);
+  const firstTrackId = trackUrls[0]?.split('/track/')[1];
+  const { data: firstTrackData, isLoading: loading } = useWavlakeTrack(firstTrackId);
+  const firstTrack: WavlakeTrack | null =
+    (Array.isArray(firstTrackData) ? firstTrackData[0] : firstTrackData) ?? null;
 
   const handlePlayPlaylist = async () => {
     if (trackUrls.length === 0) return;
 
     try {
-      // Load all tracks in the playlist
-      const tracks = await Promise.all(
-        trackUrls.map(async (url) => {
-          try {
-            const trackId = url.split('/track/')[1];
-            if (trackId) {
-              const trackData = await wavlakeAPI.getTrack(trackId);
-              return Array.isArray(trackData) ? trackData[0] : trackData;
-            }
-            return null;
-          } catch (e) {
-            console.error('Failed to load track:', url, e);
-            return null;
-          }
-        })
-      );
+      const trackIds = trackUrls
+        .map(url => url.split('/track/')[1])
+        .filter((id): id is string => !!id);
 
-      const validTracks = tracks.filter(track => track !== null) as WavlakeTrack[];
+      // Load tracks through the query cache (dedupes already-fetched tracks),
+      // in batches so a long playlist doesn't fire dozens of parallel requests
+      const tracks: (WavlakeTrack | null)[] = [];
+      const BATCH_SIZE = 8;
+      for (let i = 0; i < trackIds.length; i += BATCH_SIZE) {
+        const batch = await Promise.all(
+          trackIds.slice(i, i + BATCH_SIZE).map(trackId =>
+            queryClient.fetchQuery({
+              queryKey: ['wavlake-track', trackId],
+              queryFn: () => wavlakeAPI.getTrack(trackId),
+              staleTime: 30 * 60 * 1000,
+            })
+              .then(data => (Array.isArray(data) ? data[0] : data) ?? null)
+              .catch((e) => {
+                console.error('Failed to load track:', trackId, e);
+                return null;
+              })
+          )
+        );
+        tracks.push(...batch);
+      }
+
+      const validTracks = tracks.filter((track): track is WavlakeTrack => track !== null);
       if (validTracks.length > 0) {
         playTrack(validTracks[0], validTracks);
       }

@@ -192,11 +192,14 @@ export function VideoContent({ url, className, autoPlay = false }: VideoContentP
     return null;
   };
 
-  // Check if URL is a video file
+  // Check if URL is a video file — anchor the extension to the end of the
+  // path so query strings or crafted URLs can't fake a match
   const isVideoFile = (url: string): boolean => {
-    const videoExtensions = ['.mp4', '.mov', '.webm', '.ogg', '.avi', '.mkv', '.m4v', '.3gp', '.flv'];
-    const urlLower = url.toLowerCase();
-    return videoExtensions.some(ext => urlLower.includes(ext));
+    try {
+      return /\.(mp4|mov|webm|ogg|avi|mkv|m4v|3gp|flv)$/.test(new URL(url).pathname.toLowerCase());
+    } catch {
+      return false;
+    }
   };
 
   const youtubeVideoId = getYouTubeVideoId(url);

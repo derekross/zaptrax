@@ -95,9 +95,10 @@ export function AddToPlaylistDialog({
       const descriptionTag = playlist.tags.find(tag => tag[0] === 'description');
       const dTag = playlist.tags.find(tag => tag[0] === 'd');
 
-      // Get existing track-related tags
+      // Get existing track-related tags (the full metadata tag set —
+      // dropping any here would strip that data from existing tracks)
       const existingTrackMetadata = playlist.tags.filter(tag =>
-        ['r', 'track-title', 'track-artist', 'track-image', 'track-source', 'track-feed-id'].includes(tag[0])
+        ['r', 'track-title', 'track-artist', 'track-image', 'track-source', 'track-feed-id', 'track-media-url', 'track-url', 'track-duration'].includes(tag[0])
       );
 
       // Create new track tags with metadata
@@ -107,6 +108,9 @@ export function AddToPlaylistDialog({
         ['track-artist', trackUrl, unifiedTrack.artist || ''],
         ['track-image', trackUrl, unifiedTrack.albumArtUrl || ''],
         ['track-source', trackUrl, unifiedTrack.source || 'wavlake'],
+        ['track-media-url', trackUrl, unifiedTrack.mediaUrl || ''],
+        ['track-url', trackUrl, trackUrl],
+        ['track-duration', trackUrl, String(unifiedTrack.duration || 0)],
       ];
 
       // Add feed ID for PodcastIndex tracks

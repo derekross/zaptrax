@@ -51,7 +51,9 @@ export function MusicPlayer() {
   const [commentDialogOpen, setCommentDialogOpen] = useState(false);
   const [zapDialogOpen, setZapDialogOpen] = useState(false);
   const [addToPlaylistOpen, setAddToPlaylistOpen] = useState(false);
-  const [optimisticLikes, setOptimisticLikes] = useState<Set<string>>(new Set());
+  // Map of trackUrl -> intended liked state, applied optimistically until
+  // the server data confirms it (a bare toggle-set can permanently invert)
+  const [optimisticLikes, setOptimisticLikes] = useState<Map<string, boolean>>(new Map());
   const [rssValueBlock, setRssValueBlock] = useState<ValueBlock | null>(null);
   const [checkingRssValue, setCheckingRssValue] = useState(false);
 
@@ -105,19 +107,19 @@ export function MusicPlayer() {
     if (likedSongs && optimisticLikes.size > 0) {
       const tracksToRemove: string[] = [];
 
-      optimisticLikes.forEach(trackUrl => {
+      optimisticLikes.forEach((intendedLiked, trackUrl) => {
         const isCurrentlyLiked = likedSongs.tags.some(tag => tag[0] === 'r' && tag[1] === trackUrl);
-        // If the real data now shows the track as liked (matching our optimistic state), clear the optimistic state
-        if (isCurrentlyLiked) {
+        // Once the real data matches the intent (for likes AND unlikes), drop the override
+        if (isCurrentlyLiked === intendedLiked) {
           tracksToRemove.push(trackUrl);
         }
       });
 
       if (tracksToRemove.length > 0) {
         setOptimisticLikes(prev => {
-          const newSet = new Set(prev);
-          tracksToRemove.forEach(trackUrl => newSet.delete(trackUrl));
-          return newSet;
+          const newMap = new Map(prev);
+          tracksToRemove.forEach(trackUrl => newMap.delete(trackUrl));
+          return newMap;
         });
       }
     }
@@ -178,8 +180,8 @@ export function MusicPlayer() {
 
   // Check if current track is liked (including optimistic updates)
   const actuallyLiked = likedSongs?.tags.some(tag => tag[0] === 'r' && tag[1] === trackUrl) || false;
-  const hasOptimisticLike = optimisticLikes.has(trackUrl);
-  const isLiked = hasOptimisticLike ? !actuallyLiked : actuallyLiked;
+  const optimisticLike = optimisticLikes.get(trackUrl);
+  const isLiked = optimisticLike ?? actuallyLiked;
 
 
   const formatTime = (seconds: number) => {
@@ -215,17 +217,18 @@ export function MusicPlayer() {
 
   const handleLike = () => {
     if (user && currentTrack) {
-      // Add to optimistic likes to show immediate feedback
-      setOptimisticLikes(prev => new Set(prev).add(trackUrl));
+      // Record the intended state for immediate feedback
+      const intendedLiked = !isLiked;
+      setOptimisticLikes(prev => new Map(prev).set(trackUrl, intendedLiked));
 
       likeTrack({ track: currentTrack, trackUrl }, {
         onError: (error) => {
           console.error('MusicPlayer - Error liking track:', error);
-          // Only clear optimistic state on error - let successful likes stay optimistic
+          // Revert the optimistic override on failure
           setOptimisticLikes(prev => {
-            const newSet = new Set(prev);
-            newSet.delete(trackUrl);
-            return newSet;
+            const newMap = new Map(prev);
+            newMap.delete(trackUrl);
+            return newMap;
           });
         }
       });
