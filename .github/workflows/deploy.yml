@@ -27,13 +27,22 @@ jobs:
           VITE_PODCASTINDEX_API_SECRET: ${{ secrets.VITE_PODCASTINDEX_API_SECRET }}
 
       - name: Copy files to production server
-        uses: appleboy/scp-action@v0.1.4
+        uses: burnett01/rsync-deployments@7.0.1
         with:
-          host: ${{ secrets.PROD_HOST }}
-          username: ${{ secrets.PROD_USER }}
-          key: ${{ secrets.PROD_SSH_KEY }}
-          port: ${{ secrets.PROD_PORT }}
-          source: "dist/*"
-          target: ${{ secrets.PROD_PATH }}
-          strip_components: 1
+          # rsync --delete, not scp: scp only copies INTO the target and never
+          # removes what is no longer in dist/. Vite content-hashes every
+          # bundle, so each build emits new filenames and the old generation
+          # stays forever — this webroot held 223 asset files (38 MB) from
+          # roughly a dozen builds. --delete makes it an exact mirror of dist/.
+          #
+          # .well-known is excluded deliberately: on this server it can hold
+          # hand-placed NIP-05 (nostr.json) and ACME files that are not part of
+          # any build, which --delete would otherwise destroy.
+          switches: -rlpt --delete --exclude='.well-known/'
+          path: dist/
+          remote_path: ${{ secrets.PROD_PATH }}
+          remote_host: ${{ secrets.PROD_HOST }}
+          remote_port: ${{ secrets.PROD_PORT }}
+          remote_user: ${{ secrets.PROD_USER }}
+          remote_key: ${{ secrets.PROD_SSH_KEY }}
 
