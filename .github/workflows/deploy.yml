@@ -27,7 +27,7 @@ jobs:
           VITE_PODCASTINDEX_API_SECRET: ${{ secrets.VITE_PODCASTINDEX_API_SECRET }}
 
       - name: Copy files to production server
-        uses: burnett01/rsync-deployments@7.0.1
+        uses: burnett01/rsync-deployments@v9
         with:
           # rsync --delete, not scp: scp only copies INTO the target and never
           # removes what is no longer in dist/. Vite content-hashes every
@@ -38,7 +38,7 @@ jobs:
           # .well-known is excluded deliberately: on this server it can hold
           # hand-placed NIP-05 (nostr.json) and ACME files that are not part of
           # any build, which --delete would otherwise destroy.
-          switches: -rlpt --delete --exclude='.well-known/'
+          switches: -rlt --omit-dir-times --delete --exclude='.well-known/'
           path: dist/
           remote_path: ${{ secrets.PROD_PATH }}
           remote_host: ${{ secrets.PROD_HOST }}
